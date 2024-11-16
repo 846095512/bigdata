@@ -300,10 +300,6 @@ class Commons:
         <name>dfs.journalnode.edits.dir</name>
         <value>${hadoop.tmp.dir}/journalnode-data</value>
     </property>
-    <property>
-        <name>yarn.application.classpath</name>
-        <value>{{ hadoop_classpath }}</value>
-    </property>
     {% if install_role == 'cluster' %}
     <!-- ha配置 -->
     <property>
@@ -475,6 +471,10 @@ class Commons:
     </property>
 
     <!-- yarn资源配置 -->
+    <property>
+        <name>yarn.application.classpath</name>
+        <value>{{ hadoop_classpath }}</value>
+    </property>
     <property>
         <name>yarn.nodemanager.resource.memory-mb</name>
         <value>{{ yarn_mem }}</value>
@@ -657,42 +657,42 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
                                   zk_addr=zk_addr)
         
         self.generate_config_file(template_str=hdfs_conf_template,
-                            conf_file=hdfs_conf,
-                            keyword="<configuration>",
-                            install_role=install_role,
-                            dfs_nameservice=dfs_nameservice,
-                            hadoop_conf_dir=hadoop_conf_dir,
-                            journal_quorm=journal_quorm,
-                            namenode_list=namenode_list,
-                            nn_list=nn_list,
-                            dfs_replication=dfs_replication,
-                            hadoop_classpath=hadoop_classpath)
+                                    conf_file=hdfs_conf,
+                                    keyword="<configuration>",
+                                    install_role=install_role,
+                                    dfs_nameservice=dfs_nameservice,
+                                    hadoop_conf_dir=hadoop_conf_dir,
+                                    journal_quorm=journal_quorm,
+                                    namenode_list=namenode_list,
+                                    nn_list=nn_list,
+                                    dfs_replication=dfs_replication)
 
         self.generate_config_file(template_str=yarn_conf_template,
-                    conf_file=yarn_conf,
-                    keyword="<configuration>",
-                    install_role=install_role,
-                    local_ip=local_ip,
-                    hadoop_conf_dir=hadoop_conf_dir,
-                    resourcemanager_list=resourcemanager_list,
-                    yarn_mem=yarn_mem,
-                    yarn_cpu=yarn_cpu,
-                    yarn_cluster_id=yarn_cluster_id,
-                    rm_list=rm_list)
+                                    conf_file=yarn_conf,
+                                    keyword="<configuration>",
+                                    install_role=install_role,
+                                    local_ip=local_ip,
+                                    hadoop_conf_dir=hadoop_conf_dir,
+                                    resourcemanager_list=resourcemanager_list,
+                                    yarn_mem=yarn_mem,
+                                    yarn_cpu=yarn_cpu,
+                                    yarn_cluster_id=yarn_cluster_id,
+                                    rm_list=rm_list,
+                                    hadoop_classpath=hadoop_classpath)
         
         self.generate_config_file(template_str=mmapred_conf_template,
-                                conf_file=mapred_conf,
-                                keyword="<configuration>",
-                                dfs_nameservice=dfs_nameservice)
+                                    conf_file=mapred_conf,
+                                    keyword="<configuration>",
+                                    dfs_nameservice=dfs_nameservice)
         
         self.generate_config_file(template_str=env_conf_template,
-                                conf_file=hadoop_env_file,
-                                keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
-                                current_user=current_user,
-                                hadoop_home_dir=hadoop_home_dir,
-                                hadoop_conf_dir=hadoop_conf_dir,
-                                hadoop_opts=hadoop_opts,
-                                jvm_heap_size=jvm_heap_size)
+                                    conf_file=hadoop_env_file,
+                                    keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
+                                    current_user=current_user,
+                                    hadoop_home_dir=hadoop_home_dir,
+                                    hadoop_conf_dir=hadoop_conf_dir,
+                                    hadoop_opts=hadoop_opts,
+                                    jvm_heap_size=jvm_heap_size)
 
         self.set_permissions(hadoop_home_dir)
 
