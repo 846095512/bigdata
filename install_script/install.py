@@ -300,9 +300,10 @@ class Commons:
         <name>dfs.journalnode.edits.dir</name>
         <value>${hadoop.tmp.dir}/journalnode-data</value>
     </property>
-    {% if install_role == 'standalone' %}
-
-    {% endif %}
+    <property>
+        <name>yarn.application.classpath</name>
+        <value>{{ hadoop_classpath }}</value>
+    </property>
     {% if install_role == 'cluster' %}
     <!-- ha配置 -->
     <property>
@@ -639,6 +640,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         yarn_conf = os.path.join(hadoop_conf_dir,"yarn-site.xml")
         mapred_conf = os.path.join(hadoop_conf_dir,"mapred-site.xml")
         hadoop_opts = "-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
+        hadoop_classpath = self.exec_shell_command(f"{hadoop_bin_dir}/hadoop classpath")
 
         with open(fencing_file, "w", encoding="utf-8") as f:
             f.write("#!/bin/bash\n\n\n")
@@ -663,7 +665,8 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
                             journal_quorm=journal_quorm,
                             namenode_list=namenode_list,
                             nn_list=nn_list,
-                            dfs_replication=dfs_replication)
+                            dfs_replication=dfs_replication,
+                            hadoop_classpath=hadoop_classpath)
 
         self.generate_config_file(template_str=yarn_conf_template,
                     conf_file=yarn_conf,
