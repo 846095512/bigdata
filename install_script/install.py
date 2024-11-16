@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tarfile
 import zipfile
+from click import command
 
 from jinja2 import Template
 
@@ -52,10 +53,9 @@ class Commons:
         return result
 
     def get_install_config(self):
-        print("开始获取安装参数")
-        with open('install_conf.json', "r", encoding="utf-8") as f:
+        script_path = os.path.dirname(os.path.abspath(__file__))
+        with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
             params_dit = json.load(f)
-        print("获取安装参数完成")
         return params_dit
 
     def get_root_dir(self):
@@ -66,37 +66,33 @@ class Commons:
             root_dir = "/home/" + current_user + "/app"
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
-        print(f"当前用户为{current_user},安装目录为{root_dir}")
         return root_dir
 
     def exec_shell_command(self, command):
-        print(f"开始执行shell指令,指令{command}")
         try:
             result = subprocess.run(command, shell=True, capture_output= True, text=True, check=True)
-            return str(result.stdout).strip()
+            return result.stdout.strip()
         except subprocess.CalledProcessError as e:
-            print(f"指令{command}执行出错")
             print(e)
+            sys.exit(1)
 
     def set_permissions(self, path):
         current_user = os.getlogin()
-        print("开始设置目录权限")
         for dirpath, dirnames, filenames in os.walk(path):
             for dirname in dirnames:
                 os.chmod(os.path.join(dirpath, dirname), 0o750)
             for filename in filenames:
-                if filename.endswith(".sh"):
-                    os.chmod(os.path.join(dirpath, filename), 0o750)
-                os.chmod(os.path.join(dirpath, filename), 0o550)
+                os.chmod(os.path.join(dirpath, filename), 0o750)
         self.exec_shell_command(f"chown -R {current_user}:{current_user} {path}")
-        print("设置目录权限结束")
+        print("设置目录权限完成")
 
     def unzip_package(self):
         # 解析参数
         args = self.get_install_config()
-        filename = args["file"]
+        script_path = os.path.dirname(os.path.abspath(__file__))
+        filename =  args["file"]
         module_name = args["module"]
-
+        
         root_dir = self.get_root_dir()
         print(f"root_dir is {root_dir}")
 
@@ -111,42 +107,34 @@ class Commons:
         print(f"文件为{filename_suffix}压缩类型")
 
         if filename_suffix == ".tar.gz" or filename_suffix == ".tgz":
-            with tarfile.open(filename, 'r') as tar_ref:
+            with tarfile.open(f"{script_path}/{filename}", 'r') as tar_ref:
                 tar_ref.extractall(root_dir)
         elif filename_suffix == ".zip":
-            with zipfile.ZipFile(filename, 'r') as zip_ref:
+            with zipfile.ZipFile(f"{script_path}/{filename}", 'r') as zip_ref:
                 zip_ref.extractall(root_dir)
         else:
             print("不支持的压缩包类型")
-
         print(f"文件解压完成")
         
-        command = "tar -tzf " + filename + " | head -1 | cut -d'/' -f1"
-        unpack_name = self.exec_shell_command(command)
-        unpack_name = str(unpack_name.stdout).strip()
+        unpack_name = self.exec_shell_command(f"tar -tzf {script_path}/{filename}  | head -1 | cut -d'/' -f1")
         old_path = os.path.join(root_dir, unpack_name)
         new_path = os.path.join(root_dir, module_name)
-
         shutil.move(old_path, new_path)
-
         print(f"目录移动完成，{old_path} -> {new_path}")
 
-
-
     def generate_config_file(self, template_str, conf_file, keyword, **kwargs):
-        print(f"开始生成{conf_file}文件")
         template = Template(template_str)
-        config_content = template.render(**kwargs)
+        config_content = template.render(kwargs)
         if keyword == "":
             insert_line_num = 1
-        insert_line_num = self.exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
-        with open(conf_file, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            lines.insert(int(insert_line_num),config_content)
-        with open(conf_file, "w", encoding="utf-8") as f:
-            f.writelines(lines)
+        else:
+            insert_line_num = self.exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
+            with open(conf_file, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+                lines.insert(int(insert_line_num),config_content)
+            with open(conf_file, "w", encoding="utf-8") as f:
+                f.writelines(lines)
         print(f"生成{conf_file}文件完成")
-
 
     def install_jdk(self):
         args = self.get_install_config()
@@ -157,11 +145,10 @@ class Commons:
 
         self.set_permissions(app_home)
 
-        print("设置环境变量中")
         with open(env_file, "a+", encoding="UTF-8") as f:
             f.write(f"export JAVA_HOME={app_home}\n")
             f.write(f"export PATH=$PATH:$JAVA_HOME/bin\n")
-        print(f"source {env_file}")
+
         self.exec_shell_command(f"source {env_file}")
         print("jdk 安装完成!!!!")
 
@@ -183,24 +170,23 @@ class Commons:
 
         params_dit = self.get_install_config()
         module = params_dit["module"]
-        jvm_heap_size = params_dit["jvm_heap_size"]
+        jvm_heap_size = params_dit["jvm.heapsize"]
         root_dir = self.get_root_dir()
         zk_home_dir = os.path.join(root_dir, module)
         zk_conf_file = os.path.join(zk_home_dir, "conf", "zoo.cfg")
         zk_log4j_file = os.path.join(zk_home_dir, "conf", "log4j.properties")
-        java_env_file = os.path.join(zk_home_dir, "conf", "java-env")
+        java_env_file = os.path.join(zk_home_dir, "conf", "java.env")
         zk_env_file = os.path.join(zk_home_dir, "bin", "zkEnv.sh")
         zk_myid_file = os.path.join(zk_home_dir, "myid")
 
 
-        if params_dit["install_role"] == "standalone":
+        if params_dit["install.role"] == "standalone":
             with open(zk_conf_file, "w", encoding="UTF-8") as f:
                 for item in conf_items:
                     if item == "dataDir":
                         conf_items["dataDir"] = zk_home_dir
                     f.write(f"{item}={conf_items.get(item)}\n")
-
-        elif params_dit["install_role"] == "cluster":
+        if params_dit["install.role"] == "cluster": 
             with open(zk_conf_file, "w", encoding="UTF-8") as f:
                 for item in conf_items:
                     if item == "dataDir":
@@ -215,7 +201,7 @@ class Commons:
 
 
         self.exec_shell_command(f"sed -i \"s/zookeeper.root.logger=.*/zookeeper.root.logger=INFO, ROLLINGFILE/g\" {zk_log4j_file}")
-        self.exec_shell_command(f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath:{zk_home_dir}/logs/heapdump.hprof'\" > {java_env_file}")
+        self.exec_shell_command(f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof $JVMFLAGS'\" > {java_env_file}")
         self.exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_env_file}")
 
         with open(zk_env_file, "r", encoding="UTF-8") as f:
@@ -227,9 +213,9 @@ class Commons:
                     break
         self.set_permissions(zk_home_dir)
         print("zk 安装完成")
-        # print("zk 启动中...")
-        # subprocess.run(f"{zk_home_dir}/bin/zkServer.sh start", shell=True)
-        # print("zk 启动完成")
+        print("zk 启动中...")
+        self.exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start")
+        print("zk 启动完成")
         
     def install_hadoop(self):
         core_conf_template = """
@@ -314,8 +300,10 @@ class Commons:
         <name>dfs.journalnode.edits.dir</name>
         <value>${hadoop.tmp.dir}/journalnode-data</value>
     </property>
-    {% if install_role == 'cluster' %}
+    {% if install_role == 'standalone' %}
 
+    {% endif %}
+    {% if install_role == 'cluster' %}
     <!-- ha配置 -->
     <property>
         <name>dfs.nameservices</name>
@@ -594,9 +582,9 @@ class Commons:
         env_conf_template = """
 export HADOOP_HOME={{ hadoop_home_dir }}
 export HADOOP_CONF_DIR={{ hadoop_conf_dir }}
-export HADOOP_LOG_DIR={{ hadoop_home_dir }}/logs
-export HADOOP_PID_DIR={{ hadoop_home_dir }}/pids
-export HADOOP_TMP_DIR={{ hadoop_home_dir }}/tmp
+export HADOOP_LOG_DIR=${HADOOP_HOME}/logs
+export HADOOP_PID_DIR=${HADOOP_HOME}/pids
+export HADOOP_TMP_DIR=${HADOOP_HOME}/tmp
 export HDFS_NAMENODE_USER={{ current_user }}
 export HDFS_DATANODE_USER={{ current_user }}
 export HDFS_SECONDARYNAMENODE_USER={{ current_user }}
@@ -605,13 +593,13 @@ export YARN_NODEMANAGER_USER={{ current_user }}
 export MAPRED_HISTORYSERVER_USER={{ current_user }}
 
 
-export HADOOP_OPTS="{{ hadoop_opts }}"
-export HDFS_NAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {hadoop_opts }}"
-export HDFS_SECONDARYNAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {hadoop_opts }}"
-export YARN_RESOURECEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {hadoop_opts }}"
-export YARN_NODEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {hadoop_opts }}"
-export YARN_PROXYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {hadoop_opts }}"
-export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {hadoop_opts }}"
+export HDFS_NAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/namenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/namenode-heapdump.hprof"
+export HDFS_DATANODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
+export HDFS_SECONDARYNAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/secondarynamenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/secondarynamenode-heapdump.hprof"
+export YARN_RESOURCEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
+export YARN_NODEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/resourcemanager-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/resourcemanager-heapdump.hprof"
+export YARN_PROXYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/nodemanager-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/nodemanager-heapdump.hprof"
+export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/historyserver-heapdump.hprof"
 """
 
 
@@ -696,7 +684,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         
         self.generate_config_file(template_str=env_conf_template,
                                 conf_file=hadoop_env_file,
-                                keyword="<configuration>",
+                                keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
                                 current_user=current_user,
                                 hadoop_home_dir=hadoop_home_dir,
                                 hadoop_conf_dir=hadoop_conf_dir,
@@ -709,18 +697,17 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
 
 
 
-
 if __name__ == '__main__':
 
-    def test(*args):
-        for arg in args:
-            print(arg)
-    test(1,2,2,3,4,5)
-    # obj = Commons()
-    # obj.unzip_package()
+    obj = Commons()
+    obj.unzip_package()
     # obj.install_jdk()
+    # obj.exec_shell_command('source /home/bigdata/.profile')
+    # a = obj.exec_shell_command("tar -tzf openjdk-8u44-linux-x64.tar.gz | head -1 | cut -d'/' -f1")
+    # res  = subprocess.run("source /home/bigdata/.profile" , shell=True, capture_output= True, text=True, check=True)
+    # print(res)
     # obj.install_zk()
-    # obj.install_hadoop()
+    obj.install_hadoop()
 
     
     # print(obj.exec_shell_command("diasasdr"))

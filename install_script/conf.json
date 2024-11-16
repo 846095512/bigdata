@@ -1,15 +1,17 @@
 {
     "file":"hadoop-3.4.1.tar.gz",
     "module":"hadoop",
-    "local.ip":"10.238.111.50",
-    "install.role":"cluster",
-    "install.ip":["10.238.111.50","10.238.111.51","10.238.111.52"],
+
+    "local.ip":"10.238.110.10",
+    "install.role":"standalone",
+    "dfs.nameservice":"10.238.110.10:9000",
+    "install.ip":["10.238.110.10"],
+
     "namenode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "resourcemanager.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "journalnode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "zk.addr":"10.238.111.50:2181,10.238.111.51:2181,10.238.111.52:2181",
     "jvm.heapsize":"1g",
-    "dfs.nameservice":"hadoopcluster",
     "yarn.cluster.id":"yarncluster",
     "yarn.mem":"1024",
     "yarn.cpu":"1",
