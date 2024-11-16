@@ -12,6 +12,7 @@ import zipfile
 from jinja2 import Template
 
 
+
 class Commons:
 
     def is_valid_ip_nums(self, *args):
