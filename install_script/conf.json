@@ -1,6 +1,6 @@
 {
-    "file":"hadoop-3.4.1.tar.gz",
-    "module":"hadoop",
+    "file":"apache-zookeeper-3.6.3-bin.tar.gz",
+    "module":"zookeeper",
 
     "local.ip":"10.238.110.10",
     "install.role":"standalone",

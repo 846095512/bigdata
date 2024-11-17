@@ -29,6 +29,7 @@ def install_zk():
     zk_log4j_file = os.path.join(zk_home_dir, "conf", "log4j.properties")
     java_env_file = os.path.join(zk_home_dir, "conf", "java.env")
     zk_env_file = os.path.join(zk_home_dir, "bin", "zkEnv.sh")
+    zk_server_file = os.path.join(zk_home_dir, "bin", "zkServer.sh")
     zk_myid_file = os.path.join(zk_home_dir, "myid")
 
     if params_dit["install.role"] == "standalone":
@@ -50,7 +51,7 @@ def install_zk():
                     exec_shell_command(f"echo {id} > {zk_myid_file}")
                 id += 1
 
-
+    exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
     exec_shell_command(f"sed -i \"s/zookeeper.root.logger=.*/zookeeper.root.logger=INFO, ROLLINGFILE/g\" {zk_log4j_file}")
     exec_shell_command(f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof $JVMFLAGS'\" > {java_env_file}")
     exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_env_file}")
