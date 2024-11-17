@@ -1,223 +1,10 @@
 # -*- coding: utf-8 -*-
-import ipaddress
-import json
 import math
 import os
-import shutil
-import subprocess
-import sys
-import tarfile
-import zipfile
-from click import command
+from commons import *
 
-from jinja2 import Template
-
-
-
-class Commons:
-
-    def is_valid_ip_nums(self, *args):
-        for arg in args:
-            if isinstance(arg, str):
-                self.is_valid_ip(arg)
-            else:
-                ip_nums = len(arg)
-                if ip_nums >= 1 and ip_nums % 2 != 0:
-                    for ip in arg:
-                        self.is_valid_ip(ip)
-                    return True
-                else:
-                    print("ip地址格式错误或ip地址个数不正确,请检查ip配置参数")
-                    sys.exit(1)
-
-    def is_valid_ip(self, ip):
-        try:
-            ipaddress.ip_address(ip)
-            return True
-        except ValueError:
-            print("ip 地址不合法")
-            sys.exit(1)
-
-    def get_user_env_filename(self):
-        os_name = self.get_os_name()
-        current_user = os.getlogin()
-
-        if os_name == "ubuntu":
-            return f"/home/{current_user}/.profile"
-        else:
-            return f"/home/{current_user}/.bash_profile"
-
-    def get_os_name(self):
-        command = "cat /etc/*-release | grep -wi 'id' | awk -F '=' '{print $2}' | sed 's/\"//g' | tr 'A-Z' 'a-z' "
-        result = str(subprocess.run(command, shell=True, capture_output=True, text=True).stdout).strip()
-        return result
-
-    def get_install_config(self):
-        script_path = os.path.dirname(os.path.abspath(__file__))
-        with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
-            params_dit = json.load(f)
-        return params_dit
-
-    def get_root_dir(self):
-        current_user = os.getlogin()
-        if current_user == "root":
-            root_dir = "/opt/app"
-        else:
-            root_dir = "/home/" + current_user + "/app"
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
-        return root_dir
-
-    def exec_shell_command(self, command):
-        try:
-            result = subprocess.run(command, shell=True, capture_output= True, text=True, check=True)
-            return result.stdout.strip()
-        except subprocess.CalledProcessError as e:
-            print(e)
-            sys.exit(1)
-
-    def set_permissions(self, path):
-        current_user = os.getlogin()
-        for dirpath, dirnames, filenames in os.walk(path):
-            for dirname in dirnames:
-                os.chmod(os.path.join(dirpath, dirname), 0o750)
-            for filename in filenames:
-                os.chmod(os.path.join(dirpath, filename), 0o750)
-        self.exec_shell_command(f"chown -R {current_user}:{current_user} {path}")
-        print("设置目录权限完成")
-
-    def unzip_package(self):
-        # 解析参数
-        args = self.get_install_config()
-        script_path = os.path.dirname(os.path.abspath(__file__))
-        filename =  args["file"]
-        module_name = args["module"]
-        
-        root_dir = self.get_root_dir()
-        print(f"root_dir is {root_dir}")
-
-        # 获取文件后缀
-        if filename.endswith('.tar.gz'):
-            filename_suffix = ".tar.gz"
-        elif filename.endswith('.zip'):
-            filename_suffix = ".zip"
-        else:
-            print("不支持解压的类型！！")
-            sys.exit(1)
-        print(f"文件为{filename_suffix}压缩类型")
-
-        if filename_suffix == ".tar.gz" or filename_suffix == ".tgz":
-            with tarfile.open(f"{script_path}/{filename}", 'r') as tar_ref:
-                tar_ref.extractall(root_dir)
-        elif filename_suffix == ".zip":
-            with zipfile.ZipFile(f"{script_path}/{filename}", 'r') as zip_ref:
-                zip_ref.extractall(root_dir)
-        else:
-            print("不支持的压缩包类型")
-        print(f"文件解压完成")
-        
-        unpack_name = self.exec_shell_command(f"tar -tzf {script_path}/{filename}  | head -1 | cut -d'/' -f1")
-        old_path = os.path.join(root_dir, unpack_name)
-        new_path = os.path.join(root_dir, module_name)
-        shutil.move(old_path, new_path)
-        print(f"目录移动完成，{old_path} -> {new_path}")
-
-    def generate_config_file(self, template_str, conf_file, keyword, **kwargs):
-        template = Template(template_str)
-        config_content = template.render(kwargs)
-        if keyword == "":
-            insert_line_num = 1
-        else:
-            insert_line_num = self.exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
-            with open(conf_file, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-                lines.insert(int(insert_line_num),config_content)
-            with open(conf_file, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-        print(f"生成{conf_file}文件完成")
-
-    def install_jdk(self):
-        args = self.get_install_config()
-        module_name = args["module"]
-
-        env_file = self.get_user_env_filename()
-        app_home = os.path.join(self.get_root_dir(), module_name)
-
-        self.set_permissions(app_home)
-
-        with open(env_file, "a+", encoding="UTF-8") as f:
-            f.write(f"export JAVA_HOME={app_home}\n")
-            f.write(f"export PATH=$PATH:$JAVA_HOME/bin\n")
-
-        self.exec_shell_command(f"source {env_file}")
-        print("jdk 安装完成!!!!")
-
-    def install_zk(self):
-        conf_items = {
-            "tickTime": 2000,
-            "initLimit": 10,
-            "syncLimit": 5,
-            "clientPort": 2181,
-            "dataDir": "",
-            "autopurge.snapRetainCount": 5,
-            "autopurge.purgeInterval": 12,
-            "maxClientCnxns": 1000,
-            "minSessionTimeout": 10000,
-            "maxSessionTimeout": 60000,
-            "admin.enableServer": "false",
-            "admin.serverPort": 9999
-        }
-
-        params_dit = self.get_install_config()
-        module = params_dit["module"]
-        jvm_heap_size = params_dit["jvm.heapsize"]
-        root_dir = self.get_root_dir()
-        zk_home_dir = os.path.join(root_dir, module)
-        zk_conf_file = os.path.join(zk_home_dir, "conf", "zoo.cfg")
-        zk_log4j_file = os.path.join(zk_home_dir, "conf", "log4j.properties")
-        java_env_file = os.path.join(zk_home_dir, "conf", "java.env")
-        zk_env_file = os.path.join(zk_home_dir, "bin", "zkEnv.sh")
-        zk_myid_file = os.path.join(zk_home_dir, "myid")
-
-
-        if params_dit["install.role"] == "standalone":
-            with open(zk_conf_file, "w", encoding="UTF-8") as f:
-                for item in conf_items:
-                    if item == "dataDir":
-                        conf_items["dataDir"] = zk_home_dir
-                    f.write(f"{item}={conf_items.get(item)}\n")
-        if params_dit["install.role"] == "cluster": 
-            with open(zk_conf_file, "w", encoding="UTF-8") as f:
-                for item in conf_items:
-                    if item == "dataDir":
-                        conf_items["dataDir"] = zk_home_dir
-                    f.write(f"{item}={conf_items.get(item)}\n")
-                id = 1
-                for ip in params_dit["install_ip"]:
-                    f.write(f"server.{id}={ip}:2888:3888\n")
-                    if ip == params_dit["local_ip"]:
-                        self.exec_shell_command(f"echo {id} > {zk_myid_file}")
-                    id += 1
-
-
-        self.exec_shell_command(f"sed -i \"s/zookeeper.root.logger=.*/zookeeper.root.logger=INFO, ROLLINGFILE/g\" {zk_log4j_file}")
-        self.exec_shell_command(f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof $JVMFLAGS'\" > {java_env_file}")
-        self.exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_env_file}")
-
-        with open(zk_env_file, "r", encoding="UTF-8") as f:
-            env_lines = f.readlines()
-        with open(zk_env_file, "w", encoding="UTF-8") as f:
-            for line in env_lines:
-                f.write(line)
-                if line.startswith("# default heap for zookeeper server"):
-                    break
-        self.set_permissions(zk_home_dir)
-        print("zk 安装完成")
-        print("zk 启动中...")
-        self.exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start")
-        print("zk 启动完成")
-        
-    def install_hadoop(self):
+  
+def install_hadoop():
         core_conf_template = """
     <!--  核心配置  -->
     <property>
@@ -604,7 +391,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
 """
 
 
-        param_dict = self.get_install_config()
+        param_dict = get_install_config()
         namenode_list = param_dict["namenode.list"]
         nn_list = ",".join([f"nn{i + 1}" for i in range(len(namenode_list))])
         resourcemanager_list  = param_dict["resourcemanager.list"]
@@ -627,7 +414,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         
         
 
-        root_dir = self.get_root_dir()
+        root_dir = get_root_dir()
         current_user = os.getlogin()
         hadoop_home_dir = os.path.join(root_dir, module)
         hadoop_conf_dir = os.path.join(hadoop_home_dir, "etc/hadoop")
@@ -640,7 +427,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         yarn_conf = os.path.join(hadoop_conf_dir,"yarn-site.xml")
         mapred_conf = os.path.join(hadoop_conf_dir,"mapred-site.xml")
         hadoop_opts = "-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
-        hadoop_classpath = self.exec_shell_command(f"{hadoop_bin_dir}/hadoop classpath")
+        hadoop_classpath = exec_shell_command(f"{hadoop_bin_dir}/hadoop classpath")
 
         with open(fencing_file, "w", encoding="utf-8") as f:
             f.write("#!/bin/bash\n\n\n")
@@ -648,7 +435,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
             f.write(f"{hadoop_bin_dir}/hdfs --daemon stop resourcemanager\n")
 
         # 生成 core-site hdfs-site yarn-site mapred-site文件
-        self.generate_config_file(template_str=core_conf_template,
+        generate_config_file(template_str=core_conf_template,
                                   conf_file=core_conf,
                                   keyword="<configuration>",
                                   install_role=install_role,
@@ -656,7 +443,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
                                   hadoop_data_dir=hadoop_data_dir,
                                   zk_addr=zk_addr)
         
-        self.generate_config_file(template_str=hdfs_conf_template,
+        generate_config_file(template_str=hdfs_conf_template,
                                     conf_file=hdfs_conf,
                                     keyword="<configuration>",
                                     install_role=install_role,
@@ -667,7 +454,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
                                     nn_list=nn_list,
                                     dfs_replication=dfs_replication)
 
-        self.generate_config_file(template_str=yarn_conf_template,
+        generate_config_file(template_str=yarn_conf_template,
                                     conf_file=yarn_conf,
                                     keyword="<configuration>",
                                     install_role=install_role,
@@ -680,12 +467,12 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
                                     rm_list=rm_list,
                                     hadoop_classpath=hadoop_classpath)
         
-        self.generate_config_file(template_str=mmapred_conf_template,
+        generate_config_file(template_str=mmapred_conf_template,
                                     conf_file=mapred_conf,
                                     keyword="<configuration>",
                                     dfs_nameservice=dfs_nameservice)
         
-        self.generate_config_file(template_str=env_conf_template,
+        generate_config_file(template_str=env_conf_template,
                                     conf_file=hadoop_env_file,
                                     keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
                                     current_user=current_user,
@@ -694,35 +481,5 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
                                     hadoop_opts=hadoop_opts,
                                     jvm_heap_size=jvm_heap_size)
 
-        self.set_permissions(hadoop_home_dir)
-
-
-
-
-
-if __name__ == '__main__':
-
-    obj = Commons()
-    obj.unzip_package()
-    # obj.install_jdk()
-    # obj.exec_shell_command('source /home/bigdata/.profile')
-    # a = obj.exec_shell_command("tar -tzf openjdk-8u44-linux-x64.tar.gz | head -1 | cut -d'/' -f1")
-    # res  = subprocess.run("source /home/bigdata/.profile" , shell=True, capture_output= True, text=True, check=True)
-    # print(res)
-    # obj.install_zk()
-    obj.install_hadoop()
-
-    
-    # print(obj.exec_shell_command("diasasdr"))
-  
-
-
-
-
-
-
-
-
- 
-
+        set_permissions(hadoop_home_dir)
 
