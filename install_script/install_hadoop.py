@@ -483,3 +483,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
 
         set_permissions(hadoop_home_dir)
 
+
+if __name__ == '__main__':
+    unzip_package()
+    install_hadoop()

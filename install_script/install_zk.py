@@ -3,6 +3,7 @@ import os
 from commons import *
 
 def install_zk():
+
     conf_items = {
         "tickTime": 2000,
         "initLimit": 10,
@@ -21,6 +22,7 @@ def install_zk():
     params_dit = get_install_config()
     module = params_dit["module"]
     jvm_heap_size = params_dit["jvm.heapsize"]
+
     root_dir = get_root_dir()
     zk_home_dir = os.path.join(root_dir, module)
     zk_conf_file = os.path.join(zk_home_dir, "conf", "zoo.cfg")
@@ -28,7 +30,6 @@ def install_zk():
     java_env_file = os.path.join(zk_home_dir, "conf", "java.env")
     zk_env_file = os.path.join(zk_home_dir, "bin", "zkEnv.sh")
     zk_myid_file = os.path.join(zk_home_dir, "myid")
-
 
     if params_dit["install.role"] == "standalone":
         with open(zk_conf_file, "w", encoding="UTF-8") as f:
@@ -56,6 +57,7 @@ def install_zk():
 
     with open(zk_env_file, "r", encoding="UTF-8") as f:
         env_lines = f.readlines()
+
     with open(zk_env_file, "w", encoding="UTF-8") as f:
         for line in env_lines:
             f.write(line)
@@ -63,7 +65,10 @@ def install_zk():
                 break
     set_permissions(zk_home_dir)
     print("zk 安装完成")
-    print("zk 启动中...")
     exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start")
     print("zk 启动完成")
-    
+
+
+if __name__ == '__main__':
+    unzip_package()
+    install_zk()

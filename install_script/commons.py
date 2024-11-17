@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import ipaddress
 import json
-import math
 import os
 import shutil
 import subprocess
@@ -47,31 +46,31 @@ def get_os_name():
     result = str(subprocess.run(command, shell=True, capture_output=True, text=True).stdout).strip()
     return result
 
+def get_root_dir():
+    current_user = os.getlogin()
+    if current_user == "root":
+        root_dir = "/opt"
+    else:
+        root_dir = "/home/" + current_user
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+    return root_dir
+
 def get_install_config():
     script_path = os.path.dirname(os.path.abspath(__file__))
     with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
         params_dit = json.load(f)
     return params_dit
 
-def get_root_dir():
-    current_user = os.getlogin()
-    if current_user == "root":
-        root_dir = "/opt/app"
-    else:
-        root_dir = "/home/" + current_user + "/app"
-    if not os.path.exists(root_dir):
-        os.makedirs(root_dir)
-    return root_dir
-
-def exec_shell_command( command):
+def exec_shell_command(cmd):
     try:
-        result = subprocess.run(command, shell=True, capture_output= True, text=True, check=True)
+        result = subprocess.run(cmd, shell=True, capture_output= True, text=True, check=True)
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         print(e)
         sys.exit(1)
 
-def set_permissions( path):
+def set_permissions(path):
     current_user = os.getlogin()
     for dirpath, dirnames, filenames in os.walk(path):
         for dirname in dirnames:
@@ -82,12 +81,11 @@ def set_permissions( path):
     print("设置目录权限完成")
 
 def unzip_package():
-    # 解析参数
     args = get_install_config()
-    script_path = os.path.dirname(os.path.abspath(__file__))
     filename =  args["file"]
+    file_path = get_download_dir(filename)
     module_name = args["module"]
-    
+
     root_dir = get_root_dir()
     print(f"root_dir is {root_dir}")
 
@@ -96,37 +94,51 @@ def unzip_package():
         filename_suffix = ".tar.gz"
     elif filename.endswith('.zip'):
         filename_suffix = ".zip"
+    elif filename.endswith('.tgz'): 
+        filename_suffix = ".tgz"
     else:
         print("不支持解压的类型！！")
         sys.exit(1)
     print(f"文件为{filename_suffix}压缩类型")
 
     if filename_suffix == ".tar.gz" or filename_suffix == ".tgz":
-        with tarfile.open(f"{script_path}/{filename}", 'r') as tar_ref:
+        print(file_path)
+        with tarfile.open(f"{file_path}", 'r') as tar_ref:
             tar_ref.extractall(root_dir)
     elif filename_suffix == ".zip":
-        with zipfile.ZipFile(f"{script_path}/{filename}", 'r') as zip_ref:
+        with zipfile.ZipFile(f"{file_path}", 'r') as zip_ref:
             zip_ref.extractall(root_dir)
     else:
         print("不支持的压缩包类型")
     print(f"文件解压完成")
     
-    unpack_name = exec_shell_command(f"tar -tzf {script_path}/{filename}  | head -1 | cut -d'/' -f1")
+    unpack_name = exec_shell_command(f"tar -tzf {file_path}  | head -1 | cut -d'/' -f1")
     old_path = os.path.join(root_dir, unpack_name)
     new_path = os.path.join(root_dir, module_name)
     shutil.move(old_path, new_path)
     print(f"目录移动完成，{old_path} -> {new_path}")
 
 def generate_config_file(template_str, conf_file, keyword, **kwargs):
+    
     template = Template(template_str)
     config_content = template.render(kwargs)
     if keyword == "":
         insert_line_num = 1
     else:
         insert_line_num = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
-        with open(conf_file, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            lines.insert(int(insert_line_num),config_content)
-        with open(conf_file, "w", encoding="utf-8") as f:
-            f.writelines(lines)
+
+    with open(conf_file, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+        lines.insert(int(insert_line_num),config_content)
+    with open(conf_file, "w", encoding="utf-8") as f:
+        f.writelines(lines)
     print(f"生成{conf_file}文件完成")
+
+def get_download_dir(filename):
+    root_dir = get_root_dir()
+    package_dir = os.path.join(root_dir, "package", filename)
+    if not os.path.exists(package_dir): 
+        print(f"安装包文件下载路径:    {package_dir}  不存在,请先将安装包上传至    {package_dir}")
+        sys.exit(1)
+    return package_dir
+
