@@ -45,10 +45,10 @@ loose-group_replication_enforce_update_everywhere_checks=ON
 
 ##################### innodb #########################
 transaction_isolation=READ-COMMITTED
-log_bin_trust_function_creatos=ON
+log_bin_trust_function_creators=ON
 innodb_buffer_pool_size={{ innodb_buffer_size }}
 innodb_lock_wait_timeout=600
-innodb_print_all_daedlocks=ON
+innodb_print_all_deadlocks=ON
 innodb_read_io_threads=32
 innodb_write_io_threads=32
 innodb_io_capacity=80
@@ -105,10 +105,10 @@ binlog_expire_logs_seconds=259200
     set_permissions(mysql_home_dir)
     
     # 初始化mysql并修改root用户密码 启动组复制
-    exec_shell_command(f"{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize-insecure  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_home_dir}/data")
+    exec_shell_command(f"{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_home_dir}/data")
     exec_shell_command(f"{mysql_home_dir}/bin/mysqld_safe --defaults-file={mysql_home_dir}/my.cnf --user={current_user} &")
     exec_shell_command(f"cp -rf {mysql_home_dir}/support-files/mysql.server /etc/init.d/mysql.server")
-    temp_passwd=exec_shell_command("grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}'")
+    temp_passwd=exec_shell_command("grep 'temporary password' {mysql_home_dir}/logs/mysql-err.log | awk '{print $NF}'")
     if install_role == "cluster":
         exec_shell_command(f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S '{mysql_home_dir}/mysql.sock' -e  'SET SQL_LOG_BIN=0;'")
         exec_shell_command(f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S '{mysql_home_dir}/mysql.sock' -e  'CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY 'repl@147!$&';'")
@@ -128,14 +128,5 @@ binlog_expire_logs_seconds=259200
     exec_shell_command(f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S '{mysql_home_dir}/mysql.sock' -e 'ALTER USER 'root'@'localhost' IDENTIFIED BY 'DBuser@123_!@#';'")
 
 if __name__ == '__main__':
-    param_dict = get_install_config()
-    module_name = param_dict["module"]
-    install_role =  param_dict["install.role"]
-    local_ip =  param_dict["local.ip"]
-    install_ip = param_dict["install.ip"]
-    is_master = param_dict["is.master"]
-    ip_whitelist = ",".join([f"{ip}" for ip in install_ip])
-    replication_group_seeds = ",".join([f"{ip}:33061" for ip in install_ip])
-    is_valid_ip(local_ip,install_ip)
-    if install_role == "cluster":
-        is_vaild_nums(install_ip)
+    unzip_package()
+    install_mysql()

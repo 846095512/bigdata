@@ -104,12 +104,16 @@ def unzip_package():
         filename_suffix = ".zip"
     elif filename.endswith('.tgz'): 
         filename_suffix = ".tgz"
+    elif filename.endswith('.tar'): 
+        filename_suffix = ".tar"
+    elif filename.endswith('.tar.xz'): 
+        filename_suffix = ".tar.xz"
     else:
         print("不支持解压的类型！！")
         sys.exit(1)
     print(f"文件为{filename_suffix}压缩类型")
 
-    if filename_suffix == ".tar.gz" or filename_suffix == ".tgz" or filename_suffix == ".tar":
+    if filename_suffix == ".tar.gz" or filename_suffix == ".tgz" or filename_suffix == ".tar" or filename_suffix == ".tar.xz":
         print(file_path)
         with tarfile.open(f"{file_path}", 'r') as tar_ref:
             tar_ref.extractall(app_home_dir)
@@ -120,7 +124,7 @@ def unzip_package():
         print("不支持的压缩包类型")
     print(f"文件解压完成")
     
-    unpack_name = exec_shell_command(f"tar -tzf {file_path}  | head -1 | cut -d'/' -f1")
+    unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
     old_path = os.path.join(app_home_dir, unpack_name)
     new_path = os.path.join(app_home_dir, module_name)
     shutil.move(old_path, new_path)

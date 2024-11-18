@@ -1,11 +1,11 @@
 {
-    "file":"spark-3.5.3-bin-hadoop3.tgz",
-    "module":"spark",
+    "file":"mysql-8.0.27-linux-glibc2.12-x86_64.tar.xz",
+    "module":"mysql",
 
-    "local.ip":"1.1.1.1",
-    "install.role":"cluster",
+    "local.ip":"192.168.176.134",
+    "install.role":"standalone",
     "dfs.nameservice":"192.168.176.134:9000",
-    "install.ip":["192.168.176.134","1.1.1.1"],
+    "install.ip":["192.168.176.134"],
 
     "namenode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "resourcemanager.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
@@ -19,7 +19,7 @@
     "spark.master.ip":["192.168.176.134"],
 
     "spark.cluster.id":"sparkcluster",
-    "is.master": "true",
+    "is.master": "false",
     "innodb.buffer.size":"1g"
 
 }
