@@ -109,7 +109,7 @@ def unzip_package():
         sys.exit(1)
     print(f"文件为{filename_suffix}压缩类型")
 
-    if filename_suffix == ".tar.gz" or filename_suffix == ".tgz":
+    if filename_suffix == ".tar.gz" or filename_suffix == ".tgz" or filename_suffix == ".tar":
         print(file_path)
         with tarfile.open(f"{file_path}", 'r') as tar_ref:
             tar_ref.extractall(app_home_dir)
