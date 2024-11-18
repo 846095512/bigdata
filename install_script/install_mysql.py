@@ -65,6 +65,17 @@ log_bin_index={{ mysql_home_dir }}/binlog/mysql-bin.index
 binlog_format=ROW
 binlog_expire_logs_seconds=259200
 """
+    current_user = os.getlogin()
+    if current_user == "root":
+        if get_os_name() == "ubuntu":
+            exec_shell_command("apt remove mariadb* -y")
+            exec_shell_command("apt install libncurses5 -y")
+        elif get_os_name() == "centos":
+            exec_shell_command("yum remove mariadb* -y")
+            exec_shell_command("yum install ncurses-compat-libs -y")
+        else:
+            print("暂时不支持的系统类型")
+            sys.exit(1)
     param_dict = get_install_config()
     module_name = param_dict["module"]
     install_role =  param_dict["install.role"]
@@ -82,7 +93,6 @@ binlog_expire_logs_seconds=259200
     for ip in install_ip:
         if ip == local_ip:
             server_id += 1
-    current_user = os.getlogin()
     mysql_home_dir = os.path.join(get_app_home_dir(), module_name)
     my_cnf_file = os.path.join(mysql_home_dir,"my.cnf")
     exec_shell_command(f"mkdir -p {mysql_home_dir}/logs")
