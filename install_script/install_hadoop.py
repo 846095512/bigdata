@@ -483,6 +483,16 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
 
         set_permissions(hadoop_home_dir)
 
+        if install_role == "standalone":
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
+            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
+            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
+            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start proxyserver")
+            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
+        if install_role == "cluster":
+            pass
 
 if __name__ == '__main__':
     unzip_package()

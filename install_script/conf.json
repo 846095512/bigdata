@@ -2,10 +2,10 @@
     "file":"spark-3.5.3-bin-hadoop3.tgz",
     "module":"spark",
 
-    "local.ip":"192.168.176.134",
-    "install.role":"standalone",
+    "local.ip":"1.1.1.1",
+    "install.role":"cluster",
     "dfs.nameservice":"192.168.176.134:9000",
-    "install.ip":["192.168.176.134"],
+    "install.ip":["192.168.176.134","1.1.1.1"],
 
     "namenode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "resourcemanager.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
@@ -15,8 +15,11 @@
     "yarn.cluster.id":"yarncluster",
     "yarn.mem":"1024",
     "yarn.cpu":"1",
-    "only.namenode":"True",
+    "only.namenode":"true",
     "spark.master.ip":["192.168.176.134"],
 
-    "spark.cluster.id":"sparkcluster"
+    "spark.cluster.id":"sparkcluster",
+    "is.master": "true",
+    "innodb.buffer.size":"1g"
+
 }

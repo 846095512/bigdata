@@ -11,22 +11,27 @@ import zipfile
 from jinja2 import Template
 
 def is_valid_ip(*args):
-    for arg in args:
-        if isinstance(arg, str):
-            chechk_ip(arg)
-        elif isinstance(arg, list):
-            for ip in arg:
-                chechk_ip(ip)
-        else:
-            print("不支持的参数类型")
-
-def chechk_ip(ip):
     try:
-        ipaddress.ip_address(ip)
-        return True
+        for arg in args:
+            if isinstance(arg, str):
+                ipaddress.ip_address(arg)
+            elif isinstance(arg, list):
+                for ip in arg:
+                    ipaddress.ip_address(ip)
+            else:
+                print("不支持的参数类型")
+                sys.exit(1)
     except ValueError:
         print("ip 地址不合法")
         sys.exit(1)
+
+def is_vaild_nums(ip_list):
+    if len(ip_list) > 1 and len(ip_list) % 2 != 0:
+        return True
+    else:
+        print("集群模式下ip个数必须大于1并且为奇数")
+        sys.exit(1)
+
 
 def get_user_env_filename():
     os_name = get_os_name()

@@ -26,7 +26,7 @@ export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.dep
 {% endif %}
 """
     spark_defaults_template = """
-{% if install_role == "standalone" %}
+{% if install_role == "standalone"%}
 spark.master    spark://{{ spark_masters }}
 {% endif %}
 {% if cluster_role == "yarn" %}
