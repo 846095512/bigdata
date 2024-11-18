@@ -67,4 +67,25 @@
 }
 ```
 
+ 部署 mysql8 参数
+非root用户运行时
+ubuntu 系统
+sudo apt remove mariadb* -y
+sudo apt install libncurses5 -y
+
+centos 系统
+sudo yum remove mariadb* -y
+sudo yum install ncurses-compat-libs -y
+```json
+{
+    "file":"mysql8安装包名",
+    "module":"mysql",
+    "local.ip":"192.168.0.1",
+    "install.role":"standalone/cluster",
+    "is.master":"false/true",
+    "innodb.buffer.size":"1g",
+    "install.ip":["192.168.0.1"]
+}
+```
+
 
