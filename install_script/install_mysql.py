@@ -117,7 +117,6 @@ binlog_expire_logs_seconds=259200
     # 初始化mysql并修改root用户密码 启动组复制
     exec_shell_command(f"{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_home_dir}/data")
     exec_shell_command(f"{mysql_home_dir}/bin/mysqld_safe --defaults-file={mysql_home_dir}/my.cnf --user={current_user} &")
-    exec_shell_command(f"cp -rf {mysql_home_dir}/support-files/mysql.server /etc/init.d/mysql.server")
     temp_passwd=exec_shell_command("grep 'temporary password' {mysql_home_dir}/logs/mysql-err.log | awk '{print $NF}'")
     if install_role == "cluster":
         exec_shell_command(f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S '{mysql_home_dir}/mysql.sock' -e  'SET SQL_LOG_BIN=0;'")

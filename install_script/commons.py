@@ -8,6 +8,7 @@ import sys
 import tarfile
 import zipfile
 
+from pathlib import Path
 from jinja2 import Template
 
 def is_valid_ip(*args):
@@ -98,21 +99,7 @@ def unzip_package():
     print(f"app_home_dir is {app_home_dir}")
 
     # 获取文件后缀
-    if filename.endswith('.tar.gz'):
-        filename_suffix = ".tar.gz"
-    elif filename.endswith('.zip'):
-        filename_suffix = ".zip"
-    elif filename.endswith('.tgz'): 
-        filename_suffix = ".tgz"
-    elif filename.endswith('.tar'): 
-        filename_suffix = ".tar"
-    elif filename.endswith('.tar.xz'): 
-        filename_suffix = ".tar.xz"
-    else:
-        print("不支持解压的类型！！")
-        sys.exit(1)
-    print(f"文件为{filename_suffix}压缩类型")
-
+    filename_suffix = ''.join(Path(filename).suffixes)
     if filename_suffix == ".tar.gz" or filename_suffix == ".tgz" or filename_suffix == ".tar" or filename_suffix == ".tar.xz":
         print(file_path)
         with tarfile.open(f"{file_path}", 'r') as tar_ref:
@@ -121,7 +108,7 @@ def unzip_package():
         with zipfile.ZipFile(f"{file_path}", 'r') as zip_ref:
             zip_ref.extractall(app_home_dir)
     else:
-        print("不支持的压缩包类型")
+        print(f"不支持的压缩包类型 -> {filename_suffix}")
     print(f"文件解压完成")
     
     unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
@@ -155,3 +142,9 @@ def get_download_dir(filename):
         print(f"安装包文件下载路径:    {package_dir}  不存在,请先将安装包上传至    {package_dir}")
         sys.exit(1)
     return package_dir
+
+
+
+if __name__ == '__main__':
+    filename = "1.tar.gz"
+    print()
