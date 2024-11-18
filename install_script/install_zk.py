@@ -71,4 +71,5 @@ def install_zk():
 
 
 if __name__ == '__main__':
+    unzip_package()
     install_zk()
