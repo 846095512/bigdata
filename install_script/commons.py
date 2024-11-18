@@ -10,21 +10,17 @@ import zipfile
 
 from jinja2 import Template
 
-def is_valid_ip_nums(*args):
+def is_valid_ip(*args):
     for arg in args:
         if isinstance(arg, str):
-            is_valid_ip(arg)
+            chechk_ip(arg)
+        elif isinstance(arg, list):
+            for ip in arg:
+                chechk_ip(ip)
         else:
-            ip_nums = len(arg)
-            if ip_nums >= 1 and ip_nums % 2 != 0:
-                for ip in arg:
-                    is_valid_ip(ip)
-                return True
-            else:
-                print("ip地址格式错误或ip地址个数不正确,请检查ip配置参数")
-                sys.exit(1)
+            print("不支持的参数类型")
 
-def is_valid_ip(ip):
+def chechk_ip(ip):
     try:
         ipaddress.ip_address(ip)
         return True
@@ -56,6 +52,13 @@ def get_root_dir():
         os.makedirs(root_dir)
     return root_dir
 
+def get_app_home_dir():
+    root_dir = get_root_dir()
+    app_home_dir = os.path.join(root_dir, "app")
+    if not os.path.exists(app_home_dir):
+        os.makedirs(app_home_dir)
+    return app_home_dir
+
 def get_install_config():
     script_path = os.path.dirname(os.path.abspath(__file__))
     with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
@@ -86,8 +89,8 @@ def unzip_package():
     file_path = get_download_dir(filename)
     module_name = args["module"]
 
-    root_dir = get_root_dir()
-    print(f"root_dir is {root_dir}")
+    app_home_dir = get_app_home_dir()
+    print(f"app_home_dir is {app_home_dir}")
 
     # 获取文件后缀
     if filename.endswith('.tar.gz'):
@@ -104,17 +107,17 @@ def unzip_package():
     if filename_suffix == ".tar.gz" or filename_suffix == ".tgz":
         print(file_path)
         with tarfile.open(f"{file_path}", 'r') as tar_ref:
-            tar_ref.extractall(root_dir)
+            tar_ref.extractall(app_home_dir)
     elif filename_suffix == ".zip":
         with zipfile.ZipFile(f"{file_path}", 'r') as zip_ref:
-            zip_ref.extractall(root_dir)
+            zip_ref.extractall(app_home_dir)
     else:
         print("不支持的压缩包类型")
     print(f"文件解压完成")
     
     unpack_name = exec_shell_command(f"tar -tzf {file_path}  | head -1 | cut -d'/' -f1")
-    old_path = os.path.join(root_dir, unpack_name)
-    new_path = os.path.join(root_dir, module_name)
+    old_path = os.path.join(app_home_dir, unpack_name)
+    new_path = os.path.join(app_home_dir, module_name)
     shutil.move(old_path, new_path)
     print(f"目录移动完成，{old_path} -> {new_path}")
 
@@ -126,6 +129,8 @@ def generate_config_file(template_str, conf_file, keyword, **kwargs):
         insert_line_num = 1
     else:
         insert_line_num = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
+
+    exec_shell_command(f"touch {conf_file}")
 
     with open(conf_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
@@ -141,4 +146,3 @@ def get_download_dir(filename):
         print(f"安装包文件下载路径:    {package_dir}  不存在,请先将安装包上传至    {package_dir}")
         sys.exit(1)
     return package_dir
-

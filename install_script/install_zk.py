@@ -23,8 +23,8 @@ def install_zk():
     module = params_dit["module"]
     jvm_heap_size = params_dit["jvm.heapsize"]
 
-    root_dir = get_root_dir()
-    zk_home_dir = os.path.join(root_dir, module)
+    app_home_dir = get_app_home_dir()
+    zk_home_dir = os.path.join(app_home_dir, module)
     zk_conf_file = os.path.join(zk_home_dir, "conf", "zoo.cfg")
     zk_log4j_file = os.path.join(zk_home_dir, "conf", "log4j.properties")
     java_env_file = os.path.join(zk_home_dir, "conf", "java.env")
@@ -71,5 +71,4 @@ def install_zk():
 
 
 if __name__ == '__main__':
-    unzip_package()
     install_zk()

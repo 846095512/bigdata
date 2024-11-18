@@ -414,9 +414,9 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         
         
 
-        root_dir = get_root_dir()
+        app_home_dir = get_app_home_dir()
         current_user = os.getlogin()
-        hadoop_home_dir = os.path.join(root_dir, module)
+        hadoop_home_dir = os.path.join(app_home_dir, module)
         hadoop_conf_dir = os.path.join(hadoop_home_dir, "etc/hadoop")
         hadoop_bin_dir = os.path.join(hadoop_home_dir,"bin")
         hadoop_data_dir = os.path.join(hadoop_home_dir,"data")
