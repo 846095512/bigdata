@@ -1,6 +1,6 @@
 {
-    "file":"spark-3.5.3-bin-hadoop3.tgz",
-    "module":"spark",
+    "file":"mysql-8.0.27-linux-glibc2.12-x86_64.tar.xz",
+    "module":"mysql",
 
     "local.ip":"192.168.176.134",
     "install.role":"standalone",

@@ -6,9 +6,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
-import zipfile
 
-from pathlib import Path
 from jinja2 import Template
 
 current_user = os.getlogin()
@@ -79,11 +77,7 @@ def exec_shell_command(cmd):
 
 def set_permissions(path):
     current_user = os.getlogin()
-    for dirpath, dirnames, filenames in os.walk(path):
-        for dirname in dirnames:
-            os.chmod(os.path.join(dirpath, dirname), 0o750)
-        for filename in filenames:
-            os.chmod(os.path.join(dirpath, filename), 0o750)
+    exec_shell_command(f"chmod -R 750 {path}")
     exec_shell_command(f"chown -R {current_user}:{current_user} {path}")
     print("设置目录权限完成")
 
