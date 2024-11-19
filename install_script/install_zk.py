@@ -19,9 +19,8 @@ def install_zk():
         "admin.serverPort": 9999
     }
 
-    params_dit = get_install_config()
-    module = params_dit["module"]
-    jvm_heap_size = params_dit["jvm.heapsize"]
+    module = params_dict["module"]
+    jvm_heap_size = params_dict["jvm.heapsize"]
 
     app_home_dir = get_app_home_dir()
     zk_home_dir = os.path.join(app_home_dir, module)
@@ -32,22 +31,22 @@ def install_zk():
     zk_server_file = os.path.join(zk_home_dir, "bin", "zkServer.sh")
     zk_myid_file = os.path.join(zk_home_dir, "myid")
 
-    if params_dit["install.role"] == "standalone":
+    if params_dict["install.role"] == "standalone":
         with open(zk_conf_file, "w", encoding="UTF-8") as f:
             for item in conf_items:
                 if item == "dataDir":
                     conf_items["dataDir"] = zk_home_dir
                 f.write(f"{item}={conf_items.get(item)}\n")
-    if params_dit["install.role"] == "cluster": 
+    if params_dict["install.role"] == "cluster": 
         with open(zk_conf_file, "w", encoding="UTF-8") as f:
             for item in conf_items:
                 if item == "dataDir":
                     conf_items["dataDir"] = zk_home_dir
                 f.write(f"{item}={conf_items.get(item)}\n")
             id = 1
-            for ip in params_dit["install_ip"]:
+            for ip in params_dict["install_ip"]:
                 f.write(f"server.{id}={ip}:2888:3888\n")
-                if ip == params_dit["local_ip"]:
+                if ip == params_dict["local_ip"]:
                     exec_shell_command(f"echo {id} > {zk_myid_file}")
                 id += 1
 

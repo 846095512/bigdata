@@ -12,18 +12,19 @@ export SPARK_CONF_DIR={{ spark_conf_dir }}
 export YARN_CONF_DIR={{ spark_conf_dir }}
 export SPARK_MASTER_PORT=7077
 export SPARK_MASTER_WEBUI_PORT=10090
-export SPAR_MASTER_OPTS="-Dspark.master.rest.enabled=true -Dspark.master.rest.port=6066"
+export SPARK_MASTER_OPTS="-Xloggc:{{ spark_home_dir }}/logs/master-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/master-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError  -Dspark.master.rest.enabled=true -Dspark.master.rest.port=6066"
 export SPARK_WORKER_PORT=7078
 export SPARK_WORKER_WEBUI_PORT=10091
-export SPAR_WORKER_PORT="-Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=3600 -Dspark.worker.cleanup.appDataTtl=86400"
+export SPARK_WORKER_OPTS="-Xloggc:{{ spark_home_dir }}/logs/worker-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/worker-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=3600 -Dspark.worker.cleanup.appDataTtl=86400"
 export SPARK_WORKER_DIRS={{ spark_home_dir }}/work
 export SPARK_LOG_DIR={{ spark_home_dir }}/logs
 export SPARK_PID_DIR={{ spark_home_dir }}/pids
 export SPARK_DAEMON_MEMORY={{ jvm_heapsize }}
-export SPARK_HISTORY_OPTS="-Dspark.history.ui.port=18080 -Dspark.history.fs.cleaner.enabled=true -Dspark.history.fs.cleaner.interval=3d -Dspark.history.fs.cleaner.maxAge=14d -Dspark.history.fs.logDirectory=hdfs://{{ dfs_nameservice }}/spark-logs"
+export SPARK_HISTORY_OPTS="-Xloggc:{{ spark_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/historyserver-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Dspark.history.ui.port=18080 -Dspark.history.fs.cleaner.enabled=true -Dspark.history.fs.cleaner.interval=3d -Dspark.history.fs.cleaner.maxAge=14d -Dspark.history.fs.logDirectory=hdfs://{{ dfs_nameservice }}/spark-logs"
 {% if cluster_role == "standalone" %}
-export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=zookeeper://{{zk_addr }} -Dspark.deploy.zookeeper.dir=/{{ spark_cluster_id }}"
+export SPARK_DAEMON_JAVA_OPTS="-Xloggc:{{ spark_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/historyserver-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=zookeeper://{{zk_addr }} -Dspark.deploy.zookeeper.dir=/{{ spark_cluster_id }}"
 {% endif %}
+# SPARK_WORKER_CORES=200
 """
     spark_defaults_template = """
 {% if install_role == "standalone"%}
@@ -38,19 +39,19 @@ spark.executor.logs.rolling.enableCompression   true
 spark.executor.logs.rolling.maxSize 1048576
 spark.executor.logs.rolling.maxRetainedFiles 10
 """
-    param_dict = get_install_config()
-    module_name = param_dict["module"]
-    jvm_heapsize = param_dict["jvm.heapsize"]
-    dfs_nameservice =  param_dict["dfs.nameservice"]
-    install_role = param_dict["install.role"]
-    zk_addr = param_dict["zk.addr"]
-    local_ip = param_dict["local.ip"]
-    spark_master_ips = param_dict["spark.master.ip"]
+
+    module_name = params_dict["module"]
+    jvm_heapsize = params_dict["jvm.heapsize"]
+    dfs_nameservice =  params_dict["dfs.nameservice"]
+    install_role = params_dict["install.role"]
+    zk_addr = params_dict["zk.addr"]
+    local_ip = params_dict["local.ip"]
+    spark_master_ips = params_dict["spark.master.ip"]
 
     is_valid_ip(local_ip,spark_master_ips)
 
-    dfs_nameservice = param_dict["dfs.nameservice"]
-    spark_cluster_id = param_dict["spark.cluster.id"]
+    dfs_nameservice = params_dict["dfs.nameservice"]
+    spark_cluster_id = params_dict["spark.cluster.id"]
     spark_masters = ",".join([f"{ip}:7077" for ip in spark_master_ips])
     
 

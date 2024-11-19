@@ -11,6 +11,11 @@ import zipfile
 from pathlib import Path
 from jinja2 import Template
 
+current_user = os.getlogin()
+script_path = os.path.dirname(os.path.abspath(__file__))
+with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
+    params_dict = json.load(f)
+
 def is_valid_ip(*args):
     try:
         for arg in args:
@@ -49,7 +54,6 @@ def get_os_name():
     return result
 
 def get_root_dir():
-    current_user = os.getlogin()
     if current_user == "root":
         root_dir = "/opt"
     else:
@@ -64,12 +68,6 @@ def get_app_home_dir():
     if not os.path.exists(app_home_dir):
         os.makedirs(app_home_dir)
     return app_home_dir
-
-def get_install_config():
-    script_path = os.path.dirname(os.path.abspath(__file__))
-    with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
-        params_dit = json.load(f)
-    return params_dit
 
 def exec_shell_command(cmd):
     try:
@@ -90,32 +88,23 @@ def set_permissions(path):
     print("设置目录权限完成")
 
 def unzip_package():
-    args = get_install_config()
-    filename =  args["file"]
+    filename =  params_dict["file"]
+    module_name = params_dict["module"]
     file_path = get_download_dir(filename)
-    module_name = args["module"]
 
     app_home_dir = get_app_home_dir()
     print(f"app_home_dir is {app_home_dir}")
 
-    # 获取文件后缀
-    filename_suffix = ''.join(Path(filename).suffixes)
-    if filename_suffix == ".tar.gz" or filename_suffix == ".tgz" or filename_suffix == ".tar" or filename_suffix == ".tar.xz":
-        print(file_path)
-        with tarfile.open(f"{file_path}", 'r') as tar_ref:
-            tar_ref.extractall(app_home_dir)
-    elif filename_suffix == ".zip":
-        with zipfile.ZipFile(f"{file_path}", 'r') as zip_ref:
-            zip_ref.extractall(app_home_dir)
-    else:
-        print(f"不支持的压缩包类型 -> {filename_suffix}")
+    print(file_path)
+    with tarfile.open(f"{file_path}", 'r') as tar_ref:
+        tar_ref.extractall(app_home_dir)
     print(f"文件解压完成")
     
     unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
     old_path = os.path.join(app_home_dir, unpack_name)
     new_path = os.path.join(app_home_dir, module_name)
     shutil.move(old_path, new_path)
-    print(f"目录移动完成，{old_path} -> {new_path}")
+    print(f"目录移动完成  {old_path} -> {new_path}")
 
 def generate_config_file(template_str, conf_file, keyword, **kwargs):
     
@@ -142,9 +131,3 @@ def get_download_dir(filename):
         print(f"安装包文件下载路径:    {package_dir}  不存在,请先将安装包上传至    {package_dir}")
         sys.exit(1)
     return package_dir
-
-
-
-if __name__ == '__main__':
-    filename = "1.tar.gz"
-    print()

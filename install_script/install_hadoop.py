@@ -5,7 +5,7 @@ from commons import *
 
   
 def install_hadoop():
-        core_conf_template = """
+    core_conf_template = """
     <!--  核心配置  -->
     <property>
         <name>fs.defaultFS</name>
@@ -51,7 +51,7 @@ def install_hadoop():
     </property>
 {% endif %}
 """
-        hdfs_conf_template = """
+    hdfs_conf_template = """
     <!-- 核心配置 -->
     <property>
         <name>dfs.replication</name>
@@ -145,7 +145,7 @@ def install_hadoop():
         <value>{{ hadoop_conf_dir }}</value>
     </property>
 """
-        yarn_conf_template = """
+    yarn_conf_template = """
     {% if install_role == 'standalone' %}
     <property>
         <name>yarn.resourcemanager.hostname</name>
@@ -161,7 +161,6 @@ def install_hadoop():
         <name>yarn.resourcemanager.ha.rm-ids</name>
         <value>{{ rm_list }}</value>
     </property>
-
     {% for resourcemanager in resourcemanager_list %}
     <property>
         <name>yarn.resourcemanager.hostname.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
@@ -293,7 +292,7 @@ def install_hadoop():
         <value>org.apache.spark.network.yarn.YarnShuffleService</value>
     </property>
 """
-        mmapred_conf_template = """
+    mmapred_conf_template = """
     <!-- 核心配置 -->
     <property>
         <name>mapreduce.framework.name</name>
@@ -367,7 +366,7 @@ def install_hadoop():
         <value>3</value>
     </property>
 """
-        env_conf_template = """
+    env_conf_template = """
 export HADOOP_HOME={{ hadoop_home_dir }}
 export HADOOP_CONF_DIR={{ hadoop_conf_dir }}
 export HADOOP_LOG_DIR=${HADOOP_HOME}/logs
@@ -390,109 +389,114 @@ export YARN_PROXYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{
 export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/historyserver-heapdump.hprof"
 """
 
+    namenode_list = params_dict["namenode.list"]
+    nn_list = ",".join([f"nn{i + 1}" for i in range(len(namenode_list))])
+    resourcemanager_list  = params_dict["resourcemanager.list"]
+    rm_list = ",".join([f"rm{i + 1}" for i in range(len(resourcemanager_list))])
+    journal_quorm = ";".join([f"{i}:8485" for i in params_dict["journalnode.list"]])
+    dfs_nameservice = params_dict["dfs.nameservice"]
+    yarn_cluster_id = params_dict["yarn.cluster.id"]
+    install_role = params_dict["install.role"]
+    zk_addr = params_dict["zk.addr"]
+    module =  params_dict["module"]
+    yarn_mem =  params_dict["yarn.mem"]
+    yarn_cpu =  params_dict["yarn.cpu"]
+    local_ip =  params_dict["local.ip"]
+    jvm_heap_size = params_dict["jvm.heapsize"]
+    install_ip = params_dict["install.ip"]
+    is_master =  params_dict["only.namenode"]
+    if len(install_ip) == 1:
+        dfs_replication = 1
+    else:
+        dfs_replication =  math.ceil(len(install_ip) / 2)
+    
+    
 
-        param_dict = get_install_config()
-        namenode_list = param_dict["namenode.list"]
-        nn_list = ",".join([f"nn{i + 1}" for i in range(len(namenode_list))])
-        resourcemanager_list  = param_dict["resourcemanager.list"]
-        rm_list = ",".join([f"rm{i + 1}" for i in range(len(resourcemanager_list))])
-        journal_quorm = ";".join([f"{i}:8485" for i in param_dict["journalnode.list"]])
-        dfs_nameservice = param_dict["dfs.nameservice"]
-        yarn_cluster_id = param_dict["yarn.cluster.id"]
-        install_role = param_dict["install.role"]
-        zk_addr = param_dict["zk.addr"]
-        module =  param_dict["module"]
-        yarn_mem =  param_dict["yarn.mem"]
-        yarn_cpu =  param_dict["yarn.cpu"]
-        local_ip =  param_dict["local.ip"]
-        jvm_heap_size = param_dict["jvm.heapsize"]
-        install_ip = param_dict["install.ip"]
-        if len(install_ip) == 1:
-            dfs_replication = 1
-        else:
-          dfs_replication =  math.ceil(len(install_ip) / 2)
-        
-        
+    app_home_dir = get_app_home_dir()
+    current_user = os.getlogin()
+    hadoop_home_dir = os.path.join(app_home_dir, module)
+    hadoop_conf_dir = os.path.join(hadoop_home_dir, "etc/hadoop")
+    hadoop_bin_dir = os.path.join(hadoop_home_dir,"bin")
+    hadoop_data_dir = os.path.join(hadoop_home_dir,"data")
+    fencing_file = os.path.join(hadoop_conf_dir,"fencing.sh")
+    hadoop_env_file = os.path.join(hadoop_conf_dir,"hadoop-env.sh")
+    core_conf = os.path.join(hadoop_conf_dir,"core-site.xml")
+    hdfs_conf = os.path.join(hadoop_conf_dir,"hdfs-site.xml")
+    yarn_conf = os.path.join(hadoop_conf_dir,"yarn-site.xml")
+    mapred_conf = os.path.join(hadoop_conf_dir,"mapred-site.xml")
+    hadoop_opts = "-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
+    hadoop_classpath = exec_shell_command(f"{hadoop_bin_dir}/hadoop classpath")
 
-        app_home_dir = get_app_home_dir()
-        current_user = os.getlogin()
-        hadoop_home_dir = os.path.join(app_home_dir, module)
-        hadoop_conf_dir = os.path.join(hadoop_home_dir, "etc/hadoop")
-        hadoop_bin_dir = os.path.join(hadoop_home_dir,"bin")
-        hadoop_data_dir = os.path.join(hadoop_home_dir,"data")
-        fencing_file = os.path.join(hadoop_conf_dir,"fencing.sh")
-        hadoop_env_file = os.path.join(hadoop_conf_dir,"hadoop-env.sh")
-        core_conf = os.path.join(hadoop_conf_dir,"core-site.xml")
-        hdfs_conf = os.path.join(hadoop_conf_dir,"hdfs-site.xml")
-        yarn_conf = os.path.join(hadoop_conf_dir,"yarn-site.xml")
-        mapred_conf = os.path.join(hadoop_conf_dir,"mapred-site.xml")
-        hadoop_opts = "-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
-        hadoop_classpath = exec_shell_command(f"{hadoop_bin_dir}/hadoop classpath")
+    with open(fencing_file, "w", encoding="utf-8") as f:
+        f.write("#!/bin/bash\n\n\n")
+        f.write(f"{hadoop_bin_dir}/hdfs --daemon stop namenode\n")
+        f.write(f"{hadoop_bin_dir}/hdfs --daemon stop resourcemanager\n")
 
-        with open(fencing_file, "w", encoding="utf-8") as f:
-            f.write("#!/bin/bash\n\n\n")
-            f.write(f"{hadoop_bin_dir}/hdfs --daemon stop namenode\n")
-            f.write(f"{hadoop_bin_dir}/hdfs --daemon stop resourcemanager\n")
+    # 生成 core-site hdfs-site yarn-site mapred-site文件
+    generate_config_file(template_str=core_conf_template,
+                                conf_file=core_conf,
+                                keyword="<configuration>",
+                                install_role=install_role,
+                                dfs_nameservice=dfs_nameservice,
+                                hadoop_data_dir=hadoop_data_dir,
+                                zk_addr=zk_addr)
+    
+    generate_config_file(template_str=hdfs_conf_template,
+                                conf_file=hdfs_conf,
+                                keyword="<configuration>",
+                                install_role=install_role,
+                                dfs_nameservice=dfs_nameservice,
+                                hadoop_conf_dir=hadoop_conf_dir,
+                                journal_quorm=journal_quorm,
+                                namenode_list=namenode_list,
+                                nn_list=nn_list,
+                                dfs_replication=dfs_replication)
 
-        # 生成 core-site hdfs-site yarn-site mapred-site文件
-        generate_config_file(template_str=core_conf_template,
-                                  conf_file=core_conf,
-                                  keyword="<configuration>",
-                                  install_role=install_role,
-                                  dfs_nameservice=dfs_nameservice,
-                                  hadoop_data_dir=hadoop_data_dir,
-                                  zk_addr=zk_addr)
-        
-        generate_config_file(template_str=hdfs_conf_template,
-                                    conf_file=hdfs_conf,
-                                    keyword="<configuration>",
-                                    install_role=install_role,
-                                    dfs_nameservice=dfs_nameservice,
-                                    hadoop_conf_dir=hadoop_conf_dir,
-                                    journal_quorm=journal_quorm,
-                                    namenode_list=namenode_list,
-                                    nn_list=nn_list,
-                                    dfs_replication=dfs_replication)
+    generate_config_file(template_str=yarn_conf_template,
+                                conf_file=yarn_conf,
+                                keyword="<configuration>",
+                                install_role=install_role,
+                                local_ip=local_ip,
+                                hadoop_conf_dir=hadoop_conf_dir,
+                                resourcemanager_list=resourcemanager_list,
+                                yarn_mem=yarn_mem,
+                                yarn_cpu=yarn_cpu,
+                                yarn_cluster_id=yarn_cluster_id,
+                                rm_list=rm_list,
+                                hadoop_classpath=hadoop_classpath)
+    
+    generate_config_file(template_str=mmapred_conf_template,
+                                conf_file=mapred_conf,
+                                keyword="<configuration>",
+                                dfs_nameservice=dfs_nameservice)
+    
+    generate_config_file(template_str=env_conf_template,
+                                conf_file=hadoop_env_file,
+                                keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
+                                current_user=current_user,
+                                hadoop_home_dir=hadoop_home_dir,
+                                hadoop_conf_dir=hadoop_conf_dir,
+                                hadoop_opts=hadoop_opts,
+                                jvm_heap_size=jvm_heap_size)
 
-        generate_config_file(template_str=yarn_conf_template,
-                                    conf_file=yarn_conf,
-                                    keyword="<configuration>",
-                                    install_role=install_role,
-                                    local_ip=local_ip,
-                                    hadoop_conf_dir=hadoop_conf_dir,
-                                    resourcemanager_list=resourcemanager_list,
-                                    yarn_mem=yarn_mem,
-                                    yarn_cpu=yarn_cpu,
-                                    yarn_cluster_id=yarn_cluster_id,
-                                    rm_list=rm_list,
-                                    hadoop_classpath=hadoop_classpath)
-        
-        generate_config_file(template_str=mmapred_conf_template,
-                                    conf_file=mapred_conf,
-                                    keyword="<configuration>",
-                                    dfs_nameservice=dfs_nameservice)
-        
-        generate_config_file(template_str=env_conf_template,
-                                    conf_file=hadoop_env_file,
-                                    keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
-                                    current_user=current_user,
-                                    hadoop_home_dir=hadoop_home_dir,
-                                    hadoop_conf_dir=hadoop_conf_dir,
-                                    hadoop_opts=hadoop_opts,
-                                    jvm_heap_size=jvm_heap_size)
+    set_permissions(hadoop_home_dir)
 
-        set_permissions(hadoop_home_dir)
-
-        if install_role == "standalone":
+    if install_role == "standalone":
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
+    if install_role == "cluster":
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
+        if is_master == "true":
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
-            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
-            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
-            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start proxyserver")
-            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
-        if install_role == "cluster":
-            pass
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
 
 if __name__ == '__main__':
     unzip_package()
