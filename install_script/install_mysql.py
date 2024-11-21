@@ -222,7 +222,7 @@ interactive_timeout
         exec_shell_command(
             f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S '{mysql_home_dir}/mysql.sock' -e  '{{CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY 'repl@147!$&';}}'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S '{mysql_home_dir}/mysql.sock' -e  '{{GRANT REPLICATION,SLAVE,CONNECTION_ADMIN,BACKUP_ADMINON,CLONE_ADMIN *.* TO repl@'%';}}'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S '{mysql_home_dir}/mysql.sock' -e  '{{GRANT REPLICATION SLAVE,CONNECTION_ADMIN,BACKUP_ADMIN,CLONE_ADMIN  ON *.* TO repl@'%';}}'")
         exec_shell_command(
             f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S '{mysql_home_dir}/mysql.sock' -e  '{{INSTALL PLUGIN clone SONAME 'mysql_clone.so';}}'")
         exec_shell_command(
@@ -249,6 +249,6 @@ interactive_timeout
 
 
 if __name__ == '__main__':
-    # unzip_package()
-    # install_mysql()
-    print(uuid.uuid4())
+    unzip_package()
+    install_mysql()
+
