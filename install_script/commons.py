@@ -117,11 +117,11 @@ def generate_config_file(template_str, conf_file, keyword, **kwargs):
 
     exec_shell_command(f"touch {conf_file}")
 
-    with open(conf_file, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+    with open(conf_file, "r", encoding="utf-8") as f1:
+        lines = f1.readlines()
         lines.insert(int(insert_line_num), config_content)
-    with open(conf_file, "w", encoding="utf-8") as f:
-        f.writelines(lines)
+    with open(conf_file, "w", encoding="utf-8") as f2:
+        f2.writelines(lines)
     print(f"生成{conf_file}文件完成")
 
 

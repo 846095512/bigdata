@@ -31,20 +31,20 @@ def install_zk():
     zk_myid_file = os.path.join(zk_home_dir, "myid")
 
     if params_dict["install.role"] == "standalone":
-        with open(zk_conf_file, "w", encoding="UTF-8") as f:
+        with open(zk_conf_file, "w", encoding="UTF-8") as f1:
             for item in conf_items:
                 if item == "dataDir":
                     conf_items["dataDir"] = zk_home_dir
-                f.write(f"{item}={conf_items.get(item)}\n")
+                f1.write(f"{item}={conf_items.get(item)}\n")
     if params_dict["install.role"] == "cluster":
-        with open(zk_conf_file, "w", encoding="UTF-8") as f:
+        with open(zk_conf_file, "w", encoding="UTF-8") as f1:
             for item in conf_items:
                 if item == "dataDir":
                     conf_items["dataDir"] = zk_home_dir
-                f.write(f"{item}={conf_items.get(item)}\n")
+                f1.write(f"{item}={conf_items.get(item)}\n")
             id = 1
             for ip in params_dict["install_ip"]:
-                f.write(f"server.{id}={ip}:2888:3888\n")
+                f1.write(f"server.{id}={ip}:2888:3888\n")
                 if ip == params_dict["local_ip"]:
                     exec_shell_command(f"echo {id} > {zk_myid_file}")
                 id += 1
@@ -56,12 +56,12 @@ def install_zk():
         f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof $JVMFLAGS'\" > {java_env_file}")
     exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_env_file}")
 
-    with open(zk_env_file, "r", encoding="UTF-8") as f:
-        env_lines = f.readlines()
+    with open(zk_env_file, "r", encoding="UTF-8") as f1:
+        env_lines = f1.readlines()
 
-    with open(zk_env_file, "w", encoding="UTF-8") as f:
+    with open(zk_env_file, "w", encoding="UTF-8") as f1:
         for line in env_lines:
-            f.write(line)
+            f1.write(line)
             if line.startswith("# default heap for zookeeper server"):
                 break
     set_permissions(zk_home_dir)

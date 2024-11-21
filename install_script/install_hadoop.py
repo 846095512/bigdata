@@ -410,7 +410,6 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         dfs_replication = math.ceil(len(install_ip) / 2)
 
     app_home_dir = get_app_home_dir()
-    current_user = os.getlogin()
     hadoop_home_dir = os.path.join(app_home_dir, module)
     hadoop_conf_dir = os.path.join(hadoop_home_dir, "etc/hadoop")
     hadoop_bin_dir = os.path.join(hadoop_home_dir, "bin")

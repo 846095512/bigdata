@@ -178,7 +178,7 @@ def install_mysql():
     replication_group_seeds = ",".join([f"{ip}:33061" for ip in install_ip])
     is_valid_ip(local_ip, install_ip)
     if install_role == "cluster":
-        is_vaild_nums(install_ip)
+        is_valid_nums(install_ip)
 
     server_id = 10
     for ip in install_ip:
