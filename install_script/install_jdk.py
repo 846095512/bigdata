@@ -2,6 +2,7 @@
 import os
 from commons import *
 
+
 def install_jdk():
     module_name = params_dict["module"]
     env_file = get_user_env_filename()
@@ -15,6 +16,7 @@ def install_jdk():
     exec_shell_command("java -version")
 
     print("jdk 安装完成!!!!")
+
 
 if __name__ == '__main__':
     unzip_package()

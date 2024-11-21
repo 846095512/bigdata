@@ -42,19 +42,17 @@ spark.executor.logs.rolling.maxRetainedFiles 10
 
     module_name = params_dict["module"]
     jvm_heapsize = params_dict["jvm.heapsize"]
-    dfs_nameservice =  params_dict["dfs.nameservice"]
+    dfs_nameservice = params_dict["dfs.nameservice"]
     install_role = params_dict["install.role"]
     zk_addr = params_dict["zk.addr"]
     local_ip = params_dict["local.ip"]
     spark_master_ips = params_dict["spark.master.ip"]
 
-    is_valid_ip(local_ip,spark_master_ips)
+    is_valid_ip(local_ip, spark_master_ips)
 
     dfs_nameservice = params_dict["dfs.nameservice"]
     spark_cluster_id = params_dict["spark.cluster.id"]
     spark_masters = ",".join([f"{ip}:7077" for ip in spark_master_ips])
-    
-
 
     spark_home_dir = os.path.join(get_app_home_dir(), module_name)
     spark_conf_dir = os.path.join(spark_home_dir, "conf")

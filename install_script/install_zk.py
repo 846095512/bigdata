@@ -2,8 +2,8 @@
 import os
 from commons import *
 
-def install_zk():
 
+def install_zk():
     conf_items = {
         "tickTime": 2000,
         "initLimit": 10,
@@ -37,7 +37,7 @@ def install_zk():
                 if item == "dataDir":
                     conf_items["dataDir"] = zk_home_dir
                 f.write(f"{item}={conf_items.get(item)}\n")
-    if params_dict["install.role"] == "cluster": 
+    if params_dict["install.role"] == "cluster":
         with open(zk_conf_file, "w", encoding="UTF-8") as f:
             for item in conf_items:
                 if item == "dataDir":
@@ -51,8 +51,10 @@ def install_zk():
                 id += 1
 
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
-    exec_shell_command(f"sed -i \"s/zookeeper.root.logger=.*/zookeeper.root.logger=INFO, ROLLINGFILE/g\" {zk_log4j_file}")
-    exec_shell_command(f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof $JVMFLAGS'\" > {java_env_file}")
+    exec_shell_command(
+        f"sed -i \"s/zookeeper.root.logger=.*/zookeeper.root.logger=INFO, ROLLINGFILE/g\" {zk_log4j_file}")
+    exec_shell_command(
+        f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof $JVMFLAGS'\" > {java_env_file}")
     exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_env_file}")
 
     with open(zk_env_file, "r", encoding="UTF-8") as f:
