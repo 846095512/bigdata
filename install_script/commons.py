@@ -89,7 +89,7 @@ def set_permissions(path):
 
 def unzip_package():
     filename = params_dict["file"]
-    module_name = params_dict["module"]
+    module_name = params_dict["module.name"]
     file_path = get_download_dir(filename)
 
     app_home_dir = get_app_home_dir()
