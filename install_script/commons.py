@@ -31,7 +31,7 @@ def is_valid_ip(*args):
         sys.exit(1)
 
 
-def is_vaild_nums(ip_list):
+def is_valid_nums(ip_list):
     if len(ip_list) > 1 and len(ip_list) % 2 != 0:
         return True
     else:
@@ -41,7 +41,6 @@ def is_vaild_nums(ip_list):
 
 def get_user_env_filename():
     os_name = get_os_name()
-    current_user = os.getlogin()
 
     if os_name == "ubuntu":
         return f"/home/{current_user}/.profile"
@@ -83,7 +82,6 @@ def exec_shell_command(cmd):
 
 
 def set_permissions(path):
-    current_user = os.getlogin()
     exec_shell_command(f"chmod -R 750 {path}")
     exec_shell_command(f"chown -R {current_user}:{current_user} {path}")
     print("设置目录权限完成")

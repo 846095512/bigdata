@@ -4,7 +4,7 @@ from commons import *
 
 
 def install_jdk():
-    module_name = params_dict["module"]
+    module_name = params_dict["module.name"]
     env_file = get_user_env_filename()
     app_home = os.path.join(get_app_home_dir(), module_name)
     set_permissions(app_home)

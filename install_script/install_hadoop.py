@@ -292,7 +292,7 @@ def install_hadoop():
         <value>org.apache.spark.network.yarn.YarnShuffleService</value>
     </property>
 """
-    mmapred_conf_template = """
+    mapred_conf_template = """
     <!-- 核心配置 -->
     <property>
         <name>mapreduce.framework.name</name>
@@ -463,7 +463,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
                          rm_list=rm_list,
                          hadoop_classpath=hadoop_classpath)
 
-    generate_config_file(template_str=mmapred_conf_template,
+    generate_config_file(template_str=mapred_conf_template,
                          conf_file=mapred_conf,
                          keyword="<configuration>",
                          dfs_nameservice=dfs_nameservice)

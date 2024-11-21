@@ -19,7 +19,7 @@ def install_zk():
         "admin.serverPort": 9999
     }
 
-    module = params_dict["module"]
+    module = params_dict["module.name"]
     jvm_heap_size = params_dict["jvm.heapsize"]
 
     app_home_dir = get_app_home_dir()
