@@ -192,8 +192,6 @@ interactive_timeout
     exec_shell_command(f"mkdir -p {mysql_data_dir}/tmp")
     exec_shell_command(f"mkdir -p {mysql_home_dir}/logs")
 
-    set_permissions(mysql_home_dir)
-
     generate_config_file(template_str=my_cnf_template,
                          conf_file=my_cnf_file,
                          keyword="",
