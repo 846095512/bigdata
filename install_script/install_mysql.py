@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import uuid
-
 from commons import *
 
 
@@ -121,7 +119,7 @@ replica_pending_jobs_size_max=128M
 ################# group replication #######
 binlog_checksum=NONE
 transaction_write_set_extraction=XXHASH64
-loose-group_replication_group_name={{ repl_group_name }}
+loose-group_replication_group_name=ee70929b-7aa7-4151-8880-130b1b62ff97
 loose-group_replication_start_on_boot=OFF
 loose-group_replication_local_address={{ local_ip }}:33061
 loose-group_replication_group_seeds={{ replication_group_seeds }}
@@ -175,7 +173,6 @@ interactive_timeout
     install_ip = params_dict["install.ip"]
     is_master = params_dict["is.master"]
     innodb_buffer_size = params_dict["innodb.buffer.size"]
-    repl_group_name = uuid.uuid4()
     ip_whitelist = ",".join([f"{ip}" for ip in install_ip])
     replication_group_seeds = ",".join([f"{ip}:33061" for ip in install_ip])
     is_valid_ip(local_ip, install_ip)
@@ -206,7 +203,6 @@ interactive_timeout
                          install_role=install_role,
                          server_id=server_id,
                          ip_whitelist=ip_whitelist,
-                         repl_group_name=repl_group_name,
                          replication_group_seeds=replication_group_seeds,
                          innodb_buffer_size=innodb_buffer_size)
 
@@ -253,6 +249,6 @@ interactive_timeout
 
 
 if __name__ == '__main__':
-    unzip_package()
-    install_mysql()
+    # unzip_package()
+    # install_mysql()
     print(uuid.uuid4())
