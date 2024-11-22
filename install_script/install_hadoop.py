@@ -421,10 +421,10 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     hadoop_opts = "-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
     hadoop_classpath = exec_shell_command(f"{hadoop_bin_dir}/hadoop classpath")
 
-    with open(fencing_file, "w", encoding="utf-8") as f:
-        f.write("#!/bin/bash\n\n\n")
-        f.write(f"{hadoop_bin_dir}/hdfs --daemon stop namenode\n")
-        f.write(f"{hadoop_bin_dir}/hdfs --daemon stop resourcemanager\n")
+    with open(fencing_file, "w", encoding="utf-8") as f1:
+        f1.write("#!/bin/bash\n\n\n")
+        f1.write(f"{hadoop_bin_dir}/hdfs --daemon stop namenode\n")
+        f1.write(f"{hadoop_bin_dir}/hdfs --daemon stop resourcemanager\n")
 
     # 生成 core-site hdfs-site yarn-site mapred-site文件
     generate_config_file(template_str=core_conf_template,
