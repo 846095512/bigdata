@@ -13,7 +13,7 @@
 ```json
 {
     "file":"jdk安装包名",
-    "module":"jdk",
+    "module":"jdk"
 }
 ```
 
@@ -47,7 +47,7 @@
     "jvm.heapsize":"1g",
     "yarn.cluster.id":"yarncluster",
     "yarn.mem":"1024",
-    "yarn.cpu":"1",
+    "yarn.cpu":"1"
 }
 ```
 
@@ -63,7 +63,7 @@
     "spark.master.ip":["192.168.176.134"],
     "spark.cluster.id":"sparkcluster",
     "jvm.heapsize":"1g",
-    "zk.addr":"10.238.111.50:2181,10.238.111.51:2181,10.238.111.52:2181",
+    "zk.addr":"192.168.0.1"
 }
 ```
 
