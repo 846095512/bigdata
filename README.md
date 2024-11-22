@@ -71,10 +71,12 @@
 非root用户运行时
 ubuntu 系统
 sudo apt remove mariadb* -y
+
 sudo apt install libncurses5 -y
 
 centos 系统
 sudo yum remove mariadb* -y
+
 sudo yum install ncurses-compat-libs -y
 ```json
 {
