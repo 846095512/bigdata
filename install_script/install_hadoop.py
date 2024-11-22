@@ -196,7 +196,7 @@ def install_hadoop():
     </property>
     <property>
         <name>yarn.resourcemanager.ha.automatic-failover.zk-base-path</name>
-        <value>/{{ yarn_cluster_id }}/yarn-leader-election</value>
+        <value>/{{ dfs_nameservice }}/{{ yarn_cluster_id }}/yarn-leader-election</value>
     </property>
     <property>
         <name>yarn.resourcemanager.recovery.enabled</name>
@@ -204,7 +204,7 @@ def install_hadoop():
     </property>
     <property>
         <name>yarn.resourcemanager.zk-state-store.parent-path</name>
-        <value>/{{ yarn_cluster_id }}/yarn-store</value>
+        <value>/{{ dfs_nameservice }}/{{ yarn_cluster_id }}/yarn-store</value>
     </property>
     <property>
         <name>yarn.resourcemanager.store.class</name>
