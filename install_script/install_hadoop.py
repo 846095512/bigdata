@@ -119,7 +119,7 @@ def install_hadoop():
         <value>0.0.0.0:8485</value>
     </property>
     <property>
-        <name>dfs.journalnode.http-addres</name>
+        <name>dfs.journalnode.http-address</name>
         <value>0.0.0.0:8480</value>
     </property>
     <property>
@@ -208,7 +208,7 @@ def install_hadoop():
     </property>
     <property>
         <name>yarn.resourcemanager.store.class</name>
-        <value>org.apache.hadoop.yarn.server.resourcmanager.recovery.ZKRMStateStore</value>
+        <value>org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore</value>
     </property>
     {% endif %}
     <!-- nodemanager配置一 -->
@@ -374,7 +374,7 @@ export HADOOP_TMP_DIR=${HADOOP_HOME}/tmp
 export HDFS_NAMENODE_USER={{ current_user }}
 export HDFS_DATANODE_USER={{ current_user }}
 export HDFS_SECONDARYNAMENODE_USER={{ current_user }}
-export YARN_RESOURECEMANAGER_USER={{ current_user }}
+export YARN_RESOURCEMANAGER_USER={{ current_user }}
 export YARN_NODEMANAGER_USER={{ current_user }}
 export MAPRED_HISTORYSERVER_USER={{ current_user }}
 
@@ -384,7 +384,6 @@ export HDFS_DATANODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ ha
 export HDFS_SECONDARYNAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/secondarynamenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/secondarynamenode-heapdump.hprof"
 export YARN_RESOURCEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
 export YARN_NODEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/resourcemanager-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/resourcemanager-heapdump.hprof"
-export YARN_PROXYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/nodemanager-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/nodemanager-heapdump.hprof"
 export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/historyserver-heapdump.hprof"
 """
 
@@ -403,7 +402,6 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     local_ip = params_dict["local.ip"]
     jvm_heap_size = params_dict["jvm.heapsize"]
     install_ip = params_dict["install.ip"]
-    is_master = params_dict["only.namenode"]
     if len(install_ip) == 1:
         dfs_replication = 1
     else:
@@ -486,10 +484,14 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
     if install_role == "cluster":
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
-        if is_master == "true":
+        if local_ip == install_ip[0]:
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK")
+        else:
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
