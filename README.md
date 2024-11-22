@@ -85,7 +85,7 @@ sudo yum install ncurses-compat-libs -y
     "local.ip":"192.168.0.1",
     "install.role":"standalone/cluster",
     "is.master":"false/true",
-    "innodb.buffer.size":"1g",
+    "innodb.buffer.size":"2g",
     "install.ip":["192.168.0.1"]
 }
 ```
