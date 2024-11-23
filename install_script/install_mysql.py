@@ -218,16 +218,16 @@ interactive_timeout
         print(f"repl pwd -> {repl_pwd}")
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=0;" """)
-        exec_shell_command(
-            f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY '{repl_pwd}';" """)
-        exec_shell_command(
-            f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "GRANT REPLICATION SLAVE,CONNECTION_ADMIN,BACKUP_ADMIN,CLONE_ADMIN  ON *.* TO repl@'%';" """)
+        # exec_shell_command(
+        #     f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY '{repl_pwd}';" """)
+        # exec_shell_command(
+        #     f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "GRANT REPLICATION SLAVE,CONNECTION_ADMIN,BACKUP_ADMIN,CLONE_ADMIN  ON *.* TO repl@'%';" """)
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "INSTALL PLUGIN clone SONAME 'mysql_clone.so';" """)
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "INSTALL PLUGIN group_replication SONAME 'group_replication.so';" """)
-        exec_shell_command(
-            f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='{repl_pwd}' FOR CHANNEL 'group_replication_recovery'; " """)
+        # exec_shell_command(
+        #     f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='{repl_pwd}' FOR CHANNEL 'group_replication_recovery'; " """)
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=1;" """)
         exec_shell_command(
