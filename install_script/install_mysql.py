@@ -199,8 +199,7 @@ interactive_timeout
                          innodb_buffer_size=innodb_buffer_size)
 
     set_permissions(mysql_home_dir)
-    new_pwd = "DBuser@123_!@#"
-    repl_pwd = "repl@086)*^"
+    new_pwd = "Root@123_!@#"
     # 初始化mysql并修改root用户密码 启动组复制
     exec_shell_command(
         f"""{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_home_dir}/data """)
@@ -208,26 +207,19 @@ interactive_timeout
         f"""{mysql_home_dir}/bin/mysqld_safe --defaults-file={mysql_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """)
     temp_passwd = exec_shell_command(
         f"""grep 'temporary password' {mysql_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
-    print(f"temp_passwd -> {temp_passwd}")
-    print(f"new root pwd -> {new_pwd}")
+    print(f"临时密码 -> {temp_passwd}")
+    print(f"最新root密码 -> {new_pwd}")
     time.sleep(5)
     exec_shell_command(
         f"""{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """)
-    print("mysql 安装完成")
+
     if install_role == "cluster":
-        print(f"repl pwd -> {repl_pwd}")
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=0;" """)
-        # exec_shell_command(
-        #     f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY '{repl_pwd}';" """)
-        # exec_shell_command(
-        #     f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "GRANT REPLICATION SLAVE,CONNECTION_ADMIN,BACKUP_ADMIN,CLONE_ADMIN  ON *.* TO repl@'%';" """)
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "INSTALL PLUGIN clone SONAME 'mysql_clone.so';" """)
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "INSTALL PLUGIN group_replication SONAME 'group_replication.so';" """)
-        # exec_shell_command(
-        #     f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='{repl_pwd}' FOR CHANNEL 'group_replication_recovery'; " """)
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=1;" """)
         exec_shell_command(
@@ -243,7 +235,7 @@ interactive_timeout
         else:
             exec_shell_command(
                 f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """)
-
+    print("mysql 安装完成")
 
 if __name__ == '__main__':
     unzip_package()
