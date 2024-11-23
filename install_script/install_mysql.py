@@ -40,8 +40,8 @@ skip_name_resolve
 slave_skip_errors=1007,1008,1050,1051,1062,1032
 
 basedir={{ mysql_home_dir }}
-datadir={{ mysql_data_dir }}/data
-tmpdir={{ mysql_data_dir }}/tmp
+datadir={{ mysql_home_dir }}/data
+tmpdir={{ mysql_home_dir }}/tmp
 pid-file={{ mysql_home_dir }}/mysqld.pid
 
 
@@ -76,7 +76,7 @@ innodb_write_io_threads=32
 innodb_io_capacity=800
 innodb_temp_data_file_path=ibtmp1:512M:autoextend:max:32G
 innodb_flush_log_at_timeout=2
-innodb_undo_directory={{ mysql_data_dir }}/data/undo
+innodb_undo_directory={{ mysql_home_dir }}/data/undo
 innodb_undo_log_truncate=ON
 innodb_max_undo_log_size=2G
 innodb_purge_rseg_truncate_frequency=16
@@ -91,8 +91,8 @@ innodb_page_cleaners=4
 
 
 ################# binlog #################
-log_bin={{ mysql_data_dir }}/binlog/mysql-bin
-log_bin_index={{ mysql_data_dir }}/binlog/mysql-bin.index
+log_bin={{ mysql_home_dir }}/binlog/mysql-bin
+log_bin_index={{ mysql_home_dir }}/binlog/mysql-bin.index
 binlog_cache_size=2M
 binlog_rows_query_log_events=1
 binlog_expire_logs_seconds=864000
@@ -106,8 +106,8 @@ gtid_mode=ON
 enforce_gtid_consistency=ON
 master_info_repository=table
 relay_log_info_repository=table
-relay_log={{ mysql_data_dir }}/binlog/relay/relay-bin
-relay_log_index={{ mysql_data_dir }}/binlog/relay/relay-bin.index
+relay_log={{ mysql_home_dir }}/binlog/relay/relay-bin
+relay_log_index={{ mysql_home_dir }}/binlog/relay/relay-bin.index
 relay_log_recovery=ON
 log_replica_updates=ON
 replica_parallel_type=LOGICAL_CLOCK
@@ -184,12 +184,11 @@ interactive_timeout
         if ip == local_ip:
             server_id += 10
     mysql_home_dir = os.path.join(get_app_home_dir(), module_name)
-    mysql_data_dir = os.path.join(get_root_dir(), "dbdata")
     my_cnf_file = os.path.join(mysql_home_dir, "my.cnf")
-    exec_shell_command(f"mkdir -p {mysql_data_dir}")
-    exec_shell_command(f"mkdir -p {mysql_data_dir}/data")
-    exec_shell_command(f"mkdir -p {mysql_data_dir}/binlog/relay")
-    exec_shell_command(f"mkdir -p {mysql_data_dir}/tmp")
+    exec_shell_command(f"mkdir -p {mysql_home_dir}")
+    exec_shell_command(f"mkdir -p {mysql_home_dir}/data")
+    exec_shell_command(f"mkdir -p {mysql_home_dir}/binlog/relay")
+    exec_shell_command(f"mkdir -p {mysql_home_dir}/tmp")
     exec_shell_command(f"mkdir -p {mysql_home_dir}/logs")
 
     generate_config_file(template_str=my_cnf_template,
@@ -208,7 +207,7 @@ interactive_timeout
 
     # 初始化mysql并修改root用户密码 启动组复制
     exec_shell_command(
-        f"{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_data_dir}/data")
+        f"{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_home_dir}/data")
     exec_shell_command(
         f"{mysql_home_dir}/bin/mysqld_safe --defaults-file={mysql_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 &")
     temp_passwd = exec_shell_command(
