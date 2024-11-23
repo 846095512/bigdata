@@ -95,7 +95,6 @@ def unzip_package():
     app_home_dir = get_app_home_dir()
     print(f"app_home_dir -> {app_home_dir}")
 
-    print(file_path)
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
         tar_ref.extractall(app_home_dir)
     print(f"文件解压完成  ->  {filename}")
