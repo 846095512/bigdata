@@ -210,12 +210,12 @@ interactive_timeout
         f"""grep 'temporary password' {mysql_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
     print(f"temp_passwd -> {temp_passwd}")
     print(f"new root pwd -> {new_pwd}")
-    print(f"repl pwd -> {repl_pwd}")
     time.sleep(5)
     exec_shell_command(
         f"""{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """)
     print("mysql 安装完成")
     if install_role == "cluster":
+        print(f"repl pwd -> {repl_pwd}")
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=0;" """)
         exec_shell_command(

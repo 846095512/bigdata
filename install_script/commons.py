@@ -93,7 +93,7 @@ def unzip_package():
     file_path = get_download_dir(filename)
 
     app_home_dir = get_app_home_dir()
-    print(f"app_home_dir is {app_home_dir}")
+    print(f"app_home_dir -> {app_home_dir}")
 
     print(file_path)
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
@@ -122,7 +122,7 @@ def generate_config_file(template_str, conf_file, keyword, **kwargs):
         lines.insert(int(insert_line_num), config_content)
     with open(conf_file, "w", encoding="utf-8") as f2:
         f2.writelines(lines)
-    print(f"生成{conf_file}文件完成")
+    print(f"{conf_file} 文件配置完成")
 
 
 def get_download_dir(filename):
