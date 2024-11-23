@@ -209,6 +209,7 @@ interactive_timeout
         f"grep 'temporary password' {mysql_home_dir}/logs/mysql_error.log | awk '{{print $NF}}'")
     print(temp_passwd)
     time.sleep(5)
+
     if install_role == "cluster":
         exec_shell_command(
             f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET SQL_LOG_BIN=0;'")
