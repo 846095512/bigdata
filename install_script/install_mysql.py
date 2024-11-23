@@ -18,7 +18,7 @@ prompt=\\u@\\h:\\R:\\m:\\s[\\d]>
 
 
 [mysqld]
-server_id={{ server_id }}
+server-id={{ server_id }}
 user={{ current_user }}
 character_set_server=utf8mb4
 collation_server=utf8mb4_general_ci
@@ -90,7 +90,7 @@ innodb_page_cleaners=4
 
 
 ################# binlog #################
-log_bin={{ mysql_home_dir }}/binlog/mysql-bin
+log-bin={{ mysql_home_dir }}/binlog/mysql-bin
 log_bin_index={{ mysql_home_dir }}/binlog/mysql-bin.index
 binlog_cache_size=2M
 binlog_rows_query_log_events=1
@@ -101,8 +101,8 @@ binlog_group_commit_sync_delay=1000
 
 
 ################# replication ############
-gtid_mode=ON
-enforce_gtid_consistency=ON
+gtid-mode=ON
+enforce-gtid-consistency=ON
 relay_log={{ mysql_home_dir }}/binlog/relay/relay-bin
 relay_log_index={{ mysql_home_dir }}/binlog/relay/relay-bin.index
 relay_log_recovery=ON
