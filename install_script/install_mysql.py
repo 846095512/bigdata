@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import time
+
 from commons import *
 
 
@@ -207,6 +209,7 @@ interactive_timeout
     temp_passwd = exec_shell_command(
         f"grep 'temporary password' {mysql_home_dir}/logs/mysql_error.log | awk '{{print $NF}}'")
     print(temp_passwd)
+    time.sleep(5)
     if install_role == "cluster":
         exec_shell_command(
             f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'SET SQL_LOG_BIN=0;'")
@@ -237,7 +240,7 @@ interactive_timeout
                 f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'START GROUP_REPLICATION;'")
     exec_shell_command(
         f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e 'ALTER USER 'root'@'localhost' IDENTIFIED BY \"DBuser@123_!@#\";'")
-
+    print("mysql 安装完成")
 
 if __name__ == '__main__':
     unzip_package()
