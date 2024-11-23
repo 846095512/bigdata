@@ -1,12 +1,13 @@
 {
-    "file":"mysql-8.0.27-linux-glibc2.12-x86_64.tar.xz",
+    "file":"mysql-8.4.3-linux-glibc2.28-x86_64.tar.xz",
     "module.name":"mysql",
 
-    "local.ip":"192.168.176.134",
+    "local.ip":"10.238.110.11",
     "install.role":"standalone",
+    "install.ip":["10.238.110.11"],
 
     "dfs.nameservice":"192.168.176.134:9000",
-    "install.ip":["192.168.176.134"],
+
 
     "namenode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "resourcemanager.list":["10.238.111.50","10.238.111.51","10.238.111.52"],

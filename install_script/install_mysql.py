@@ -5,12 +5,12 @@ from commons import *
 def install_mysql():
     my_cnf_template = """
 [client]
-port=13306
+port=3306
 socket={{ mysql_home_dir }}/mysql.sock
 
 [mysql]
 init_command=set names utf8mb4
-port=13306
+port=3306
 socket={{ mysql_home_dir }}/mysql.sock
 prompt=\\u@\\h:\\R:\\m:\\s[\\d]>
 
@@ -21,7 +21,7 @@ user={{ current_user }}
 character_set_server=utf8mb4
 collation_server=utf8mb4_general_ci
 bind-address=0.0.0.0
-port=13306
+port=3306
 socket={{ mysql_home_dir }}/mysql.sock
 max_connect_errors=18446744073709551615
 explicit_defaults_for_timestamp=1
@@ -76,9 +76,6 @@ innodb_write_io_threads=32
 innodb_io_capacity=800
 innodb_temp_data_file_path=ibtmp1:512M:autoextend:max:32G
 innodb_flush_log_at_timeout=2
-innodb_undo_directory={{ mysql_home_dir }}/data/undo
-innodb_undo_log_truncate=ON
-innodb_max_undo_log_size=2G
 innodb_purge_rseg_truncate_frequency=16
 innodb_numa_interleave=ON
 innodb_online_alter_log_max_size=2G
@@ -104,8 +101,6 @@ binlog_group_commit_sync_delay=1000
 ################# replication ############
 gtid_mode=ON
 enforce_gtid_consistency=ON
-master_info_repository=table
-relay_log_info_repository=table
 relay_log={{ mysql_home_dir }}/binlog/relay/relay-bin
 relay_log_index={{ mysql_home_dir }}/binlog/relay/relay-bin.index
 relay_log_recovery=ON
@@ -144,7 +139,6 @@ long_query_time=1
 
 ################# other ##################
 default-time-zone='+08:00'
-default_authentication_plugin=mysql_native_password
 performance_schema_session_connect_attrs_size=2048
 sql_mode="STRICT_ALL_TABLES,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
 
@@ -179,7 +173,7 @@ interactive_timeout
     if install_role == "cluster":
         is_valid_nums(install_ip)
 
-    server_id = 10
+    server_id = 1
     for ip in install_ip:
         if ip == local_ip:
             server_id += 10
@@ -211,38 +205,38 @@ interactive_timeout
     exec_shell_command(
         f"{mysql_home_dir}/bin/mysqld_safe --defaults-file={mysql_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 &")
     temp_passwd = exec_shell_command(
-        f"grep 'temporary password' {mysql_home_dir}/logs/mysql-err.log | awk '{{print $NF}}'")
+        f"grep 'temporary password' {mysql_home_dir}/logs/mysql_error.log | awk '{{print $NF}}'")
     print(temp_passwd)
     if install_role == "cluster":
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'SET SQL_LOG_BIN=0;'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'SET SQL_LOG_BIN=0;'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY 'repl@147!$&';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY \"repl@147!$&\";'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'GRANT REPLICATION SLAVE,CONNECTION_ADMIN,BACKUP_ADMIN,CLONE_ADMIN  ON *.* TO repl@'%';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'GRANT REPLICATION SLAVE,CONNECTION_ADMIN,BACKUP_ADMIN,CLONE_ADMIN  ON *.* TO repl@'%';'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'INSTALL PLUGIN clone SONAME 'mysql_clone.so';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'INSTALL PLUGIN clone SONAME 'mysql_clone.so';'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'INSTALL PLUGIN group_replication SONAME 'group_replication.so';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'INSTALL PLUGIN group_replication SONAME 'group_replication.so';'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='repl@147!$&' FOR CHANNEL 'group_replication_recovery';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='repl@147!$&' FOR CHANNEL 'group_replication_recovery';'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'SET SQL_LOG_BIN=1;'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'SET SQL_LOG_BIN=1;'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'FLUSH PRIVILEGES;'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'FLUSH PRIVILEGES;'")
 
         if is_master == "true":
             exec_shell_command(
-                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'SET GLOBAL group_replication_bootstrap_group=ON;'")
+                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'SET GLOBAL group_replication_bootstrap_group=ON;'")
             exec_shell_command(
-                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'START GROUP_REPLICATION;'")
+                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'START GROUP_REPLICATION;'")
             exec_shell_command(
-                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'SET GLOBAL group_replication_bootstrap_group=OFF;'")
+                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'SET GLOBAL group_replication_bootstrap_group=OFF;'")
         else:
             exec_shell_command(
-                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -e  'START GROUP_REPLICATION;'")
+                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e  'START GROUP_REPLICATION;'")
     exec_shell_command(
-        f"{mysql_home_dir}/bin/mysql -uroot -p{temp_passwd} -e 'ALTER USER 'root'@'localhost' IDENTIFIED BY 'DBuser@123_!@#';'")
+        f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e 'ALTER USER 'root'@'localhost' IDENTIFIED BY \"DBuser@123_!@#\";'")
 
 
 if __name__ == '__main__':
