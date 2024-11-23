@@ -210,7 +210,7 @@ interactive_timeout
     print(temp_passwd)
     time.sleep(5)
     exec_shell_command(
-        f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock -e 'ALTER USER 'root'@'localhost' IDENTIFIED BY \"DBuser@123_!@#\";'")
+        f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e 'ALTER USER 'root'@'localhost' IDENTIFIED BY \"DBuser@123_!@#\";'")
     print("mysql 安装完成")
     if install_role == "cluster":
         exec_shell_command(
