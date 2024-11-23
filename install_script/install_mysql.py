@@ -200,7 +200,7 @@ interactive_timeout
 
     set_permissions(mysql_home_dir)
     new_pwd = "DBuser@123_!@#"
-    repl_pwd = "repl@147!$&"
+    repl_pwd = "repl@086)*^"
     # 初始化mysql并修改root用户密码 启动组复制
     exec_shell_command(
         f"""{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_home_dir}/data """)

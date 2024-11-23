@@ -84,7 +84,7 @@ def exec_shell_command(cmd):
 def set_permissions(path):
     exec_shell_command(f"chmod -R 750 {path}")
     exec_shell_command(f"chown -R {current_user}:{current_user} {path}")
-    print("设置目录权限完成")
+    print(f"{path}  设置目录权限完成")
 
 
 def unzip_package():
@@ -98,7 +98,7 @@ def unzip_package():
     print(file_path)
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
         tar_ref.extractall(app_home_dir)
-    print(f"文件解压完成")
+    print(f"文件解压完成  ->  {filename}")
 
     unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
     old_path = os.path.join(app_home_dir, unpack_name)
