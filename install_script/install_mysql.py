@@ -209,39 +209,37 @@ interactive_timeout
         f"grep 'temporary password' {mysql_home_dir}/logs/mysql_error.log | awk '{{print $NF}}'")
     print(temp_passwd)
     time.sleep(5)
-    exec_shell_command(
-        f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e 'ALTER USER 'root'@'localhost' IDENTIFIED BY \"DBuser@123_!@#\";'")
     if install_role == "cluster":
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET SQL_LOG_BIN=0;'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET SQL_LOG_BIN=0;'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY \"repl@147!$&\";'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'CREATE USER repl@'%' IDENTIFIED WITH sha256_password BY \"repl@147!$&\";'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'GRANT REPLICATION SLAVE,CONNECTION_ADMIN,BACKUP_ADMIN,CLONE_ADMIN  ON *.* TO repl@'%';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'GRANT REPLICATION SLAVE,CONNECTION_ADMIN,BACKUP_ADMIN,CLONE_ADMIN  ON *.* TO repl@'%';'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'INSTALL PLUGIN clone SONAME 'mysql_clone.so';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'INSTALL PLUGIN clone SONAME 'mysql_clone.so';'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'INSTALL PLUGIN group_replication SONAME 'group_replication.so';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'INSTALL PLUGIN group_replication SONAME 'group_replication.so';'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='repl@147!$&' FOR CHANNEL 'group_replication_recovery';'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='repl@147!$&' FOR CHANNEL 'group_replication_recovery';'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET SQL_LOG_BIN=1;'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET SQL_LOG_BIN=1;'")
         exec_shell_command(
-            f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'FLUSH PRIVILEGES;'")
+            f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'FLUSH PRIVILEGES;'")
 
         if is_master == "true":
             exec_shell_command(
-                f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET GLOBAL group_replication_bootstrap_group=ON;'")
+                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET GLOBAL group_replication_bootstrap_group=ON;'")
             exec_shell_command(
-                f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'START GROUP_REPLICATION;'")
+                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'START GROUP_REPLICATION;'")
             exec_shell_command(
-                f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET GLOBAL group_replication_bootstrap_group=OFF;'")
+                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'SET GLOBAL group_replication_bootstrap_group=OFF;'")
         else:
             exec_shell_command(
-                f"{mysql_home_dir}/bin/mysql -uroot -p\"DBuser@123_!@#\" -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'START GROUP_REPLICATION;'")
-
+                f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e  'START GROUP_REPLICATION;'")
+    exec_shell_command(
+        f"{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e 'ALTER USER 'root'@'localhost' IDENTIFIED BY \"DBuser@123_!@#\";'")
     print("mysql 安装完成")
-
 
 if __name__ == '__main__':
     unzip_package()
