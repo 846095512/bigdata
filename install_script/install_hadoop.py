@@ -371,7 +371,7 @@ def install_hadoop():
 export HADOOP_HOME={{ hadoop_home_dir }}
 export HADOOP_CONF_DIR={{ hadoop_conf_dir }}
 export HADOOP_LOG_DIR=${HADOOP_HOME}/logs
-export HADOOP_PID_DIR=${HADOOP_HOME}/pids
+export HADOOP_PID_DIR=${HADOOP_HOME}/pid
 export HADOOP_TMP_DIR=${HADOOP_HOME}/tmp
 export HDFS_NAMENODE_USER={{ current_user }}
 export HDFS_DATANODE_USER={{ current_user }}
