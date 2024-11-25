@@ -20,6 +20,7 @@ local_ip = params_dict["local.ip"]
 install_role = params_dict["install.role"]
 install_ip = params_dict["install.ip"]
 
+
 def is_valid_ip(*args):
     try:
         for arg in args:
@@ -80,7 +81,7 @@ def get_app_home_dir():
 def exec_shell_command(cmd):
     try:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
-        return result.stdout.strip()
+        return result.stdout.strip(), result.stderr.strip(), result.returncode
     except subprocess.CalledProcessError as e:
         print(e)
         sys.exit(1)
@@ -93,7 +94,7 @@ def set_permissions(path):
 
 
 def unzip_package():
-    file_path = get_download_dir(filename)
+    file_path = get_download_dir()
     app_home_dir = get_app_home_dir()
     print(f"应用家目录 -> {app_home_dir}")
 
@@ -126,7 +127,7 @@ def generate_config_file(template_str, conf_file, keyword, **kwargs):
     print(f"文件配置完成    ->    {conf_file} ")
 
 
-def get_download_dir(filename):
+def get_download_dir():
     root_dir = get_root_dir()
     package_dir = os.path.join(root_dir, "package", filename)
     if not os.path.exists(package_dir):

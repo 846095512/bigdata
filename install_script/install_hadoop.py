@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
+import time
+
 from commons import *
 
 
@@ -481,10 +483,12 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
     if install_role == "cluster":
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
+        check_service(8485, "journalnode")
         if local_ip == install_ip[0]:
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK")
         else:
+            check_service(8020, "namenode", install_ip[0])
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
@@ -492,6 +496,17 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
+
+
+def check_service(service_port, service_name, ip_list=install_ip):
+    for ip in ip_list:
+        while True:
+            stdout, stderr, code = exec_shell_command(f"telnet {ip} {service_port}")
+            if code != 0:
+                print(f"等待  {service_name}  服务启动")
+                time.sleep(3)
+            else:
+                break
 
 
 if __name__ == '__main__':
