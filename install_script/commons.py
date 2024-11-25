@@ -84,7 +84,7 @@ def exec_shell_command(cmd):
 def set_permissions(path):
     exec_shell_command(f"chmod -R 750 {path}")
     exec_shell_command(f"chown -R {current_user}:{current_user} {path}")
-    print("设置目录权限完成")
+    print(f"{path}  设置目录权限完成")
 
 
 def unzip_package():
@@ -93,12 +93,11 @@ def unzip_package():
     file_path = get_download_dir(filename)
 
     app_home_dir = get_app_home_dir()
-    print(f"app_home_dir is {app_home_dir}")
+    print(f"应用家目录 -> {app_home_dir}")
 
-    print(file_path)
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
         tar_ref.extractall(app_home_dir)
-    print(f"文件解压完成")
+    print(f"文件解压完成  ->  {filename}")
 
     unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
     old_path = os.path.join(app_home_dir, unpack_name)
@@ -122,13 +121,13 @@ def generate_config_file(template_str, conf_file, keyword, **kwargs):
         lines.insert(int(insert_line_num), config_content)
     with open(conf_file, "w", encoding="utf-8") as f2:
         f2.writelines(lines)
-    print(f"生成{conf_file}文件完成")
+    print(f"文件配置完成    ->    {conf_file} ")
 
 
 def get_download_dir(filename):
     root_dir = get_root_dir()
     package_dir = os.path.join(root_dir, "package", filename)
     if not os.path.exists(package_dir):
-        print(f"安装包文件下载路径:    {package_dir}  不存在,请先将安装包上传至    {package_dir}")
+        print(f"安装包文件下载路径    ->    {package_dir}  不存在,请先将安装包上传至    ->    {package_dir}")
         sys.exit(1)
     return package_dir
