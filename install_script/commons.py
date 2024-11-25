@@ -14,6 +14,11 @@ script_path = os.path.dirname(os.path.abspath(__file__))
 with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
     params_dict = json.load(f)
 
+filename = params_dict["file"]
+module_name = params_dict["module.name"]
+local_ip = params_dict["local.ip"]
+install_role = params_dict["install.role"]
+install_ip = params_dict["install.ip"]
 
 def is_valid_ip(*args):
     try:
@@ -88,10 +93,7 @@ def set_permissions(path):
 
 
 def unzip_package():
-    filename = params_dict["file"]
-    module_name = params_dict["module.name"]
     file_path = get_download_dir(filename)
-
     app_home_dir = get_app_home_dir()
     print(f"应用家目录 -> {app_home_dir}")
 

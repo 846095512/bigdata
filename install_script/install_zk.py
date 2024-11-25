@@ -18,11 +18,11 @@ def install_zk():
         "admin.serverPort": 9999
     }
 
-    module = params_dict["module.name"]
+
     jvm_heap_size = params_dict["jvm.heapsize"]
 
     app_home_dir = get_app_home_dir()
-    zk_home_dir = os.path.join(app_home_dir, module)
+    zk_home_dir = os.path.join(app_home_dir, module_name)
     zk_conf_file = os.path.join(zk_home_dir, "conf", "zoo.cfg")
     zk_log4j_file = os.path.join(zk_home_dir, "conf", "log4j.properties")
     java_env_file = os.path.join(zk_home_dir, "conf", "java.env")

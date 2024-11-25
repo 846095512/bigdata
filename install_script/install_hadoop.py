@@ -394,14 +394,11 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     journal_quorm = ";".join([f"{i}:8485" for i in params_dict["journalnode.list"]])
     dfs_nameservice = params_dict["dfs.nameservice"]
     yarn_cluster_id = params_dict["yarn.cluster.id"]
-    install_role = params_dict["install.role"]
     zk_addr = params_dict["zk.addr"]
     module = params_dict["module.name"]
     yarn_mem = params_dict["yarn.mem"]
     yarn_cpu = params_dict["yarn.cpu"]
-    local_ip = params_dict["local.ip"]
     jvm_heap_size = params_dict["jvm.heapsize"]
-    install_ip = params_dict["install.ip"]
     if len(install_ip) == 1:
         dfs_replication = 1
     else:

@@ -162,10 +162,6 @@ interactive_timeout
         else:
             print("暂时不支持的系统类型")
             sys.exit(1)
-    module_name = params_dict["module.name"]
-    install_role = params_dict["install.role"]
-    local_ip = params_dict["local.ip"]
-    install_ip = params_dict["install.ip"]
     is_master = params_dict["is.master"]
     innodb_buffer_size = params_dict["innodb.buffer.size"]
     ip_whitelist = ",".join([f"{ip}" for ip in install_ip])

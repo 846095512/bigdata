@@ -39,12 +39,9 @@ spark.executor.logs.rolling.maxSize 1048576
 spark.executor.logs.rolling.maxRetainedFiles 10
 """
 
-    module_name = params_dict["module.name"]
     jvm_heapsize = params_dict["jvm.heapsize"]
     dfs_nameservice = params_dict["dfs.nameservice"]
-    install_role = params_dict["install.role"]
     zk_addr = params_dict["zk.addr"]
-    local_ip = params_dict["local.ip"]
     spark_master_ips = params_dict["spark.master.ip"]
 
     is_valid_ip(local_ip, spark_master_ips)
