@@ -10,6 +10,7 @@ jobmanager.memory.process.size={{ jvm_heapsize }}
 taskmanager.memory.process.size={{ jvm_heapsize }}
 taskmanager.numberOfTaskSlots={{ task_slots }}
 parallelism.default={{ parallelism }}
+env.java.home={{ flink_home_dir }}/jdk
 env.log.dir={{ flink_home_dir }}/log
 env.pid.dir={{ flink_home_dir }}/pid
 io.tmp.dirs={{ flink_home_dir }}/tmp
@@ -111,41 +112,62 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     flink_home_dir = os.path.join(get_app_home_dir(), 'flink')
     flink_conf_file = os.path.join(flink_home_dir, 'conf', 'config.yaml')
     zk_conf_file = os.path.join(flink_home_dir, 'conf', 'zoo.cfg')
-    bin_dir = os.path.join(flink_home_dir, 'bin')
+    flink_bin_dir = os.path.join(flink_home_dir, 'bin')
     exec_shell_command(f"mkdir -p {flink_home_dir}/tmp")
     exec_shell_command(f"mkdir -p {flink_home_dir}/hadoop")
-    if install_role == 'standalone':
+    exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
+
+    generate_config_file(
+        template_str=flink_conf_template,
+        conf_file=flink_conf_file,
+        keyword="",
+        install_role=install_role,
+        local_ip=local_ip,
+        jm_rpc_port=jm_rpc_port,
+        jvm_heapsize=jvm_heapsize,
+        task_slots=task_slots,
+        parallelism=parallelism,
+        flink_home_dir=flink_home_dir,
+        dfs_nameservice=dfs_nameservice,
+        flink_cluster_id=flink_cluster_id,
+        zk_addr=zk_addr,
+        history_server_port=history_server_port,
+        prom_port=prom_port
+    )
+
+    if install_role == "cluster":
+        generate_config_file(
+            template_str=zk_conf_template,
+            conf_file=zk_conf_file,
+            keyword="",
+            install_role=install_role,
+            install_ip=install_ip
+        )
+        for myid in range(len(install_ip)):
+            if local_ip == install_ip[myid]:
+                with open(f"{flink_home_dir}/data/zookeeper", "w") as f1:
+                    f1.write(myid)
+
+        exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
+        exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
+        exec_shell_command(f"{flink_bin_dir}/historyserver.sh start")
+        exec_shell_command(f"{flink_bin_dir}/start-zookeeper-quorum.sh start")
+        print("flink standalone集群启动完成")
+
+    if install_role == "standalone":
         exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
         exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
         exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
         exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
 
-    exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
-    generate_config_file(
-        template_str=flink_conf_template,
-         conf_file=flink_conf_file,
-         keyword="",
-         install_role=install_role,
-         local_ip=local_ip,
-         jm_rpc_port=jm_rpc_port,
-         jvm_heapsize=jvm_heapsize,
-         task_slots=task_slots,
-         parallelism=parallelism,
-         flink_home_dir=flink_home_dir,
-         dfs_nameservice=dfs_nameservice,
-         flink_cluster_id=flink_cluster_id,
-         zk_addr=zk_addr,
-         history_server_port=history_server_port,
-         prom_port=prom_port
-    )
+        exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
+        exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
+        exec_shell_command(f"{flink_bin_dir}/historyserver.sh start")
+        print("flink 单节点模式启动完成")
 
-    generate_config_file(
-        template_str=zk_conf_template,
-        conf_file=zk_conf_file,
-        keyword="",
-        install_role=install_role,
-        install_ip=install_ip
-    )
+    if install_role == "yarn":
+        print("flink 集群yarn模式启动完成 ")
+
 
 if __name__ == '__main__':
     unzip_package()
