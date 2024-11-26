@@ -426,51 +426,62 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         f1.write(f"{hadoop_bin_dir}/yarn--daemon stop resourcemanager\n")
 
     # 生成 core-site hdfs-site yarn-site mapred-site文件
-    generate_config_file(template_str=core_conf_template,
-                         conf_file=core_conf,
-                         keyword="<configuration>",
-                         install_role=install_role,
-                         dfs_nameservice=dfs_nameservice,
-                         hadoop_data_dir=hadoop_data_dir,
-                         zk_addr=zk_addr)
+    generate_config_file(
+        template_str=core_conf_template,
+         conf_file=core_conf,
+         keyword="<configuration>",
+         install_role=install_role,
+         dfs_nameservice=dfs_nameservice,
+         hadoop_data_dir=hadoop_data_dir,
+         zk_addr=zk_addr
+    )
 
-    generate_config_file(template_str=hdfs_conf_template,
-                         conf_file=hdfs_conf,
-                         keyword="<configuration>",
-                         install_role=install_role,
-                         dfs_nameservice=dfs_nameservice,
-                         hadoop_conf_dir=hadoop_conf_dir,
-                         journal_quorm=journal_quorm,
-                         namenode_list=namenode_list,
-                         nn_list=nn_list,
-                         dfs_replication=dfs_replication)
+    generate_config_file(
+        template_str=hdfs_conf_template,
+         conf_file=hdfs_conf,
+         keyword="<configuration>",
+         install_role=install_role,
+         dfs_nameservice=dfs_nameservice,
+         hadoop_conf_dir=hadoop_conf_dir,
+         journal_quorm=journal_quorm,
+         namenode_list=namenode_list,
+         nn_list=nn_list,
+         dfs_replication=dfs_replication
+    )
 
-    generate_config_file(template_str=yarn_conf_template,
-                         conf_file=yarn_conf,
-                         keyword="<configuration>",
-                         install_role=install_role,
-                         local_ip=local_ip,
-                         hadoop_conf_dir=hadoop_conf_dir,
-                         resourcemanager_list=resourcemanager_list,
-                         yarn_mem=yarn_mem,
-                         yarn_cpu=yarn_cpu,
-                         yarn_cluster_id=yarn_cluster_id,
-                         rm_list=rm_list,
-                         hadoop_classpath=hadoop_classpath)
 
-    generate_config_file(template_str=mapred_conf_template,
-                         conf_file=mapred_conf,
-                         keyword="<configuration>",
-                         dfs_nameservice=dfs_nameservice)
+    generate_config_file(
+        template_str=yarn_conf_template,
+         conf_file=yarn_conf,
+         keyword="<configuration>",
+         install_role=install_role,
+         local_ip=local_ip,
+         hadoop_conf_dir=hadoop_conf_dir,
+         resourcemanager_list=resourcemanager_list,
+         yarn_mem=yarn_mem,
+         yarn_cpu=yarn_cpu,
+         yarn_cluster_id=yarn_cluster_id,
+         rm_list=rm_list,
+         hadoop_classpath=hadoop_classpath
+    )
 
-    generate_config_file(template_str=env_conf_template,
-                         conf_file=hadoop_env_file,
-                         keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
-                         current_user=current_user,
-                         hadoop_home_dir=hadoop_home_dir,
-                         hadoop_conf_dir=hadoop_conf_dir,
-                         hadoop_opts=hadoop_opts,
-                         jvm_heap_size=jvm_heap_size)
+    generate_config_file(
+        template_str=mapred_conf_template,
+         conf_file=mapred_conf,
+         keyword="<configuration>",
+         dfs_nameservice=dfs_nameservice
+    )
+
+    generate_config_file(
+        template_str=env_conf_template,
+         conf_file=hadoop_env_file,
+         keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
+         current_user=current_user,
+         hadoop_home_dir=hadoop_home_dir,
+         hadoop_conf_dir=hadoop_conf_dir,
+         hadoop_opts=hadoop_opts,
+         jvm_heap_size=jvm_heap_size
+    )
 
     set_permissions(hadoop_home_dir)
 

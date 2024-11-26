@@ -17,7 +17,7 @@ io.tmp.dirs={{ flink_home_dir }}/tmp
 {% if install_role = "standalone" or install_role = "cluster"%}
 web.submit.enable=true
 web.cancel.enable=true
-web.upload.dir={{ flink_home_dir }}/upload
+web.upload.dir={{ flink_home_dir }}/data/upload
 {% endif %}
 
 execution.checkpointing.interval=30000
@@ -112,31 +112,33 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     flink_conf_file = os.path.join(flink_home_dir, 'conf', 'config.yaml')
     zk_conf_file = os.path.join(flink_home_dir, 'conf', 'zoo.cfg')
     bin_dir = os.path.join(flink_home_dir, 'bin')
-
-    exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/hadoop")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/upload")
     exec_shell_command(f"mkdir -p {flink_home_dir}/tmp")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/archive")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/conf/task_conf_tmp")
+    exec_shell_command(f"mkdir -p {flink_home_dir}/hadoop")
+    if install_role == 'standalone':
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
 
     exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
-    generate_config_file(template_str=flink_conf_template,
-                         conf_file=flink_conf_file,
-                         keyword="",
-                         install_role=install_role,
-                         local_ip=local_ip,
-                         jm_rpc_port=jm_rpc_port,
-                         jvm_heapsize=jvm_heapsize,
-                         task_slots=task_slots,
-                         parallelism=parallelism,
-                         flink_home_dir=flink_home_dir,
-                         dfs_nameservice=dfs_nameservice,
-                         flink_cluster_id=flink_cluster_id,
-                         zk_addr=zk_addr,
-                         history_server_port=history_server_port,
-                         prom_port=prom_port)
+    generate_config_file(
+        template_str=flink_conf_template,
+         conf_file=flink_conf_file,
+         keyword="",
+         install_role=install_role,
+         local_ip=local_ip,
+         jm_rpc_port=jm_rpc_port,
+         jvm_heapsize=jvm_heapsize,
+         task_slots=task_slots,
+         parallelism=parallelism,
+         flink_home_dir=flink_home_dir,
+         dfs_nameservice=dfs_nameservice,
+         flink_cluster_id=flink_cluster_id,
+         zk_addr=zk_addr,
+         history_server_port=history_server_port,
+         prom_port=prom_port
+    )
+
     generate_config_file(
         template_str=zk_conf_template,
         conf_file=zk_conf_file,

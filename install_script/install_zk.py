@@ -44,7 +44,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     )
     for id in range(len(install_ip)):
         if local_ip == install_ip[id]:
-            with open(zk_log4j_file, "w") as f1:
+            with open(zk_myid_file, "w") as f1:
                 f1.write(id)
 
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
