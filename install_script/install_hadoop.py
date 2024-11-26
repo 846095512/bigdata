@@ -498,10 +498,11 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         if local_ip == install_ip[0]:
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         else:
             check_service(8020, "namenode", install_ip[0])
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
