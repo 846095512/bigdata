@@ -134,3 +134,14 @@ def get_download_dir():
         print(f"安装包文件下载路径    ->    {package_dir}  不存在,请先将安装包上传至    ->    {package_dir}")
         sys.exit(1)
     return package_dir
+
+
+def check_service(service_port, service_name, ip_list=install_ip):
+    for ip in ip_list:
+        while True:
+            stdout, stderr, code = exec_shell_command(f"telnet {ip} {service_port}")
+            if code != 0:
+                print(f"等待  {service_name}  服务启动")
+                time.sleep(3)
+            else:
+                break

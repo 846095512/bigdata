@@ -4,7 +4,6 @@ from commons import *
 
 def install_flink():
     flink_conf_template = """
-
 jobmanager.rpc.address= {{ local_ip }}
 jobmanager.rpc.port={{ jm_rpc_port }}
 jobmanager.memory.process.size={{ jvm_heapsize }}
@@ -82,7 +81,24 @@ metrics.reporters=prom
 metrics.reporter.prom.class=org.apache.flink.metrics.prometheus.PrometheusReporter
 metrics.reporter.prom.port={{ prom_port }}
 """
-
+    zk_conf_template = """
+initLimit=10
+syncLimit=5
+clientPort=2181
+dataDir={{ flink_home_dir }}/data/zookeeper
+autopurge.snapRetainCount=5
+autopurge.purgeInterval=12
+maxClientCnxns=1000
+minSessionTimeout=10000
+maxSessionTimeout=60000
+admin.enableServer="false"
+admin.serverPort=9999
+{% if install_role = "cluster" %}
+{% for ip in install_ip %}
+server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
+{% endfor %}
+{% endif %}    
+"""
     dfs_nameservice = params_dict["dfs.nameservice"]
     flink_cluster_id = params_dict["flink.cluster.id"]
     zk_addr = params_dict["zk.addr"]
@@ -93,20 +109,21 @@ metrics.reporter.prom.port={{ prom_port }}
     jm_rpc_port = 8081
     parallelism = 1
     flink_home_dir = os.path.join(get_app_home_dir(), 'flink')
-    conf_file = os.path.join(flink_home_dir, 'conf', 'config.yaml')
+    flink_conf_file = os.path.join(flink_home_dir, 'conf', 'config.yaml')
+    zk_conf_file = os.path.join(flink_home_dir, 'conf', 'zoo.cfg')
     bin_dir = os.path.join(flink_home_dir, 'bin')
 
-    exec_shell_command(f"mkdir -p {flink_home_dir}/data")
     exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
     exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
     exec_shell_command(f"mkdir -p {flink_home_dir}/hadoop")
     exec_shell_command(f"mkdir -p {flink_home_dir}/upload")
     exec_shell_command(f"mkdir -p {flink_home_dir}/tmp")
     exec_shell_command(f"mkdir -p {flink_home_dir}/archive")
+    exec_shell_command(f"mkdir -p {flink_home_dir}/conf/task_conf_tmp")
 
-    exec_shell_command(f"mv {conf_file} {conf_file}.template")
+    exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
     generate_config_file(template_str=flink_conf_template,
-                         conf_file=conf_file,
+                         conf_file=flink_conf_file,
                          keyword="",
                          install_role=install_role,
                          local_ip=local_ip,
@@ -120,7 +137,13 @@ metrics.reporter.prom.port={{ prom_port }}
                          zk_addr=zk_addr,
                          history_server_port=history_server_port,
                          prom_port=prom_port)
-
+    generate_config_file(
+        template_str=zk_conf_template,
+        conf_file=zk_conf_file,
+        keyword="",
+        install_role=install_role,
+        install_ip=install_ip
+    )
 
 if __name__ == '__main__':
     unzip_package()

@@ -1,23 +1,27 @@
-# -*- coding: utf-8 -*-
+# -*- coding=utf-8 -*-
 from commons import *
 
 
 def install_zk():
-    conf_items = {
-        "tickTime": 2000,
-        "initLimit": 10,
-        "syncLimit": 5,
-        "clientPort": 2181,
-        "dataDir": "",
-        "autopurge.snapRetainCount": 5,
-        "autopurge.purgeInterval": 12,
-        "maxClientCnxns": 1000,
-        "minSessionTimeout": 10000,
-        "maxSessionTimeout": 60000,
-        "admin.enableServer": "false",
-        "admin.serverPort": 9999
-    }
-
+    zoo_conf_template = """
+tickTime=2000
+initLimit=10
+syncLimit=5
+clientPort=2181
+dataDir={{ zk_home_dir }}
+autopurge.snapRetainCount=5
+autopurge.purgeInterval=12
+maxClientCnxns=1000
+minSessionTimeout=10000
+maxSessionTimeout=60000
+admin.enableServer="false"
+admin.serverPort=9999
+{% if install_role = "cluster" %}
+{% for ip in install_ip %}
+server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
+{% endfor %}
+{% endif %}
+"""
 
     jvm_heap_size = params_dict["jvm.heapsize"]
 
@@ -30,24 +34,18 @@ def install_zk():
     zk_server_file = os.path.join(zk_home_dir, "bin", "zkServer.sh")
     zk_myid_file = os.path.join(zk_home_dir, "myid")
 
-    if params_dict["install.role"] == "standalone":
-        with open(zk_conf_file, "w", encoding="UTF-8") as f1:
-            for item in conf_items:
-                if item == "dataDir":
-                    conf_items["dataDir"] = zk_home_dir
-                f1.write(f"{item}={conf_items.get(item)}\n")
-    if params_dict["install.role"] == "cluster":
-        with open(zk_conf_file, "w", encoding="UTF-8") as f1:
-            for item in conf_items:
-                if item == "dataDir":
-                    conf_items["dataDir"] = zk_home_dir
-                f1.write(f"{item}={conf_items.get(item)}\n")
-            id = 1
-            for ip in params_dict["install_ip"]:
-                f1.write(f"server.{id}={ip}:2888:3888\n")
-                if ip == params_dict["local_ip"]:
-                    exec_shell_command(f"echo {id} > {zk_myid_file}")
-                id += 1
+    generate_config_file(
+        template_str=zoo_conf_template,
+        conf_file=zk_conf_file,
+        keyword="",
+        install_role=install_role,
+        install_ip=install_ip,
+        zk_home_dir=zk_home_dir,
+    )
+    for id in range(len(install_ip)):
+        if local_ip == install_ip[id]:
+            with open(zk_log4j_file, "w") as f1:
+                f1.write(id)
 
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
     exec_shell_command(
@@ -56,14 +54,7 @@ def install_zk():
         f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof $JVMFLAGS'\" > {java_env_file}")
     exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_env_file}")
 
-    with open(zk_env_file, "r", encoding="UTF-8") as f1:
-        env_lines = f1.readlines()
-
-    with open(zk_env_file, "w", encoding="UTF-8") as f1:
-        for line in env_lines:
-            f1.write(line)
-            if line.startswith("# default heap for zookeeper server"):
-                break
+    exec_shell_command(f"head -n -7 {zk_log4j_file} > {zk_env_file}")
     set_permissions(zk_home_dir)
     print("zk 安装完成")
     exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start")

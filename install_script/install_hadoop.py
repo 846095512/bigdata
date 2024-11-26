@@ -498,17 +498,6 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
 
 
-def check_service(service_port, service_name, ip_list=install_ip):
-    for ip in ip_list:
-        while True:
-            stdout, stderr, code = exec_shell_command(f"telnet {ip} {service_port}")
-            if code != 0:
-                print(f"等待  {service_name}  服务启动")
-                time.sleep(3)
-            else:
-                break
-
-
 if __name__ == '__main__':
     unzip_package()
     install_hadoop()
