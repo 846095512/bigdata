@@ -162,7 +162,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
         for myid in range(len(install_ip)):
             if local_ip == install_ip[myid]:
                 with open(f"{flink_home_dir}/data/zookeeper/myid", "w") as f1:
-                    f1.write(myid)
+                    f1.write(str(myid))
 
 
         exec_shell_command(f"{flink_bin_dir}/start-zookeeper-quorum.sh start")
