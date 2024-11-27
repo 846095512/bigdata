@@ -15,6 +15,8 @@ env.java.home: {{ flink_home_dir }}/jdk
 env.log.dir: {{ flink_home_dir }}/log
 env.pid.dir: {{ flink_home_dir }}/pid
 io.tmp.dirs: {{ flink_home_dir }}/tmp
+env.hadoop.conf.dir: {{ flink_home_dir }}/hadoop/hdfs
+env.yarn.conf.dir: {{ flink_home_dir }}/hadoop/yarn
 
 {% if install_role == "standalone" or install_role == "cluster"%}
 web.submit.enable: true
@@ -44,11 +46,6 @@ restart-strategy: failure-rate
 restart-strategy.failure-rate.max-failures-per-interval: 3
 restart-strategy.failure-rate.failure-rate-interval: 600s
 restart-strategy.failure-rate.delay: 10s
-
-
-
-env.hadoop.conf.dir: {{ flink_home_dir }}/hadoop
-env.yarn.conf.dir: {{ flink_home_dir }}/hadoop
 
 {% if install_role == "yarn"%}
 yarn.maximum-failed-containers: 5
@@ -80,7 +77,7 @@ historyserver.web.port: {{ history_server_port }}
 
 
 metrics.reporters: prom
-metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
+metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
 metrics.reporter.prom.port: {{ prom_port }}
 """
     zk_conf_template = """
@@ -157,10 +154,10 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
         print("flink standalone集群启动完成")
 
     if install_role == "standalone":
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
+        # exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
+        # exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
+        # exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
+        # exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
 
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
