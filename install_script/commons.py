@@ -146,3 +146,16 @@ def check_service(service_port, service_name, ip_list=install_ip):
                 time.sleep(3)
             else:
                 break
+
+def init_os_conf():
+
+    # doris 推荐系统优化参数
+    exec_shell_command("swapoff -a")
+    exec_shell_command("sed -i '/swap/s/^/#/' /etc/fstab")
+    exec_shell_command("sysctl -w vm.max_map_count=2000000")
+    exec_shell_command("echo never > /sys/kernel/mm/transparent_hugepage/enabled")
+    exec_shell_command("echo never > /sys/kernel/mm/transparent_hugepage/defrag")
+    exec_shell_command("echo '* soft nofile 1000000'  > /etc/security/limits.conf")
+    exec_shell_command("echo '* hard nofile 1000000'  > /etc/security/limits.conf")
+    exec_shell_command("sudo systemctl stop firewalld.service")
+    exec_shell_command("sudo systemctl disable firewalld.service")
