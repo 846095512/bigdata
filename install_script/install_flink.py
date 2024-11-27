@@ -177,10 +177,11 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
 
         myid, stderr, code = exec_shell_command(f"cat {flink_home_dir}/data/zookeeper/myid")
         exec_shell_command(f"{flink_bin_dir}/zookeeper.sh start {myid}")
+        check_service("2181","zookeeper")
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/historyserver.sh start")
-        print("flink standalone集群启动完成")
+        print("flink 集群启动完成")
 
     if install_role == "standalone":
         exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
