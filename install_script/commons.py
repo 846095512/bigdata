@@ -103,7 +103,7 @@ def unzip_package():
         tar_ref.extractall(app_home_dir)
     print(f"文件解压完成  ->  {filename}")
 
-    unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
+    unpack_name, stderr, code = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
     old_path = os.path.join(app_home_dir, unpack_name)
     new_path = os.path.join(app_home_dir, module_name)
     shutil.move(old_path, new_path)
