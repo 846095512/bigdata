@@ -119,11 +119,11 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     jm_rpc_port = 6123
     jm_rest_port = 8081
     parallelism = 1
-    jvm_options = "-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
     flink_home_dir = os.path.join(get_app_home_dir(), 'flink')
     flink_conf_file = os.path.join(flink_home_dir, 'conf', 'config.yaml')
     zk_conf_file = os.path.join(flink_home_dir, 'conf', 'zoo.cfg')
     flink_bin_dir = os.path.join(flink_home_dir, 'bin')
+    jvm_options = f"-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Djava.io.tmpdir={flink_home_dir}/tmp"
     exec_shell_command(f"mkdir -p {flink_home_dir}/tmp")
     exec_shell_command(f"mkdir -p {flink_home_dir}/hadoop")
     exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
