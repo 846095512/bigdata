@@ -74,13 +74,21 @@ yarn.application-attempts: 3
 yarn.container-start-timeout: 300000
 {% endif %}
 
-{% if install_role == "yarn" or install_role == "cluster" %}
+{% if install_role == "yarn" %}
 # 高可用
 high-availability.type: ZOOKEEPER
 high-availability.cluster-id: {{ flink_cluster_id }}
-high-availability.storageDir: hdfs://{{ dfs_nameservice }}/{{ flink_cluster_id }}/ha
 high-availability.zookeeper.path.root: /{{ flink_cluster_id }}
-high-availability.zookeeper.quorum: {{ zk_addr}}
+high-availability.storageDir: hdfs://{{ dfs_nameservice }}/{{ flink_cluster_id }}/ha
+high-availability.zookeeper.quorum: {{ zk_addr }}
+{% endif %}
+{% if install_role == "cluster" %}
+# 高可用
+high-availability.type: ZOOKEEPER
+high-availability.cluster-id: {{ flink_cluster_id }}
+high-availability.zookeeper.path.root: /{{ flink_cluster_id }}
+high-availability.storageDir: file://{{ flink_home_dir }}/data/ha
+high-availability.zookeeper.quorum: {{ ",".join([f"{ip}:2181" for ip in install_ip]) }}
 {% endif %}
 
 {% if install_role == "standalone" or install_role == "cluster" %}
@@ -187,3 +195,4 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
 if __name__ == '__main__':
     unzip_package()
     install_flink()
+
