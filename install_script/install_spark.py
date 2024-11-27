@@ -31,12 +31,51 @@ spark.master    spark://{{ spark_masters }}
 {% endif %}
 {% if cluster_role == "yarn" %}
 spark.master    yarn
+spark.yarn.jars hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/jars
+spark.dynamicAllocation.enabled  true                                  
+spark.dynamicAllocation.minExecutors  1                                
+spark.dynamicAllocation.maxExecutors  100                              
+spark.dynamicAllocation.initialExecutors  10                          
+spark.dynamicAllocation.schedulerBacklogTimeout  1s                   
+spark.dynamicAllocation.sustainedSchedulerBacklogTimeout  1s   
 {% endif %}
+# 作业提交模式
+spark.submit.deployMode cluster
+spark.hadoop.fs.defaultFS hdfs://{{ dfs_nameservice }}
+# 事件日志 
 spark.eventLog.enabled  true
-spark.eventLog.dir  hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/job-logs
+spark.eventLog.dir  hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/logs
+spark.history.ui.port            18080
+spark.history.retainedApplications 100
+spark.history.fs.logDirectory hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/history
 spark.executor.logs.rolling.enableCompression   true
 spark.executor.logs.rolling.maxSize 1048576
 spark.executor.logs.rolling.maxRetainedFiles 10
+
+# shuffle 相关
+spark.sql.shuffle.partitions     200                                  
+spark.sql.files.maxPartitionBytes 134217728                           
+spark.shuffle.compress           true                                  
+spark.shuffle.spill.compress     true       
+spark.sql.files.openCostInBytes 4194304                               
+spark.sql.autoBroadcastJoinThreshold 10485760                        
+spark.shuffle.file.buffer        32k                                 
+spark.shuffle.io.maxRetries      10                                  
+spark.shuffle.io.retryWait       30s                              
+
+# 压缩
+spark.broadcast.compress true
+spark.rdd.compress true
+spark.kafka.consumer.cache.enabled true
+
+# Spark SQL 相关配置
+spark.sql.shuffle.partitions     200                                  
+spark.sql.files.maxPartitionBytes 134217728                            
+spark.sql.cache.serializer        org.apache.spark.storage.SnappyCompressionCodec 
+
+# Spark MLlib 配置
+spark.mllib.regParam              0.01                                
+spark.mllib.numIterations         10                                 
 """
 
     jvm_heapsize = params_dict["jvm.heapsize"]
