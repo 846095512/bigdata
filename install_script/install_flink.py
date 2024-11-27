@@ -164,8 +164,8 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
                 with open(f"{flink_home_dir}/data/zookeeper/myid", "w") as f1:
                     f1.write(str(myid))
 
-
-        exec_shell_command(f"{flink_bin_dir}/start-zookeeper-quorum.sh start")
+        myid, stderr, code = exec_shell_command(f"cat {flink_home_dir}/data/zookeeper/myid")
+        exec_shell_command(f"{flink_bin_dir}/zookeeper.sh start {myid}")
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/historyserver.sh start")
