@@ -34,8 +34,8 @@ spark.master    yarn
 spark.yarn.jars hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/jars
 spark.dynamicAllocation.enabled  true                                  
 spark.dynamicAllocation.minExecutors  1                                
-spark.dynamicAllocation.maxExecutors  100                              
-spark.dynamicAllocation.initialExecutors  10                          
+spark.dynamicAllocation.maxExecutors  200                              
+spark.dynamicAllocation.initialExecutors  1                          
 spark.dynamicAllocation.schedulerBacklogTimeout  1s                   
 spark.dynamicAllocation.sustainedSchedulerBacklogTimeout  1s   
 {% endif %}
