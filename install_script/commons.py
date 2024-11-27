@@ -140,9 +140,9 @@ def get_download_dir():
 def check_service(service_port, service_name, ip_list=install_ip):
     for ip in ip_list:
         while True:
-            stdout, stderr, code = subprocess.run(
+            result = subprocess.run(
                 f"telnet {ip} {service_port}", shell=True, capture_output=True, text=True)
-            if code != 0:
+            if result.returncode != 0:
                 print(f"等待  {service_name}  服务启动")
                 time.sleep(3)
             else:
