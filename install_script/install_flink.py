@@ -49,8 +49,6 @@ historyserver.web.port: {{ history_server_port }}
 metrics.reporters: prom
 metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
 metrics.reporter.prom.port: {{ prom_port }}
-
-
 {% if install_role == "standalone" or install_role == "cluster"%}
 # web UI
 web.submit.enable: true
@@ -58,23 +56,20 @@ web.cancel.enable: true
 web.upload.dir: {{ flink_home_dir }}/data/upload
 rest.profiling.enabled: true
 {% endif %}
-
-{% if install_role == "standalone"%}
+{% if install_role == "standalone" %}
 state.checkpoints.dir: file://{{ flink_home_dir }}/data/checkpoints
 state.savepoints.dir: file://{{ flink_home_dir }}/data/savepoints
 {% else %}
 state.checkpoints.dir: hdfs://{{ dfs_nameservice }}/{{ flink_cluster_id }}/checkpoints
 state.savepoints.dir: hdfs://{{ dfs_nameservice }}/{{ flink_cluster_id }}/savepoints
 {% endif %}
-
 {% if install_role == "yarn"%}
 # yarn
 yarn.maximum-failed-containers: 5
 yarn.application-attempts: 3
 yarn.container-start-timeout: 300000
 {% endif %}
-
-{% if install_role == "yarn" %}
+{% if install_role == "yarn" or install_role == "cluster" %}
 # 高可用
 high-availability.type: ZOOKEEPER
 high-availability.cluster-id: {{ flink_cluster_id }}
@@ -82,19 +77,11 @@ high-availability.zookeeper.path.root: /{{ flink_cluster_id }}
 high-availability.storageDir: hdfs://{{ dfs_nameservice }}/{{ flink_cluster_id }}/ha
 high-availability.zookeeper.quorum: {{ zk_addr }}
 {% endif %}
-{% if install_role == "cluster" %}
-# 高可用
-high-availability.type: ZOOKEEPER
-high-availability.cluster-id: {{ flink_cluster_id }}
-high-availability.zookeeper.path.root: /{{ flink_cluster_id }}
-high-availability.storageDir: file://{{ flink_home_dir }}/data/ha
-high-availability.zookeeper.quorum: {{ zk_addr }}
-{% endif %}
-
-{% if install_role == "standalone" or install_role == "cluster" %}
+{% if (install_role == "standalone" %}
 jobmanager.archive.fs.dir: file://{{ flink_home_dir }}/data/archive
 historyserver.archive.fs.dir: file://{{ flink_home_dir }}/data/archive
-{% else %}
+{% endif %}
+{% if install_role == "yarn" or install_role == "cluster" %}
 jobmanager.archive.fs.dir: hdfs://{{ dfs_nameservice }}/{{ flink_cluster_id }}/archive
 historyserver.archive.fs.dir: hdfs://{{ dfs_nameservice }}/{{ flink_cluster_id }}/archive
 {% endif %}
