@@ -15,7 +15,7 @@ env.log.dir={{ flink_home_dir }}/log
 env.pid.dir={{ flink_home_dir }}/pid
 io.tmp.dirs={{ flink_home_dir }}/tmp
 
-{% if install_role = "standalone" or install_role = "cluster"%}
+{% if install_role == "standalone" or install_role == "cluster"%}
 web.submit.enable=true
 web.cancel.enable=true
 web.upload.dir={{ flink_home_dir }}/data/upload
@@ -31,7 +31,7 @@ state.backend.rocksdb.memory.managed=true
 state.backend.rocksdb.localdir={{ flink_home_dir }}/data
 state.backend.rocksdb.timer-service.factory=rocksdb
 
-{% if install_role = "standalone"%}
+{% if install_role == "standalone"%}
 state.checkpoints.dir=file://{{ flink_home_dir }}/data/checkpoints
 state.savepoints.dir=file://{{ flink_home_dir }}/data/savepoints
 {% else %}
@@ -49,12 +49,12 @@ restart-strategy.failure-rate.delay=10s
 env.hadoop.conf.dir={{ flink_home_dir }}/hadoop
 env.yarn.conf.dir={{ flink_home_dir }}/hadoop
 
-{% if install_role = "yarn"%}
+{% if install_role == "yarn"%}
 yarn.maximum-failed-containers=5
 yarn.application-attempts=3
 yarn.container-start-timeout=300000
 {% endif %}
-{% if install_role = "yarn" or install_role = "cluster" %}
+{% if install_role == "yarn" or install_role == "cluster" %}
 high-availability.type=ZOOKEEPER
 high-availability.cluster-id={{ flink_cluster_id }}
 high-availability.storageDir=hdfs://{{ dfs_nameservice }}/{{ flink_cluster_id }}/ha
@@ -63,7 +63,7 @@ high-availability.zookeeper.quorum={{ zk_addr}}
 {% endif %}
 
 # history server
-{% if install_role = "standalone"%}
+{% if install_role == "standalone"%}
 jobmanager.archive.fs.dir=file://{{ flink_home_dir }}/data/archive
 historyserver.archive.fs.dir=file://{{ flink_home_dir }}/data/archive
 {% else %}
