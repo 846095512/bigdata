@@ -88,7 +88,7 @@ high-availability.type: ZOOKEEPER
 high-availability.cluster-id: {{ flink_cluster_id }}
 high-availability.zookeeper.path.root: /{{ flink_cluster_id }}
 high-availability.storageDir: file://{{ flink_home_dir }}/data/ha
-high-availability.zookeeper.quorum: {{ ",".join([f"{ip}:2181" for ip in install_ip]) }}
+high-availability.zookeeper.quorum: {{ zk_addr }}
 {% endif %}
 
 {% if install_role == "standalone" or install_role == "cluster" %}
@@ -119,7 +119,10 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
 """
     dfs_nameservice = params_dict["dfs.nameservice"]
     flink_cluster_id = params_dict["flink.cluster.id"]
-    zk_addr = params_dict["zk.addr"]
+    if install_role == "cluster":
+        zk_addr = ",".join([f"{ip}:2181" for ip in install_ip])
+    else:
+        zk_addr = params_dict["zk.addr"]
     jvm_heapsize = params_dict["jvm.heapsize"]
     task_slots, stderr, code = exec_shell_command("nproc")
     history_server_port = 8082
