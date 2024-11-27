@@ -160,11 +160,10 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
             if local_ip == install_ip[myid]:
                 with open(f"{flink_home_dir}/data/zookeeper", "w") as f1:
                     f1.write(myid)
-
+        exec_shell_command(f"{flink_bin_dir}/start-zookeeper-quorum.sh start")
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/historyserver.sh start")
-        exec_shell_command(f"{flink_bin_dir}/start-zookeeper-quorum.sh start")
         print("flink standalone集群启动完成")
 
     if install_role == "standalone":
