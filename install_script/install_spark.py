@@ -16,8 +16,8 @@ export SPARK_WORKER_PORT=7078
 export SPARK_WORKER_WEBUI_PORT=10091
 export SPARK_WORKER_OPTS="-Xloggc:{{ spark_home_dir }}/logs/worker-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/worker-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=3600 -Dspark.worker.cleanup.appDataTtl=86400"
 export SPARK_WORKER_DIRS={{ spark_home_dir }}/work
-export SPARK_LOG_DIR={{ spark_home_dir }}/logs
-export SPARK_PID_DIR={{ spark_home_dir }}/pids
+export SPARK_LOG_DIR={{ spark_home_dir }}/log
+export SPARK_PID_DIR={{ spark_home_dir }}/pid
 export SPARK_DAEMON_MEMORY={{ jvm_heapsize }}
 export SPARK_HISTORY_OPTS="-Xloggc:{{ spark_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/historyserver-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Dspark.history.ui.port=18080 -Dspark.history.fs.cleaner.enabled=true -Dspark.history.fs.cleaner.interval=3d -Dspark.history.fs.cleaner.maxAge=14d -Dspark.history.fs.logDirectory=hdfs://{{ dfs_nameservice }}/spark-logs"
 {% if cluster_role == "standalone" %}
@@ -33,7 +33,7 @@ spark.master    spark://{{ spark_masters }}
 spark.master    yarn
 {% endif %}
 spark.eventLog.enabled  true
-spark.eventLog.dir  hdfs://{{ dfs_nameservice }}/spark-logs
+spark.eventLog.dir  hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/job-logs
 spark.executor.logs.rolling.enableCompression   true
 spark.executor.logs.rolling.maxSize 1048576
 spark.executor.logs.rolling.maxRetainedFiles 10
@@ -69,7 +69,8 @@ spark.executor.logs.rolling.maxRetainedFiles 10
                          conf_file=spark_defaults_file,
                          install_role=install_role,
                          spark_masters=spark_masters,
-                         dfs_nameservice=dfs_nameservice)
+                         dfs_nameservice=dfs_nameservice,
+                         spark_cluster_id=spark_cluster_id)
     print("生成配置文件完成")
 
     set_permissions(spark_home_dir)

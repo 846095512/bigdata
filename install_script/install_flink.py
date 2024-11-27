@@ -163,6 +163,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
 
     if install_role == "cluster":
         exec_shell_command(f"mkdir -p {flink_home_dir}/data/zookeeper")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/ha")
         generate_config_file(
             template_str=zk_conf_template,
             conf_file=zk_conf_file,
