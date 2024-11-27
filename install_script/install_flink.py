@@ -168,10 +168,11 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
         print("flink standalone集群启动完成")
 
     if install_role == "standalone":
-        # exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
-        # exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
-        # exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
-        # exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
+        exec_shell_command(f"mkdir -p {flink_home_dir}/conf/hadoop")
 
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
