@@ -72,6 +72,8 @@ spark.kafka.consumer.cache.enabled true
 spark.sql.shuffle.partitions     200                                  
 spark.sql.files.maxPartitionBytes 134217728                            
 spark.sql.cache.serializer        org.apache.spark.storage.SnappyCompressionCodec 
+spark.sql.parquet.cacheMetadata true
+spark.sql.parquet.filterPushdown true
 
 # Spark MLlib 配置
 spark.mllib.regParam              0.01                                
