@@ -110,7 +110,7 @@ def unzip_package():
     print(f"目录移动完成  {old_path} -> {new_path}")
 
 
-def generate_config_file(template_str, conf_file, keyword, **kwargs):
+def generate_config_file(template_str, conf_file, keyword="", **kwargs):
     template = Template(template_str)
     config_content = template.render(kwargs)
     if keyword == "":

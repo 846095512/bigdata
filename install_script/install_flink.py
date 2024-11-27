@@ -105,7 +105,7 @@ admin.enableServer="false"
 admin.serverPort=9999
 {% if install_role == "cluster" %}
 {% for ip in install_ip %}
-server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
+server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
 {% endfor %}
 {% endif %}    
 """
@@ -127,11 +127,11 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     exec_shell_command(f"mkdir -p {flink_home_dir}/tmp")
     exec_shell_command(f"mkdir -p {flink_home_dir}/hadoop")
     exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
+    exec_shell_command(f"mv {zk_conf_file} {zk_conf_file}.template")
 
     generate_config_file(
         template_str=flink_conf_template,
         conf_file=flink_conf_file,
-        keyword="",
         install_role=install_role,
         local_ip=local_ip,
         jm_rpc_port=jm_rpc_port,
@@ -152,7 +152,6 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
         generate_config_file(
             template_str=zk_conf_template,
             conf_file=zk_conf_file,
-            keyword="",
             install_role=install_role,
             install_ip=install_ip
         )
@@ -160,6 +159,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
             if local_ip == install_ip[myid]:
                 with open(f"{flink_home_dir}/data/zookeeper", "w") as f1:
                     f1.write(myid)
+        exec_shell_command(f"mkdir - p {flink_home_dir}/data/zookeeper")
         exec_shell_command(f"{flink_bin_dir}/start-zookeeper-quorum.sh start")
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")

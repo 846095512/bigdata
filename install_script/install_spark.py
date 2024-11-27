@@ -57,7 +57,6 @@ spark.executor.logs.rolling.maxRetainedFiles 10
     generate_config_file(template_str=spark_env_template,
                          conf_file=spark_env_file,
                          install_role=install_role,
-                         keyword="",
                          local_ip=local_ip,
                          spark_home_dir=spark_home_dir,
                          spark_conf_dir=spark_conf_dir,
@@ -68,7 +67,6 @@ spark.executor.logs.rolling.maxRetainedFiles 10
                          )
     generate_config_file(template_str=spark_defaults_template,
                          conf_file=spark_defaults_file,
-                         keyword="",
                          install_role=install_role,
                          spark_masters=spark_masters,
                          dfs_nameservice=dfs_nameservice)

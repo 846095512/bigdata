@@ -37,7 +37,6 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     generate_config_file(
         template_str=zoo_conf_template,
         conf_file=zk_conf_file,
-        keyword="",
         install_role=install_role,
         install_ip=install_ip,
         zk_home_dir=zk_home_dir,

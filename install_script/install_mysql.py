@@ -184,7 +184,6 @@ interactive_timeout
 
     generate_config_file(template_str=my_cnf_template,
                          conf_file=my_cnf_file,
-                         keyword="",
                          mysql_home_dir=mysql_home_dir,
                          current_user=current_user,
                          local_ip=local_ip,
