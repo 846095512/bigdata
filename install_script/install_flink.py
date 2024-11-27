@@ -101,7 +101,7 @@ autopurge.purgeInterval=12
 maxClientCnxns=1000
 minSessionTimeout=10000
 maxSessionTimeout=60000
-admin.enableServer="false"
+admin.enableServer=false
 admin.serverPort=9999
 {% if install_role == "cluster" %}
 {% for ip in install_ip %}
@@ -156,7 +156,8 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
             template_str=zk_conf_template,
             conf_file=zk_conf_file,
             install_role=install_role,
-            install_ip=install_ip
+            install_ip=install_ip,
+            flink_home_dir=flink_home_dir
         )
         for myid in range(len(install_ip)):
             if local_ip == install_ip[myid]:
