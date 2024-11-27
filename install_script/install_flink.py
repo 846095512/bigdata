@@ -8,7 +8,7 @@ def install_flink():
 jobmanager.rpc.address: {{ local_ip }}
 jobmanager.rpc.port: {{ jm_rpc_port }}
 rest.port: {{ jm_rest_port }}
-jobmanager.memory.process.size: { jvm_heapsize }}
+jobmanager.memory.process.size: {{ jvm_heapsize }}
 taskmanager.memory.process.size: {{ jvm_heapsize }}
 taskmanager.numberOfTaskSlots: {{ task_slots }}
 parallelism.default: {{ parallelism }}
