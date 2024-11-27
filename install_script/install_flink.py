@@ -83,7 +83,7 @@ high-availability.zookeeper.path.root: /{{ flink_cluster_id }}
 high-availability.zookeeper.quorum: {{ zk_addr}}
 {% endif %}
 
-{% if install_role == "standalone"%}
+{% if install_role == "standalone" or install_role == "cluster" %}
 jobmanager.archive.fs.dir: file://{{ flink_home_dir }}/data/archive
 historyserver.archive.fs.dir: file://{{ flink_home_dir }}/data/archive
 {% else %}
@@ -125,7 +125,9 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
     flink_bin_dir = os.path.join(flink_home_dir, 'bin')
     jvm_options = f"-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Djava.io.tmpdir={flink_home_dir}/tmp"
     exec_shell_command(f"mkdir -p {flink_home_dir}/tmp")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/hadoop")
+    exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
+    exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
+    exec_shell_command(f"mkdir -p {flink_home_dir}/conf/hadoop")
     exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
     exec_shell_command(f"mv {zk_conf_file} {zk_conf_file}.template")
 
@@ -149,6 +151,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
     )
 
     if install_role == "cluster":
+        exec_shell_command(f"mkdir -p {flink_home_dir}/data/zookeeper")
         generate_config_file(
             template_str=zk_conf_template,
             conf_file=zk_conf_file,
@@ -157,9 +160,10 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
         )
         for myid in range(len(install_ip)):
             if local_ip == install_ip[myid]:
-                with open(f"{flink_home_dir}/data/zookeeper", "w") as f1:
+                with open(f"{flink_home_dir}/data/zookeeper/myid", "w") as f1:
                     f1.write(myid)
-        exec_shell_command(f"mkdir - p {flink_home_dir}/data/zookeeper")
+
+
         exec_shell_command(f"{flink_bin_dir}/start-zookeeper-quorum.sh start")
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
@@ -169,9 +173,6 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
     if install_role == "standalone":
         exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
         exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
-        exec_shell_command(f"mkdir -p {flink_home_dir}/conf/hadoop")
 
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
