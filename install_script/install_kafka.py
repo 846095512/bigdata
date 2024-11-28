@@ -112,3 +112,7 @@ controlled.shutdown.max.retries=3
             broker=broker,
             kraft_enable=kraft_enable
         )
+
+if __name__ == '__main__':
+    unzip_package()
+    install_kafka()
