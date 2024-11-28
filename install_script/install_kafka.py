@@ -77,7 +77,7 @@ controlled.shutdown.max.retries=3
     exec_shell_command(f"mv {server_conf} {server_conf}.template")
 
     kraft_enable = params_dict["kraft.enable"]
-    if kraft_enable:
+    if kraft_enable == "true":
         controller_list = params_dict["controller.list"]
         if local_ip in broker_list and local_ip in controller_list:
             process_roles = "broker,controller"
