@@ -1,15 +1,18 @@
 {
     "filename":"mysql-8.4.3-linux-glibc2.28-x86_64.tar.xz",
-    "module.name":"mysql",
+    "module.name":"kafka",
 
     "local.ip":"192.168.176.11",
     "install.role":"standalone",
     "install.ip":["192.168.176.11"],
+    "broker.list": ["192.168.176.11"],
+    "controller.list": ["192.168.176.11"],
+    "kraft.enable": false,
+
+
 
     "is.master": "false",
     "dfs.nameservice":"192.168.176.134:9000",
-
-
     "namenode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "resourcemanager.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "journalnode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
@@ -18,12 +21,7 @@
     "yarn.cluster.id":"yarncluster",
     "yarn.mem":"1024",
     "yarn.cpu":"1",
-
-
-
     "spark.master.ip":["192.168.176.134"],
     "spark.cluster.id":"sparkcluster",
-
     "innodb.buffer.size":"1g"
-
 }

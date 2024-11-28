@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
 import math
+import sys
 
 from commons import *
 
 
 def install_kafka():
-    kafka_conf_template="""
+    kafka_conf_template = """
 # 基础配置
-broker.id={{ broker_id }}
 {% if kraft_enable == "true" %}
-process.roles=broker,controller
-listeners=PLAINTEXT://{{ broker_list }},CONTROLLER://{{ controller_list }}
-advertised.listeners=PLAINTEXT://{{ local_ip }},
-controller.quorum.voters={{ broker_id }}@{{ local_ip }}
+node.id={{ broker_id }}
+process.roles={{ process_roles }}
+listeners={{ broker }},{{ controller }}
+advertised.listeners={{ broker }}
+controller.quorum.voters={{ controller_quorums }}
 listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+inter.broker.listener.name=PLAINTEXT
+controller.listener.names=CONTROLLER
 {% else %}
-listeners=PLAINTEXT://{{ broker_list }}
-advertised.listeners=PLAINTEXT://{{ local_ip }}
+broker.id={{ broker_id }}
+listeners={{ broker }}
+advertised.listeners={{ broker }}
 zookeeper.connect={{ zk_addr }}
 zookeeper.connection.timeout.ms=3000
 listener.security.protocol.map=PLAINTEXT:PLAINTEXT
@@ -25,7 +29,9 @@ listener.security.protocol.map=PLAINTEXT:PLAINTEXT
 num.partitions={{ partitions_default }}
 min.insync.replicas={{ partitions_default }}
 default.replication.factor={{ partitions_default }}
-
+offsets.topic.replication.factor={{ partitions_default }}
+transaction.state.log.replication.factor={{ partitions_default }}
+transaction.state.log.min.isr={{ partitions_default }}
 # 日志存储
 log.dirs={{ kafka_home_dir }}/message
 log.retention.hours=3
@@ -59,10 +65,50 @@ controlled.shutdown.max.retries=3
     app_home_dir = get_app_home_dir()
     kafka_home_dir = os.path.join(app_home_dir, module_name)
     partitions_default = math.ceil(len(install_ip) / 2)
+    broker_list = params_dict["broker.list"]
+    broker = f"PLAINTEXT://{local_ip}:9092"
+    server_conf = os.path.join(kafka_home_dir, "config", "server.properties")
+    kraft_conf = os.path.join(kafka_home_dir, "config", "kraft", "server.properties")
+    bin_dir = os.path.join(kafka_home_dir, "bin")
+    broker_id = 0
     for i in len(install_ip):
         if local_ip == install_ip.index(i):
             broker_id = i
-    if params_dict["kraft.enable"]:
-        pass
+    exec_shell_command(f"mv {server_conf} {server_conf}.template")
+
+    kraft_enable = params_dict["kraft.enable"]
+    if kraft_enable:
+        controller_list = params_dict["controller.list"]
+        if local_ip in broker_list and local_ip in controller_list:
+            process_roles = "broker,controller"
+        elif local_ip in broker_list:
+            process_roles = "broker"
+        elif local_ip in controller_list:
+            process_roles = "controller"
+        else:
+            print("本机ip不在broker或controller列表内,请检查安装参数")
+            sys.exit(1)
+        controller = f"CONTROLLER://{local_ip}:9093"
+        controller_quorums = ",".join([f"{controller_list.index(ip)}@{ip}:9093" for ip in controller_list])
+        generate_config_file(
+            template_str=kafka_conf_template,
+            conf_file=kraft_conf,
+            broker=broker,
+            process_roles=process_roles,
+            controller_quorums=controller_quorums,
+            controller=controller,
+            kraft_enable=kraft_enable,
+            node_id=broker_id,
+            partitions_default=partitions_default
+        )
     else:
         zk_addr = params_dict["zookeeper.address"]
+        generate_config_file(
+            template_str=kafka_conf_template,
+            conf_file=server_conf,
+            broker_id=broker_id,
+            partitions_default=partitions_default,
+            zk_addr=zk_addr,
+            broker=broker,
+            kraft_enable=kraft_enable
+        )
