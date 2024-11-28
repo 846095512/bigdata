@@ -23,3 +23,6 @@ def init_os_conf():
 
     # cpu性能调度模式
     exec_shell_command("echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+
+if __name__ == '__main__':
+    init_os_conf()
