@@ -71,7 +71,7 @@ controlled.shutdown.max.retries=3
     kraft_conf = os.path.join(kafka_home_dir, "config", "kraft", "server.properties")
     bin_dir = os.path.join(kafka_home_dir, "bin")
     broker_id = 0
-    for i in len(install_ip):
+    for i in range(len(install_ip)):
         if local_ip == install_ip.index(i):
             broker_id = i
     exec_shell_command(f"mv {server_conf} {server_conf}.template")
