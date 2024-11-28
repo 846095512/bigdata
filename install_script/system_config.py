@@ -6,7 +6,6 @@ from commons import exec_shell_command
 
 
 def init_os_conf():
-
     if os.getlogin() != 'root':
         print("请用root用户执行系统优化脚本")
         sys.exit(1)
@@ -31,6 +30,7 @@ def init_os_conf():
 
     # cpu性能调度模式
     exec_shell_command("echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+
 
 if __name__ == '__main__':
     init_os_conf()
