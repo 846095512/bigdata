@@ -78,6 +78,7 @@ controlled.shutdown.max.retries=3
         if local_ip == install_ip[i]:
             broker_id = i
     exec_shell_command(f"mv {server_conf} {server_conf}.template")
+    exec_shell_command(f"mv {kraft_conf} {kraft_conf}.template")
 
     kraft_enable = params_dict["kraft.enable"]
     if kraft_enable == "true":
