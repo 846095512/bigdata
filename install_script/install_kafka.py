@@ -11,7 +11,7 @@ def install_kafka():
 {% if kraft_enable == "true" %}
 node.id={{ node_id }}
 process.roles={{ process_roles }}
-listeners={{ broker }},{{ controller }}
+listeners={{ listeners }}
 advertised.listeners={{ broker }}
 controller.quorum.voters={{ controller_quorums }}
 listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
@@ -64,7 +64,10 @@ controlled.shutdown.max.retries=3
 """
     app_home_dir = get_app_home_dir()
     kafka_home_dir = os.path.join(app_home_dir, module_name)
-    partitions_default = math.ceil(len(install_ip) / 2)
+    if len(install_ip) % 2 == 0:
+        partitions_default = math.ceil((len(install_ip) / 2) + 1)
+    else:
+        partitions_default = math.ceil(len(install_ip) / 2)
     broker_list = params_dict["broker.list"]
     broker = f"PLAINTEXT://{local_ip}:9092"
     server_conf = os.path.join(kafka_home_dir, "config", "server.properties")
@@ -79,17 +82,20 @@ controlled.shutdown.max.retries=3
     kraft_enable = params_dict["kraft.enable"]
     if kraft_enable == "true":
         node_id = broker_id
+        controller = f"CONTROLLER://{local_ip}:9093"
         controller_list = params_dict["controller.list"]
         if local_ip in broker_list and local_ip in controller_list:
             process_roles = "broker,controller"
+            listeners = f"{broker},{controller}"
         elif local_ip in broker_list:
             process_roles = "broker"
+            listeners = f"{broker}"
         elif local_ip in controller_list:
             process_roles = "controller"
+            listeners = f"{controller}"
         else:
             print("本机ip不在broker或controller列表内,请检查安装参数")
             sys.exit(1)
-        controller = f"CONTROLLER://{local_ip}:9093"
         controller_quorums = ",".join([f"{controller_list.index(ip)}@{ip}:9093" for ip in controller_list])
         generate_config_file(
             template_str=kafka_conf_template,
@@ -98,9 +104,11 @@ controlled.shutdown.max.retries=3
             process_roles=process_roles,
             controller_quorums=controller_quorums,
             controller=controller,
+            listeners=listeners,
             kraft_enable=kraft_enable,
             node_id=node_id,
-            partitions_default=partitions_default
+            partitions_default=partitions_default,
+            kafka_home_dir=kafka_home_dir
         )
     else:
         zk_addr = params_dict["zookeeper.address"]
@@ -111,8 +119,10 @@ controlled.shutdown.max.retries=3
             partitions_default=partitions_default,
             zk_addr=zk_addr,
             broker=broker,
-            kraft_enable=kraft_enable
+            kraft_enable=kraft_enable,
+            kafka_home_dir=kafka_home_dir
         )
+
 
 if __name__ == '__main__':
     unzip_package()
