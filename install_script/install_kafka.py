@@ -9,7 +9,7 @@ def install_kafka():
     kafka_conf_template = """
 # 基础配置
 {% if kraft_enable == "true" %}
-node.id={{ broker_id }}
+node.id={{ node_id }}
 process.roles={{ process_roles }}
 listeners={{ broker }},{{ controller }}
 advertised.listeners={{ broker }}
@@ -78,6 +78,7 @@ controlled.shutdown.max.retries=3
 
     kraft_enable = params_dict["kraft.enable"]
     if kraft_enable == "true":
+        node_id = broker_id
         controller_list = params_dict["controller.list"]
         if local_ip in broker_list and local_ip in controller_list:
             process_roles = "broker,controller"
@@ -98,7 +99,7 @@ controlled.shutdown.max.retries=3
             controller_quorums=controller_quorums,
             controller=controller,
             kraft_enable=kraft_enable,
-            node_id=broker_id,
+            node_id=node_id,
             partitions_default=partitions_default
         )
     else:
