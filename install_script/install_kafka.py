@@ -85,6 +85,8 @@ controlled.shutdown.max.retries=3
         node_id = broker_id
         controller = f"CONTROLLER://{local_ip}:9093"
         controller_list = params_dict["controller.list"]
+        controller_quorums = ",".join([f"{controller_list.index(ip)}@{ip}:9093" for ip in controller_list])
+
         if local_ip in broker_list and local_ip in controller_list:
             process_roles = "broker,controller"
             listeners = f"{broker},{controller}"
@@ -97,7 +99,6 @@ controlled.shutdown.max.retries=3
         else:
             print("本机ip不在broker或controller列表内,请检查安装参数")
             sys.exit(1)
-        controller_quorums = ",".join([f"{controller_list.index(ip)}@{ip}:9093" for ip in controller_list])
         generate_config_file(
             template_str=kafka_conf_template,
             conf_file=kraft_conf,
