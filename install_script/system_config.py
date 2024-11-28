@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
+
 from commons import exec_shell_command
 
 
 def init_os_conf():
+
+    if os.getlogin() != 'root':
+        print("请用root用户执行系统优化脚本")
+        sys.exit(1)
+
     # 交换分区
     exec_shell_command("swapoff -a")
     exec_shell_command("sed -i '/swap/s/^/#/' /etc/fstab")
