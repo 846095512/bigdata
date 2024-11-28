@@ -1,5 +1,5 @@
 {
-    "file":"mysql-8.4.3-linux-glibc2.28-x86_64.tar.xz",
+    "filename":"mysql-8.4.3-linux-glibc2.28-x86_64.tar.xz",
     "module.name":"mysql",
 
     "local.ip":"192.168.176.11",
@@ -13,7 +13,7 @@
     "namenode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "resourcemanager.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "journalnode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
-    "zk.addr":"10.238.111.50:2181,10.238.111.51:2181,10.238.111.52:2181",
+    "zookeeper.address":"10.238.111.50:2181,10.238.111.51:2181,10.238.111.52:2181",
     "jvm.heapsize":"1g",
     "yarn.cluster.id":"yarncluster",
     "yarn.mem":"1024",

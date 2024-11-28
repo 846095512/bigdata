@@ -54,3 +54,7 @@ message.max.bytes=20971520
 controlled.shutdown.enable=true
 controlled.shutdown.max.retries=3
 """
+    if params_dict["kraft.enable"]:
+        pass
+    else:
+        zk_addr = params_dict["zookeeper.address"]

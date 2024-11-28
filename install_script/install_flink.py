@@ -109,7 +109,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
     if install_role == "cluster":
         zk_addr = ",".join([f"{ip}:2181" for ip in install_ip])
     else:
-        zk_addr = params_dict["zk.addr"]
+        zk_addr = params_dict["zookeeper.address"]
     jvm_heapsize = params_dict["jvm.heapsize"]
     task_slots, stderr, code = exec_shell_command("nproc")
     history_server_port = 8082

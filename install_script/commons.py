@@ -15,7 +15,7 @@ script_path = os.path.dirname(os.path.abspath(__file__))
 with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
     params_dict = json.load(f)
 
-filename = params_dict["file"]
+filename = params_dict["filename"]
 module_name = params_dict["module.name"]
 local_ip = params_dict["local.ip"]
 install_role = params_dict["install.role"]

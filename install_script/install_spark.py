@@ -82,7 +82,7 @@ spark.mllib.numIterations               10
 
     jvm_heapsize = params_dict["jvm.heapsize"]
     dfs_nameservice = params_dict["dfs.nameservice"]
-    zk_addr = params_dict["zk.addr"]
+    zk_addr = params_dict["zookeeper.address"]
     spark_master_ips = params_dict["spark.master.ip"]
 
     is_valid_ip(local_ip, spark_master_ips)
