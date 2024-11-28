@@ -12,14 +12,14 @@ def init_os_conf():
     exec_shell_command("echo never > /sys/kernel/mm/transparent_hugepage/defrag")
 
     # 系统文件描述符 进程限制
-    exec_shell_command("echo '* soft nofile 1000000'  > /etc/security/limits.conf")
-    exec_shell_command("echo '* hard nofile 1000000'  > /etc/security/limits.conf")
-    exec_shell_command("echo '* soft nproc 1000000'  > /etc/security/limits.conf")
-    exec_shell_command("echo '* hard nproc 1000000'  > /etc/security/limits.conf")
+    exec_shell_command("echo '* soft nofile 1000000'  >> /etc/security/limits.conf")
+    exec_shell_command("echo '* hard nofile 1000000'  >> /etc/security/limits.conf")
+    exec_shell_command("echo '* soft nproc 1000000'  >> /etc/security/limits.conf")
+    exec_shell_command("echo '* hard nproc 1000000'  >> /etc/security/limits.conf")
 
     # 防火墙
-    exec_shell_command("systemctl stop firewalld.service")
-    exec_shell_command("systemctl disable firewalld.service")
+    exec_shell_command("systemctl stop firewalld")
+    exec_shell_command("systemctl disable firewalld")
 
     # cpu性能调度模式
     exec_shell_command("echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
