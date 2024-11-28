@@ -18,8 +18,8 @@ def init_os_conf():
     exec_shell_command("echo '* hard nproc 1000000'  >> /etc/security/limits.conf")
 
     # 防火墙
-    exec_shell_command("sudo systemctl stop firewalld")
-    exec_shell_command("sudo systemctl disable firewalld")
+    exec_shell_command("systemctl stop firewalld")
+    exec_shell_command("systemctl disable firewalld")
 
     # cpu性能调度模式
     exec_shell_command("echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
