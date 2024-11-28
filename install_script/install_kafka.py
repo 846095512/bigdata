@@ -72,7 +72,7 @@ controlled.shutdown.max.retries=3
     bin_dir = os.path.join(kafka_home_dir, "bin")
     broker_id = 0
     for i in range(len(install_ip)):
-        if local_ip == install_ip.index[i]:
+        if local_ip == install_ip[i]:
             broker_id = i
     exec_shell_command(f"mv {server_conf} {server_conf}.template")
 
