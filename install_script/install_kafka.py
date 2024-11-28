@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import math
+
 from commons import *
 
 
@@ -10,7 +12,7 @@ broker.id={{ broker_id }}
 process.roles=broker,controller
 listeners=PLAINTEXT://{{ broker_list }},CONTROLLER://{{ controller_list }}
 advertised.listeners=PLAINTEXT://{{ local_ip }},
-controller.quorum.voters={{ broker_id }}@{{ local_ip }}:9093 # 逗号分隔
+controller.quorum.voters={{ broker_id }}@{{ local_ip }}
 listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
 {% else %}
 listeners=PLAINTEXT://{{ broker_list }}
@@ -54,6 +56,12 @@ message.max.bytes=20971520
 controlled.shutdown.enable=true
 controlled.shutdown.max.retries=3
 """
+    app_home_dir = get_app_home_dir()
+    kafka_home_dir = os.path.join(app_home_dir, module_name)
+    partitions_default = math.ceil(len(install_ip) / 2)
+    for i in len(install_ip):
+        if local_ip == install_ip.index(i):
+            broker_id = i
     if params_dict["kraft.enable"]:
         pass
     else:

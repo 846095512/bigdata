@@ -400,17 +400,13 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     dfs_nameservice = params_dict["dfs.nameservice"]
     yarn_cluster_id = params_dict["yarn.cluster.id"]
     zk_addr = params_dict["zookeeper.address"]
-    module = params_dict["module.name"]
     yarn_mem = params_dict["yarn.mem"]
     yarn_cpu = params_dict["yarn.cpu"]
     jvm_heap_size = params_dict["jvm.heapsize"]
-    if len(install_ip) == 1:
-        dfs_replication = 1
-    else:
-        dfs_replication = math.ceil(len(install_ip) / 2)
 
+    dfs_replication = math.ceil(len(install_ip) / 2)
     app_home_dir = get_app_home_dir()
-    hadoop_home_dir = os.path.join(app_home_dir, module)
+    hadoop_home_dir = os.path.join(app_home_dir, module_name)
     hadoop_conf_dir = os.path.join(hadoop_home_dir, "etc/hadoop")
     hadoop_bin_dir = os.path.join(hadoop_home_dir, "bin")
     hadoop_data_dir = os.path.join(hadoop_home_dir, "data")
