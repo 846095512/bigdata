@@ -55,6 +55,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     exec_shell_command(f"sed -i '/export SERVER_JVMFLAGS=/s/^/#/'  {zk_env_file}")
     exec_shell_command(f"sed -i '/ZK_CLIENT_HEAP=/s/^/#/'  {zk_env_file}")
     exec_shell_command(f"sed -i '/export CLIENT_JVMFLAGS=/s/^/#/'  {zk_env_file}")
+    exec_shell_command(f"echo 'export ZOOKEEPER_HOME={zk_home_dir}' >> {zk_env_file}")
 
     set_permissions(zk_home_dir)
     print("zk 安装完成")
