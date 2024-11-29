@@ -40,10 +40,11 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
         install_ip=install_ip,
         zk_home_dir=zk_home_dir,
     )
-    for id in range(len(install_ip)):
-        if local_ip == install_ip[id]:
-            with open(zk_myid_file, "w") as f1:
-                f1.write(str(id))
+    if install_role == "cluster":
+        for id in range(len(install_ip)):
+            if local_ip == install_ip[id]:
+                with open(zk_myid_file, "w") as f1:
+                    f1.write(str(id))
     exec_shell_command(f"mkdir -p {zk_home_dir}/tmp")
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
 
