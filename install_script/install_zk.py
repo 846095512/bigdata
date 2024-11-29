@@ -48,10 +48,8 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     exec_shell_command(f"mkdir -p {zk_home_dir}/tmp")
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
 
-    exec_shell_command(
-        f"echo \"export GC_OPTS='-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof -Djava.io.tmpdir={zk_home_dir}/tmp' \" >> {java_env_file}")
-    exec_shell_command(
-        f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} ${{GC_OPTS}} ${{JVMFLAGS}}'\" >> {java_env_file}")
+    exec_shell_command(f"""echo 'export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof -Djava.io.tmpdir={zk_home_dir}/tmp"  >> {java_env_file}' """)
+    exec_shell_command(f"""echo 'export JVMFLAGS="-Xms{jvm_heap_size} -Xmx{jvm_heap_size} ${{GC_OPTS}} ${{JVMFLAGS}}" ' >> {java_env_file}""")
 
     exec_shell_command(f"sed -i '/ZK_SERVER_HEAP=/s/^/#/'  {zk_env_file}")
     exec_shell_command(f"sed -i '/export SERVER_JVMFLAGS=/s/^/#/'  {zk_env_file}")
