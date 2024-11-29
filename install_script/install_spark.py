@@ -10,16 +10,20 @@ export SPARK_LOCAL_DIRS={{ spark_home_dir }}/tmp
 export SPARK_CONF_DIR={{ spark_conf_dir }}
 export YARN_CONF_DIR={{ spark_conf_dir }}
 export SPARK_MASTER_PORT=7077
+export SPARK_MASTER_REST_ENABLED=true
+export SPARK_MASTER_REST_PORT=6066
 export SPARK_MASTER_WEBUI_PORT=10090
-export SPARK_MASTER_OPTS="-Xloggc:{{ spark_home_dir }}/logs/master-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/master-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError  -Dspark.master.rest.enabled=true -Dspark.master.rest.port=6066"
 export SPARK_WORKER_PORT=7078
 export SPARK_WORKER_WEBUI_PORT=10091
-export SPARK_WORKER_OPTS="-Xloggc:{{ spark_home_dir }}/logs/worker-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/worker-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=3600 -Dspark.worker.cleanup.appDataTtl=86400"
 export SPARK_WORKER_DIRS={{ spark_home_dir }}/work
 export SPARK_LOG_DIR={{ spark_home_dir }}/log
 export SPARK_PID_DIR={{ spark_home_dir }}/pid
 export SPARK_DAEMON_MEMORY={{ jvm_heapsize }}
-export SPARK_HISTORY_OPTS="-Xloggc:{{ spark_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/historyserver-heapdump.hprof -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Dspark.history.ui.port=18080 -Dspark.history.fs.cleaner.enabled=true -Dspark.history.fs.cleaner.interval=3d -Dspark.history.fs.cleaner.maxAge=14d -Dspark.history.fs.logDirectory=hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/history"
+export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
+export SPARK_SUBMIT_OPTS="-Djava.io.tmpdir={{ spark_home_dir }}/tmp -Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=3600 -Dspark.worker.cleanup.appDataTtl=86400 -Dspark.history.ui.port=18080 -Dspark.history.fs.cleaner.enabled=true -Dspark.history.fs.cleaner.interval=3d -Dspark.history.fs.cleaner.maxAge=14d -Dspark.history.fs.logDirectory=hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/history"
+export SPARK_MASTER_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/master-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/master-heapdump.hprof"
+export SPARK_WORKER_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/worker-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/worker-heapdump.hprof"
+export SPARK_HISTORY_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/historyserver-heapdump.hprof"
 {% if cluster_role == "standalone" %}
 export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=zookeeper://{{ zk_addr }} -Dspark.deploy.zookeeper.dir=/{{ spark_cluster_id }}"
 {% endif %}

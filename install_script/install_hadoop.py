@@ -38,6 +38,14 @@ def install_hadoop():
         <name>hadoop.http.cross-origin.max-age</name>
         <value>1800</value>
     </property>
+     <property>
+        <name>hadoop.proxyuser.*.groups</name>
+        <value>*</value>
+    </property>
+    <property>
+        <name>hadoop.proxyuser.*.hosts</name>
+        <value>*</value>
+    </property>
 
     {% if install_role == 'cluster' %}
     <!--  ha配置  -->
@@ -383,13 +391,13 @@ export YARN_RESOURCEMANAGER_USER={{ current_user }}
 export YARN_NODEMANAGER_USER={{ current_user }}
 export MAPRED_HISTORYSERVER_USER={{ current_user }}
 
-
-export HDFS_NAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/namenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/namenode-heapdump.hprof"
-export HDFS_DATANODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
-export HDFS_SECONDARYNAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/secondarynamenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/secondarynamenode-heapdump.hprof"
-export YARN_RESOURCEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
-export YARN_NODEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/resourcemanager-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/resourcemanager-heapdump.hprof"
-export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} {{ hadoop_opts }} -Xloggc:{{ hadoop_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/historyserver-heapdump.hprof"
+export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
+export HDFS_NAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/namenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/namenode-heapdump.hprof"
+export HDFS_DATANODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
+export HDFS_SECONDARYNAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/secondarynamenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/secondarynamenode-heapdump.hprof"
+export YARN_RESOURCEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
+export YARN_NODEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/resourcemanager-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/resourcemanager-heapdump.hprof"
+export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/historyserver-heapdump.hprof"
 """
 
     namenode_list = params_dict["namenode.list"]
@@ -416,7 +424,6 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     hdfs_conf = os.path.join(hadoop_conf_dir, "hdfs-site.xml")
     yarn_conf = os.path.join(hadoop_conf_dir, "yarn-site.xml")
     mapred_conf = os.path.join(hadoop_conf_dir, "mapred-site.xml")
-    hadoop_opts = "-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
     hadoop_classpath = exec_shell_command(f"{hadoop_bin_dir}/hadoop classpath")
 
     with open(fencing_file, "w", encoding="utf-8") as f1:
@@ -477,7 +484,6 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         current_user=current_user,
         hadoop_home_dir=hadoop_home_dir,
         hadoop_conf_dir=hadoop_conf_dir,
-        hadoop_opts=hadoop_opts,
         jvm_heap_size=jvm_heap_size
     )
 

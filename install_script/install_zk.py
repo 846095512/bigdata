@@ -45,13 +45,16 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
         if local_ip == install_ip[id]:
             with open(zk_myid_file, "w") as f1:
                 f1.write(id)
-
+    exec_shell_command(f"mkdir -p {zk_home_dir}/tmp")
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
     exec_shell_command(
         f"sed -i \"s/zookeeper.root.logger=.*/zookeeper.root.logger=INFO, ROLLINGFILE/g\" {zk_log4j_file}")
+    exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_log4j_file}")
+
     exec_shell_command(
-        f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof $JVMFLAGS'\" > {java_env_file}")
-    exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_env_file}")
+        f"echo \"export GC_OPTS='-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof' -Djava.io.tmpdir={zk_home_dir}/tmp\" >> {java_env_file}")
+    exec_shell_command(
+        f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} $GC_OPTS $JVMFLAGS'\" >> {java_env_file}")
 
     exec_shell_command(f"head -n -7 {zk_log4j_file} > {zk_env_file}")
     set_permissions(zk_home_dir)

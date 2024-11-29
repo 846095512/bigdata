@@ -15,10 +15,10 @@ parallelism.default: {{ parallelism }}
 env.java.home: {{ flink_home_dir }}/jdk
 env.log.dir: {{ flink_home_dir }}/log
 env.pid.dir: {{ flink_home_dir }}/pid
-io.tmp.dirs: {{ flink_home_dir }}/tmp
+env.java.opts: {{ jvm_options }}
 env.hadoop.conf.dir: {{ flink_home_dir }}/conf/hadoop
-jobmanager.jvm-options: {{ jvm_options }}
-taskmanager.heap.size: {{ jvm_options }}
+io.tmp.dirs: {{ flink_home_dir }}/tmp
+taskmanager.heap.size: {{ jvm_heapsize }}
 
 # checkpoint 状态后端
 execution.checkpointing.interval: 30000
@@ -38,7 +38,6 @@ restart-strategy.failure-rate.failure-rate-interval: 600s
 restart-strategy.failure-rate.delay: 10s
 
 # 历史服务器
-historyserver.jvm-options: {{ jvm_options }}
 historyserver.archive.clean-expired-jobs.retention-time: 30d
 historyserver.archive.fs.refresh-interval: 300s
 historyserver.archive.clean-expired-jobs: true
@@ -121,7 +120,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
     flink_conf_file = os.path.join(flink_home_dir, 'conf', 'config.yaml')
     zk_conf_file = os.path.join(flink_home_dir, 'conf', 'zoo.cfg')
     flink_bin_dir = os.path.join(flink_home_dir, 'bin')
-    jvm_options = f"-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Djava.io.tmpdir={flink_home_dir}/tmp"
+    jvm_options = f"-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError "
     exec_shell_command(f"mkdir -p {flink_home_dir}/tmp")
     exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
     exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
