@@ -16,7 +16,7 @@ minSessionTimeout=10000
 maxSessionTimeout=60000
 admin.enableServer="false"
 admin.serverPort=9999
-{% if install_role = "cluster" %}
+{% if install_role == "cluster" %}
 {% for ip in install_ip %}
 server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
 {% endfor %}
@@ -44,7 +44,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     for id in range(len(install_ip)):
         if local_ip == install_ip[id]:
             with open(zk_myid_file, "w") as f1:
-                f1.write(id)
+                f1.write(str(id))
     exec_shell_command(f"mkdir -p {zk_home_dir}/tmp")
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
     exec_shell_command(
