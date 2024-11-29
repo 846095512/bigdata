@@ -28,7 +28,6 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     app_home_dir = get_app_home_dir()
     zk_home_dir = os.path.join(app_home_dir, module_name)
     zk_conf_file = os.path.join(zk_home_dir, "conf", "zoo.cfg")
-    zk_log4j_file = os.path.join(zk_home_dir, "conf", "log4j.properties")
     java_env_file = os.path.join(zk_home_dir, "conf", "java.env")
     zk_env_file = os.path.join(zk_home_dir, "bin", "zkEnv.sh")
     zk_server_file = os.path.join(zk_home_dir, "bin", "zkServer.sh")
@@ -47,16 +46,13 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
                 f1.write(str(id))
     exec_shell_command(f"mkdir -p {zk_home_dir}/tmp")
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
-    exec_shell_command(
-        f"sed -i \"s/zookeeper.root.logger=.*/zookeeper.root.logger=INFO, ROLLINGFILE/g\" {zk_log4j_file}")
-    exec_shell_command(f"sed -i \"s/ZOO_LOG4J_PROP=.*/ZOO_LOG4J_PROP=\"INFO,ROLLINGFILE\"/g\" {zk_log4j_file}")
 
     exec_shell_command(
         f"echo \"export GC_OPTS='-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -Xloggc:{zk_home_dir}/logs/gc.log -XX:HeapDumpPath={zk_home_dir}/logs/heapdump.hprof' -Djava.io.tmpdir={zk_home_dir}/tmp\" >> {java_env_file}")
     exec_shell_command(
         f"echo \"export JVMFLAGS='-Xms{jvm_heap_size} -Xmx{jvm_heap_size} $GC_OPTS $JVMFLAGS'\" >> {java_env_file}")
 
-    exec_shell_command(f"head -n -7 {zk_log4j_file} > {zk_env_file}")
+    exec_shell_command(f"head -n -7 {zk_env_file} > {zk_env_file}")
     set_permissions(zk_home_dir)
     print("zk 安装完成")
     exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start")
