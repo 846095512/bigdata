@@ -183,6 +183,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
         print("flink 集群yarn模式启动完成 ")
 
 
+
 if __name__ == '__main__':
     unzip_package()
     install_flink()
