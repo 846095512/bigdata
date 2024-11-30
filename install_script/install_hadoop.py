@@ -10,7 +10,8 @@ def kill_hadoop_service():
                     "org.apache.hadoop.hdfs.qjournal.server.JournalNode",
                     "org.apache.hadoop.yarn.server.resourcemanager.ResourceManager",
                     "org.apache.hadoop.yarn.server.nodemanager.NodeManager",
-                    "org.apache.hadoop.yarn.server.applicationhistoryservice.ApplicationHistoryServer"]
+                    "org.apache.hadoop.yarn.server.applicationhistoryservice.ApplicationHistoryServer",
+                    "org.apache.hadoop.hdfs.tools.DFSZKFailoverController"]
 
     for class_name in hadoop_class:
         stdout, stderr, code = exec_shell_command(f"ps -ef | grep {class_name} | grep -v grep | awk '{{print $2}}'")
