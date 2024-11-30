@@ -136,12 +136,16 @@ def install_hadoop():
         <value>true</value>
     </property>
     <property>
-        <name>dfs.client.failover.proxy.provider.{{ dfs_nameservice }}</name>
-        <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+        <name>dfs.ha.fencing.enabled</name>
+        <value>true</value>
     </property>
     <property>
-        <name>dfs.ha.fencing.methods</name>
-        <value>shell({{ hadoop_conf_dir }}/fencing.sh)</value>
+        <name>dfs.ha.fencing.zkfc.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>dfs.client.failover.proxy.provider.{{ dfs_nameservice }}</name>
+        <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
     </property>
     <property>
         <name>dfs.namenode.shared.edits.dir</name>
