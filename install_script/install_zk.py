@@ -45,6 +45,8 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
             if local_ip == install_ip[id]:
                 with open(zk_myid_file, "w") as f1:
                     f1.write(str(id))
+                exec_shell_command(f"echo 'export ZOO_MYID={id}' >> {zk_env_file}")
+
     exec_shell_command(f"mkdir -p {zk_home_dir}/tmp")
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
 
@@ -60,8 +62,8 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
         f"sed -i 's|^export SERVER_JVMFLAGS=.*$|export SERVER_JVMFLAGS=\"-Xloggc:{zk_home_dir}/logs/server-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/server-heapdump.hprof ${{SERVER_JVMFLAGS}}\"| '  {zk_env_file}")
     exec_shell_command(
         f"sed -i 's|^export CLIENT_JVMFLAGS=.*$|export CLIENT_JVMFLAGS=\"-Xloggc:{zk_home_dir}/logs/cli-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/cli-heapdump.hprof/ ${{CLIENT_JVMFLAGS}}\"|'  {zk_env_file}")
-
     exec_shell_command(f"echo 'export ZOOKEEPER_HOME={zk_home_dir}' >> {zk_env_file}")
+
 
     set_permissions(zk_home_dir)
     print("zk 安装完成")
