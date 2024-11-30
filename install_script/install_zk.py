@@ -18,7 +18,7 @@ admin.enableServer=false
 admin.serverPort=9999
 {% if install_role == "cluster" %}
 {% for ip in install_ip %}
-server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
+server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
 {% endfor %}
 {% endif %}
 """
