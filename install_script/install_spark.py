@@ -145,7 +145,7 @@ spark.mllib.numIterations               10
             stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh")
             print(f"spark historyserver  启动成功\n {stdout}" if code == 0 else f"spark historyserver 启动失败   ->  {stderr}\n")
 
-
+    print("spark 安装完成")
 if __name__ == '__main__':
     kill_spark_service()
     unzip_package()
