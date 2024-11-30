@@ -137,11 +137,7 @@ def install_hadoop():
     </property>
     <property>
         <name>dfs.ha.fencing.methods</name>
-        <value>sshfence</value>
-    </property>
-    <property>
-        <name>dfs.ha.fencing.ssh.private-key-files</name>
-        <value>~/.ssh/id_rsa</value>
+        <value>shell(/bin/true)</value>
     </property>
     <property>
         <name>dfs.client.failover.proxy.provider.{{ dfs_nameservice }}</name>
