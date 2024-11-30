@@ -116,7 +116,7 @@ def generate_config_file(template_str, conf_file, keyword="", **kwargs):
     if keyword == "":
         insert_line_num = 1
     else:
-        insert_line_num = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
+        insert_line_num, stderr, code = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
 
     exec_shell_command(f"touch {conf_file}")
 
