@@ -55,10 +55,10 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
 
     exec_shell_command(f"sed -i '/ZK_SERVER_HEAP=/s/^/#/'  {zk_env_file}")
     exec_shell_command(
-        f"sed -i '/export SERVER_JVMFLAGS=/SERVER_JVMFLAGS=\'-Xloggc:{zk_home_dir}/logs/server-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/server-heapdump.hprof ${{SERVER_JVMFLAGS}}/\''  {zk_env_file}")
+        f"sed -i 's|^export SERVER_JVMFLAGS=.*$|export SERVER_JVMFLAGS=\"-Xloggc:{zk_home_dir}/logs/server-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/server-heapdump.hprof ${{SERVER_JVMFLAGS}}\"| '  {zk_env_file}")
     exec_shell_command(f"sed -i '/ZK_CLIENT_HEAP=/s/^/#/'  {zk_env_file}")
     exec_shell_command(
-        f"sed -i '/export CLIENT_JVMFLAGS=/CLIENT_JVMFLAGS=\'-Xloggc:{zk_home_dir}/logs/cli-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/cli-heapdump.hprof/ ${{CLIENT_JVMFLAGS}}\'/'  {zk_env_file}")
+        f"sed -i 's|^export CLIENT_JVMFLAGS=.*$|export CLIENT_JVMFLAGS=\"-Xloggc:{zk_home_dir}/logs/cli-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/cli-heapdump.hprof/ ${{CLIENT_JVMFLAGS}}\"|'  {zk_env_file}")
     exec_shell_command(f"echo 'export ZOOKEEPER_HOME={zk_home_dir}' >> {zk_env_file}")
 
     set_permissions(zk_home_dir)
