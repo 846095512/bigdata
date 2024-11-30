@@ -48,13 +48,17 @@ server.{{ install_ip.index(ip) }}={{ ip }}}:2888:3888
     exec_shell_command(f"mkdir -p {zk_home_dir}/tmp")
     exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
 
-    exec_shell_command(f"""echo 'export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError  -Djava.io.tmpdir={zk_home_dir}/tmp" '  >> {java_env_file} """)
-    exec_shell_command(f"""echo 'export JVMFLAGS="-Xms{jvm_heap_size} -Xmx{jvm_heap_size} ${{GC_OPTS}} ${{JVMFLAGS}}" ' >> {java_env_file}""")
+    exec_shell_command(
+        f"""echo 'export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError  -Djava.io.tmpdir={zk_home_dir}/tmp" '  >> {java_env_file} """)
+    exec_shell_command(
+        f"""echo 'export JVMFLAGS="-Xms{jvm_heap_size} -Xmx{jvm_heap_size} ${{GC_OPTS}} ${{JVMFLAGS}}" ' >> {java_env_file}""")
 
     exec_shell_command(f"sed -i '/ZK_SERVER_HEAP=/s/^/#/'  {zk_env_file}")
-    exec_shell_command(f"sed -i '/export SERVER_JVMFLAGS=/SERVER_JVMFLAGS=\'-Xloggc:{zk_home_dir}/logs/server-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/server-heapdump.hprof ${{SERVER_JVMFLAGS}}/\''  {zk_env_file}")
+    exec_shell_command(
+        f"sed -i '/export SERVER_JVMFLAGS=/SERVER_JVMFLAGS=\'-Xloggc:{zk_home_dir}/logs/server-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/server-heapdump.hprof ${{SERVER_JVMFLAGS}}/\''  {zk_env_file}")
     exec_shell_command(f"sed -i '/ZK_CLIENT_HEAP=/s/^/#/'  {zk_env_file}")
-    exec_shell_command(f"sed -i '/export CLIENT_JVMFLAGS=/CLIENT_JVMFLAGS=\'-Xloggc:{zk_home_dir}/logs/cli-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/cli-heapdump.hprof/ ${{CLIENT_JVMFLAGS}}\'/'  {zk_env_file}")
+    exec_shell_command(
+        f"sed -i '/export CLIENT_JVMFLAGS=/CLIENT_JVMFLAGS=\'-Xloggc:{zk_home_dir}/logs/cli-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/cli-heapdump.hprof/ ${{CLIENT_JVMFLAGS}}\'/'  {zk_env_file}")
     exec_shell_command(f"echo 'export ZOOKEEPER_HOME={zk_home_dir}' >> {zk_env_file}")
 
     set_permissions(zk_home_dir)
