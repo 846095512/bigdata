@@ -509,17 +509,22 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     if install_role == "cluster":
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
         check_service(8485, "journalnode")
-        if local_ip == install_ip[0]:
+        if local_ip == namenode_list[0]:
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-        else:
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
+        elif local_ip in namenode_list:
             check_service(8020, "namenode", [install_ip[0]])
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
+        else:
+            print(f"当前主机  {local_ip} 不是namenode节点,跳过初始化")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
-        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
+
+        if  local_ip in resourcemanager_list:
+            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
 
