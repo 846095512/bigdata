@@ -140,6 +140,10 @@ def install_hadoop():
         <value>true</value>
     </property>
     <property>
+        <name>dfs.ha.fencing.method</name>
+        <value>zkfc</value>
+    </property>
+    <property>
         <name>dfs.ha.fencing.zkfc.enabled</name>
         <value>true</value>
     </property>
