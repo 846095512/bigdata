@@ -136,20 +136,12 @@ def install_hadoop():
         <value>true</value>
     </property>
     <property>
-        <name>dfs.ha.fencing.enabled</name>
-        <value>true</value>
+        <name>dfs.ha.fencing.methods</name>
+        <value>sshfence</value>
     </property>
     <property>
-        <name>dfs.ha.fencing.method</name>
-        <value>zkfc</value>
-    </property>
-    <property>
-        <name>dfs.ha.fencing.zkfc.enabled</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>dfs.ha.fencing.zkfc.zk-address</name>
-        <value>{{ zk_addr }}</value>
+        <name>dfs.ha.fencing.ssh.private-key-files</name>
+        <value>~/.ssh/id_rsa</value>
     </property>
     <property>
         <name>dfs.client.failover.proxy.provider.{{ dfs_nameservice }}</name>
@@ -436,7 +428,6 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     hadoop_conf_dir = os.path.join(hadoop_home_dir, "etc/hadoop")
     hadoop_bin_dir = os.path.join(hadoop_home_dir, "bin")
     hadoop_data_dir = os.path.join(hadoop_home_dir, "data")
-    fencing_file = os.path.join(hadoop_conf_dir, "fencing.sh")
     hadoop_env_file = os.path.join(hadoop_conf_dir, "hadoop-env.sh")
     core_conf = os.path.join(hadoop_conf_dir, "core-site.xml")
     hdfs_conf = os.path.join(hadoop_conf_dir, "hdfs-site.xml")
@@ -520,17 +511,17 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         check_service(8485, "journalnode")
         if local_ip == namenode_list[0]:
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
-            print(f"namenode  初始化成功 {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}")
+            print(f"namenode  初始化成功\n {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}\n")
 
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
-            print(f"zkfc  初始化成功  {stdout}" if code == 0 else f"zkfc 初始化失败   ->  {stderr}")
+            print(f"zkfc  初始化成功\n  {stdout}" if code == 0 else f"zkfc 初始化失败   ->  {stderr}\n")
 
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
         elif local_ip in namenode_list:
             check_service(8020, "namenode", [install_ip[0]])
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
-            print(f"namenode  同步元数据成功  {stdout}" if code == 0 else f"namenode 同步元数据失败   ->  {stderr}")
+            print(f"namenode  同步元数据成功 \n  {stdout}" if code == 0 else f"namenode 同步元数据失败   ->  {stderr}\n")
 
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
