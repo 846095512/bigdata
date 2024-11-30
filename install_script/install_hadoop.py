@@ -144,6 +144,10 @@ def install_hadoop():
         <value>true</value>
     </property>
     <property>
+        <name>dfs.ha.fencing.zkfc.zk-address</name>
+        <value>{{ zk_addr }}</value>
+    </property>
+    <property>
         <name>dfs.client.failover.proxy.provider.{{ dfs_nameservice }}</name>
         <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
     </property>
@@ -457,6 +461,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         journal_quorm=journal_quorm,
         namenode_list=namenode_list,
         nn_list=nn_list,
+        zk_addr=zk_addr,
         dfs_replication=dfs_replication
     )
 
