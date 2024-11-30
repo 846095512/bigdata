@@ -488,7 +488,8 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         hadoop_conf_dir=hadoop_conf_dir,
         jvm_heap_size=jvm_heap_size
     )
-
+    exec_shell_command(f"touch {hadoop_conf_dir}/hdfs_exclude")
+    exec_shell_command(f"touch {hadoop_conf_dir}/nodemanager_exclude")
     set_permissions(hadoop_home_dir)
 
     if install_role == "standalone":
