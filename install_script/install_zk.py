@@ -14,7 +14,7 @@ autopurge.purgeInterval=12
 maxClientCnxns=1000
 minSessionTimeout=10000
 maxSessionTimeout=60000
-admin.enableServer="false"
+admin.enableServer=false
 admin.serverPort=9999
 {% if install_role == "cluster" %}
 {% for ip in install_ip %}
