@@ -501,6 +501,8 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         print(f"namenode  初始化成功\n {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}\n")
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         print(f"namenode  启动成功\n {stdout}" if code == 0 else f"namenode 启动失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start secondarynamenode")
+        print(f"secondarynamenode  启动成功\n {stdout}" if code == 0 else f"secondarynamenode 启动失败   ->  {stderr}\n")
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
         print(f"datanode  启动成功\n {stdout}" if code == 0 else f"datanode 启动失败   ->  {stderr}\n")
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
@@ -533,6 +535,8 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
             print(f"zkfc  启动成功\n {stdout}" if code == 0 else f"zkfc 启动失败   ->  {stderr}\n")
         else:
             print(f"当前主机  {local_ip} 不是namenode节点,跳过namenode初始化")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start secondarynamenode")
+        print(f"secondarynamenode  启动成功\n {stdout}" if code == 0 else f"secondarynamenode 启动失败   ->  {stderr}\n")
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
         print(f"datanode  启动成功\n {stdout}" if code == 0 else f"datanode 启动失败   ->  {stderr}\n")
         if local_ip in resourcemanager_list:
