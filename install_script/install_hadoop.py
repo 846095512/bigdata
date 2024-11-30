@@ -204,6 +204,10 @@ def install_hadoop():
         <value>true</value>
     </property>
     <property>
+        <name>yarn.resourcemanager.zk-address</name>
+        <value>{{ zk_addr }}</value>
+    </property>
+    <property>
         <name>yarn.resourcemanager.ha.automatic-failover.zk-base-path</name>
         <value>/{{ dfs_nameservice }}/{{ yarn_cluster_id }}/yarn-leader-election</value>
     </property>
@@ -467,6 +471,8 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         resourcemanager_list=resourcemanager_list,
         yarn_mem=yarn_mem,
         yarn_cpu=yarn_cpu,
+        dfs_nameservice=dfs_nameservice,
+        zk_addr=zk_addr,
         yarn_cluster_id=yarn_cluster_id,
         rm_list=rm_list,
         hadoop_classpath=hadoop_classpath
