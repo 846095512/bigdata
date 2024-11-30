@@ -143,7 +143,7 @@ def check_service(service_port, service_name, ip_list=install_ip):
             result = subprocess.run(
                 f"nc -zv {ip} {service_port}", shell=True, capture_output=True, text=True)
             if result.returncode != 0:
-                print(f"等待  {service_name}  服务启动")
+                print(f"等待 {ip} {service_name}  服务启动")
                 time.sleep(3)
             else:
                 break
