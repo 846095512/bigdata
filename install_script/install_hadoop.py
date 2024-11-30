@@ -504,7 +504,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     exec_shell_command(f"rm -rf  {hadoop_data_dir}")
 
     if install_role == "standalone":
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
         print(stdout)
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
