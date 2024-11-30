@@ -512,15 +512,18 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         check_service(8485, "journalnode")
         if local_ip == namenode_list[0]:
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
-            print(stdout)
+            print(f"namenode  初始化成功 {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}")
+
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
-            print(stdout)
+            print(f"zkfc  初始化成功  {stdout}" if code == 0 else f"zkfc 初始化失败   ->  {stderr}")
+
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
         elif local_ip in namenode_list:
             check_service(8020, "namenode", [install_ip[0]])
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
-            print(stdout)
+            print(f"namenode  同步元数据成功  {stdout}" if code == 0 else f"namenode 同步元数据失败   ->  {stderr}")
+
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
         else:
