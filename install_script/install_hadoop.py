@@ -500,7 +500,8 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     exec_shell_command(f"rm -rf  {hadoop_data_dir}")
 
     if install_role == "standalone":
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
+        print(stdout)
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
@@ -510,20 +511,23 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
         check_service(8485, "journalnode")
         if local_ip == namenode_list[0]:
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
+            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
+            print(stdout)
+            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
+            print(stdout)
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
         elif local_ip in namenode_list:
             check_service(8020, "namenode", [install_ip[0]])
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
+            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
+            print(stdout)
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
         else:
             print(f"当前主机  {local_ip} 不是namenode节点,跳过初始化")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
 
-        if  local_ip in resourcemanager_list:
+        if local_ip in resourcemanager_list:
             exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
