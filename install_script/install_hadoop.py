@@ -4,6 +4,21 @@ import time
 
 from commons import *
 
+def kill_hadoop_service():
+    hadoop_class = ["org.apache.hadoop.hdfs.server.namenode.NameNode",
+                    "org.apache.hadoop.hdfs.server.datanode.DataNode",
+                    "org.apache.hadoop.hdfs.qjournal.server.JournalNode",
+                    "org.apache.hadoop.yarn.server.resourcemanager.ResourceManager",
+                    "org.apache.hadoop.yarn.server.nodemanager.NodeManager",
+                    "org.apache.hadoop.yarn.server.applicationhistoryservice.ApplicationHistoryServer"]
+
+    for class_name in hadoop_class:
+        stdout, stderr, code = exec_shell_command(f"ps -ef | grep {class_name} | grep -v grep | awk '{{print $2}}'")
+        if stdout != "":
+            stdout, stderr, code = exec_shell_command(f"kill -9 {stdout}")
+            print(f"kill  残留进程 {class_name} 成功\n {stdout}" if code == 0 else f"kill  残留进程 {class_name} 失败   ->  {stderr}\n")
+
+
 
 def install_hadoop():
     core_conf_template = """
@@ -116,11 +131,6 @@ def install_hadoop():
     <property>
         <name>dfs.namenode.http-address.{{ dfs_nameservice }}.nn{{ namenode_list.index(namenode) + 1 }}</name>
         <value>{{ namenode }}:50070</value>
-    </property>
-
-    <property>
-        <name>dfs.namenode.secondary.http-address.{{ dfs_nameservice }}.nn{{ namenode_list.index(namenode) + 1 }}</name>
-        <value>{{ namenode }}:9868</value>
     </property>
     {% endfor %}
 
@@ -494,15 +504,12 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     exec_shell_command(f"touch {hadoop_conf_dir}/nodemanager_exclude")
     set_permissions(hadoop_home_dir)
     exec_shell_command(f"rm -rf  {hadoop_data_dir}")
-
     time.sleep(3)
     if install_role == "standalone":
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
         print(f"namenode  初始化成功\n {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}\n")
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         print(f"namenode  启动成功\n {stdout}" if code == 0 else f"namenode 启动失败   ->  {stderr}\n")
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start secondarynamenode")
-        print(f"secondarynamenode  启动成功\n {stdout}" if code == 0 else f"secondarynamenode 启动失败   ->  {stderr}\n")
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
         print(f"datanode  启动成功\n {stdout}" if code == 0 else f"datanode 启动失败   ->  {stderr}\n")
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
@@ -535,8 +542,6 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
             print(f"zkfc  启动成功\n {stdout}" if code == 0 else f"zkfc 启动失败   ->  {stderr}\n")
         else:
             print(f"当前主机  {local_ip} 不是namenode节点,跳过namenode初始化")
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start secondarynamenode")
-        print(f"secondarynamenode  启动成功\n {stdout}" if code == 0 else f"secondarynamenode 启动失败   ->  {stderr}\n")
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
         print(f"datanode  启动成功\n {stdout}" if code == 0 else f"datanode 启动失败   ->  {stderr}\n")
         if local_ip in resourcemanager_list:
@@ -549,5 +554,6 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
 
 
 if __name__ == '__main__':
+    kill_hadoop_service()
     unzip_package()
     install_hadoop()
