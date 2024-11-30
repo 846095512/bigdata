@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
+from time import sleep
+
 from commons import *
+
+
+def kill_spark_service():
+    spark_class = ["org.apache.spark.deploy.master.Master",
+                   "org.apache.spark.deploy.worker.Worker",
+                   "org.apache.spark.deploy.history.HistoryServer"]
+
+    for class_name in spark_class:
+        stdout, stderr, code = exec_shell_command(f"ps -ef | grep {class_name} | grep -v grep | awk '{{print $2}}'")
+        if stdout != "":
+            stdout, stderr, code = exec_shell_command(f"kill -9 {stdout}")
+            print(f"kill  残留进程 {class_name} 成功\n {stdout}" if code == 0 else f"kill  残留进程 {class_name} 失败   ->  {stderr}\n")
+
+
 
 
 def install_spark():
@@ -20,17 +36,17 @@ export SPARK_LOG_DIR={{ spark_home_dir }}/log
 export SPARK_PID_DIR={{ spark_home_dir }}/pid
 export SPARK_DAEMON_MEMORY={{ jvm_heapsize }}
 export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
-export SPARK_SUBMIT_OPTS="-Djava.io.tmpdir={{ spark_home_dir }}/tmp -Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=3600 -Dspark.worker.cleanup.appDataTtl=86400 -Dspark.history.ui.port=18080 -Dspark.history.fs.cleaner.enabled=true -Dspark.history.fs.cleaner.interval=3d -Dspark.history.fs.cleaner.maxAge=14d -Dspark.history.fs.logDirectory=hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/history"
+export SPARK_SUBMIT_OPTS="-Djava.io.tmpdir={{ spark_home_dir }}/tmp -Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=3600 -Dspark.worker.cleanup.appDataTtl=86400 -Dspark.history.ui.port=18080 -Dspark.history.fs.cleaner.enabled=true -Dspark.history.fs.cleaner.interval=3d -Dspark.history.fs.cleaner.maxAge=14d -Dspark.history.fs.logDirectory=hdfs://{{ dfs_nameservice }}/spark/history-log"
 export SPARK_MASTER_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/master-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/master-heapdump.hprof"
 export SPARK_WORKER_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/worker-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/worker-heapdump.hprof"
 export SPARK_HISTORY_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/historyserver-heapdump.hprof"
-{% if cluster_role == "standalone" %}
+{% if cluster_role == "cluster" %}
 export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=zookeeper://{{ zk_addr }} -Dspark.deploy.zookeeper.dir=/{{ spark_cluster_id }}"
 {% endif %}
 # SPARK_WORKER_CORES=
 """
     spark_defaults_template = """
-{% if install_role == "standalone"%}
+{% if install_role == "standalone" or install_role == "cluster" %}
 spark.master                            spark://{{ spark_masters }}
 {% endif %}
 {% if cluster_role == "yarn" %}
@@ -41,7 +57,7 @@ spark.dynamicAllocation.maxExecutors    200
 spark.dynamicAllocation.initialExecutors                    1                          
 spark.dynamicAllocation.schedulerBacklogTimeout             1s                   
 spark.dynamicAllocation.sustainedSchedulerBacklogTimeout    1s  
-spark.yarn.jars                         hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/jars 
+spark.yarn.jars                         hdfs://{{ dfs_nameservice }}/spark/jars 
 {% endif %}
 # 作业提交模式
 spark.submit.deployMode                 cluster
@@ -53,8 +69,8 @@ spark.history.retainedApplications      100
 spark.executor.logs.rolling.maxSize     1048576
 spark.executor.logs.rolling.maxRetainedFiles    10
 spark.executor.logs.rolling.enableCompression   true
-spark.eventLog.dir                      hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/logs
-spark.history.fs.logDirectory           hdfs://{{ dfs_nameservice }}/{{ spark_cluster_id }}/history
+spark.eventLog.dir                      hdfs://{{ dfs_nameservice }}/spark/history-log
+spark.history.fs.logDirectory           hdfs://{{ dfs_nameservice }}/spark/history-log
 
 # shuffle 相关
 spark.sql.shuffle.partitions            200                         
@@ -88,17 +104,16 @@ spark.mllib.numIterations               10
     dfs_nameservice = params_dict["dfs.nameservice"]
     zk_addr = params_dict["zookeeper.address"]
     spark_master_ips = params_dict["spark.master.ip"]
-
     is_valid_ip(local_ip, spark_master_ips)
-
     spark_cluster_id = params_dict["spark.cluster.id"]
     spark_masters = ",".join([f"{ip}:7077" for ip in spark_master_ips])
-
     spark_home_dir = os.path.join(get_app_home_dir(), module_name)
     spark_conf_dir = os.path.join(spark_home_dir, "conf")
     spark_env_file = os.path.join(spark_conf_dir, "spark-env.sh")
     spark_defaults_file = os.path.join(spark_conf_dir, "spark-defaults.conf")
     spark_sbin_dir = os.path.join(spark_home_dir, "sbin")
+
+    # 生成配置
     generate_config_file(template_str=spark_env_template,
                          conf_file=spark_env_file,
                          install_role=install_role,
@@ -116,14 +131,18 @@ spark.mllib.numIterations               10
                          spark_masters=spark_masters,
                          dfs_nameservice=dfs_nameservice,
                          spark_cluster_id=spark_cluster_id)
-    print("生成配置文件完成")
-
     set_permissions(spark_home_dir)
-    exec_shell_command(f"{spark_sbin_dir}/start-master.sh")
-    exec_shell_command(f"{spark_sbin_dir}/start-worker.sh spark://{spark_masters}")
-    exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh")
+
+    stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-master.sh")
+    check_service("10090", "spark master", spark_master_ips)
+    print(f"spark master  启动成功\n {stdout}" if code == 0 else f"spark master 启动失败   ->  {stderr}\n")
+    stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-worker.sh spark://{spark_masters}")
+    print(f"spark worker  启动成功\n {stdout}" if code == 0 else f"spark worker 启动失败   ->  {stderr}\n")
+    stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh")
+    print(f"spark historyserver  启动成功\n {stdout}" if code == 0 else f"spark historyserver 启动失败   ->  {stderr}\n")
 
 
 if __name__ == '__main__':
+    kill_spark_service()
     unzip_package()
     install_spark()

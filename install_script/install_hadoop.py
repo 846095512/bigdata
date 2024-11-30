@@ -336,11 +336,11 @@ def install_hadoop():
     </property>
     <property>
         <name>mapreduce.jobhistory.intermediate-done-dir</name>
-        <value>hdfs://{{ dfs_nameservice }}/mr-history/tmp</value>
+        <value>hdfs://{{ dfs_nameservice }}/hadoop/mr-history/tmp</value>
     </property>
     <property>
         <name>mapreduce.jobhistory.done-dir</name>
-        <value>hdfs://{{ dfs_nameservice }}/mr-history/done</value>
+        <value>hdfs://{{ dfs_nameservice }}/hadoop/mr-history/done</value>
     </property>
 
     <!-- 作业压缩配置 -->
@@ -553,6 +553,13 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
         print(f"timelineserver(historyserver)  启动成功\n {stdout}" if code == 0 else f"timelineserver(historyserver) 启动失败   ->  {stderr}\n")
 
+        # 创建 hdfs 目录
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mr-history/tmp")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mr-history/done")
+
+        # 创建 spark 目录
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/jars")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/history-log")
 
 if __name__ == '__main__':
     kill_hadoop_service()
