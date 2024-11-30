@@ -133,13 +133,17 @@ spark.mllib.numIterations               10
                          spark_cluster_id=spark_cluster_id)
     set_permissions(spark_home_dir)
 
-    stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-master.sh")
-    check_service("10090", "spark master", spark_master_ips)
-    print(f"spark master  启动成功\n {stdout}" if code == 0 else f"spark master 启动失败   ->  {stderr}\n")
-    stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-worker.sh spark://{spark_masters}")
-    print(f"spark worker  启动成功\n {stdout}" if code == 0 else f"spark worker 启动失败   ->  {stderr}\n")
-    stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh")
-    print(f"spark historyserver  启动成功\n {stdout}" if code == 0 else f"spark historyserver 启动失败   ->  {stderr}\n")
+    if install_role != "yarn":
+        stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-master.sh")
+        check_service("10090", "spark master", spark_master_ips)
+        print(f"spark master  启动成功\n {stdout}" if code == 0 else f"spark master 启动失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-worker.sh spark://{spark_masters}")
+        print(f"spark worker  启动成功\n {stdout}" if code == 0 else f"spark worker 启动失败   ->  {stderr}\n")
+
+        need_history_server = input("是否需要启动historyserver,启动historyserver前，需要将hadoop文件上传到spark的conf目录,请输入Y/N 确认: ")
+        if need_history_server == "y" or need_history_server == "Y":
+            stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh")
+            print(f"spark historyserver  启动成功\n {stdout}" if code == 0 else f"spark historyserver 启动失败   ->  {stderr}\n")
 
 
 if __name__ == '__main__':
