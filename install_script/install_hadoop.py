@@ -497,6 +497,7 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     exec_shell_command(f"touch {hadoop_conf_dir}/hdfs_exclude")
     exec_shell_command(f"touch {hadoop_conf_dir}/nodemanager_exclude")
     set_permissions(hadoop_home_dir)
+    exec_shell_command(f"rm -rf  {hadoop_data_dir}")
 
     if install_role == "standalone":
         exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
@@ -509,11 +510,11 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
         check_service(8485, "journalnode")
         if local_ip == install_ip[0]:
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format")
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         else:
-            check_service(8020, "namenode", install_ip[0])
+            check_service(8020, "namenode", [install_ip[0]])
             exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
