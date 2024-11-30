@@ -18,7 +18,6 @@
 ```
 
 部署 zk 参数
-
 ```json
 {
     "file":"zk安装包名",
@@ -26,7 +25,7 @@
     "jvm.heapsize":"1g",
     "install.role":"standalone/cluster",
     "local.ip":"192.168.0.1",
-    "install.ip":["192.168.0.1","192.168.0.2","192.168.0.3"],
+    "install.ip":["192.168.0.1"]
 }
 ```
 
