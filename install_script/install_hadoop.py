@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+import time
 
 from commons import *
 
@@ -494,41 +495,53 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     set_permissions(hadoop_home_dir)
     exec_shell_command(f"rm -rf  {hadoop_data_dir}")
 
+    time.sleep(3)
     if install_role == "standalone":
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
-        print(stdout)
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
-        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
-        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
-        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
+        print(f"namenode  初始化成功\n {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
+        print(f"namenode  启动成功\n {stdout}" if code == 0 else f"namenode 启动失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
+        print(f"datanode  启动成功\n {stdout}" if code == 0 else f"datanode 启动失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
+        print(f"resourcemanager  启动成功\n {stdout}" if code == 0 else f"resourcemanager 启动失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
+        print(f"nodemanager  启动成功\n {stdout}" if code == 0 else f"nodemanager 启动失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
+        print(f"historyserver  启动成功\n {stdout}" if code == 0 else f"historyserver 启动失败   ->  {stderr}\n")
     if install_role == "cluster":
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
+        print(f"journalnode  启动成功\n {stdout}" if code == 0 else f"journalnode 启动成功   ->  {stderr}\n")
         check_service(8485, "journalnode")
+
         if local_ip == namenode_list[0]:
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
             print(f"namenode  初始化成功\n {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}\n")
-
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
             print(f"zkfc  初始化成功\n  {stdout}" if code == 0 else f"zkfc 初始化失败   ->  {stderr}\n")
-
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
+            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
+            print(f"namenode  启动成功\n {stdout}" if code == 0 else f"namenode 启动失败   ->  {stderr}\n")
+            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
+            print(f"zkfc  启动成功\n {stdout}" if code == 0 else f"zkfc 启动失败   ->  {stderr}\n")
         elif local_ip in namenode_list:
             check_service(8020, "namenode", [install_ip[0]])
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
             print(f"namenode  同步元数据成功 \n  {stdout}" if code == 0 else f"namenode 同步元数据失败   ->  {stderr}\n")
-
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
+            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
+            print(f"namenode  启动成功\n {stdout}" if code == 0 else f"namenode 启动失败   ->  {stderr}\n")
+            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
+            print(f"zkfc  启动成功\n {stdout}" if code == 0 else f"zkfc 启动失败   ->  {stderr}\n")
         else:
-            print(f"当前主机  {local_ip} 不是namenode节点,跳过初始化")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
-
+            print(f"当前主机  {local_ip} 不是namenode节点,跳过namenode初始化")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
+        print(f"datanode  启动成功\n {stdout}" if code == 0 else f"datanode 启动失败   ->  {stderr}\n")
         if local_ip in resourcemanager_list:
-            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
-        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
-        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
+            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
+            print(f"resourcemanager  启动成功\n {stdout}" if code == 0 else f"resourcemanager 启动失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
+        print(f"nodemanager  启动成功\n {stdout}" if code == 0 else f"nodemanager 启动失败   ->  {stderr}\n")
+        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
+        print(f"timelineserver(historyserver)  启动成功\n {stdout}" if code == 0 else f"timelineserver(historyserver) 启动失败   ->  {stderr}\n")
 
 
 if __name__ == '__main__':
