@@ -141,7 +141,7 @@ def check_service(service_port, service_name, ip_list=install_ip):
     for ip in ip_list:
         while True:
             result = subprocess.run(
-                f"telnet {ip} {service_port}", shell=True, capture_output=True, text=True, timeout=3)
+                f"nc -zv {ip} {service_port}", shell=True, capture_output=True, text=True)
             if result.returncode != 0:
                 print(f"等待  {service_name}  服务启动")
                 time.sleep(3)
