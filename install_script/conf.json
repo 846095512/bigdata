@@ -11,7 +11,6 @@
 
 
 
-    "is.master": "false",
     "dfs.nameservice":"192.168.176.134:9000",
     "namenode.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "resourcemanager.list":["10.238.111.50","10.238.111.51","10.238.111.52"],
@@ -22,6 +21,6 @@
     "yarn.mem":"1024",
     "yarn.cpu":"1",
     "spark.master.ip":["10.238.111.50","10.238.111.51","10.238.111.52"],
-    "spark.cluster.id":"sparkcluster",
-    "innodb.buffer.size":"1g"
+    "spark.cluster.id":"sparkcluster"
+
 }

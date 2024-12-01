@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import time
-
 from commons import *
 
 
@@ -17,8 +15,6 @@ def init_libs():
 
 
 def install_mysql():
-    is_master = params_dict["is.master"]
-    innodb_buffer_size = params_dict["innodb.buffer.size"]
     ip_whitelist = ",".join([f"{ip}" for ip in install_ip])
     replication_group_seeds = ",".join([f"{ip}:33061" for ip in install_ip])
     is_valid_ip(local_ip, install_ip)
@@ -29,8 +25,11 @@ def install_mysql():
     for ip in install_ip:
         if ip == local_ip:
             server_id += 10
+
     mysql_home_dir = os.path.join(get_app_home_dir(), module_name)
     my_cnf_file = os.path.join(mysql_home_dir, "my.cnf")
+    stdout, stderr, code = exec_shell_command("free -g | awk '/Mem:/ {print $2}'")
+    innodb_buffer_size = f"{stdout}g"
     exec_shell_command(f"mkdir -p {mysql_home_dir}")
     exec_shell_command(f"mkdir -p {mysql_home_dir}/data")
     exec_shell_command(f"mkdir -p {mysql_home_dir}/binlog/relay")
@@ -77,7 +76,7 @@ def install_mysql():
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "FLUSH PRIVILEGES;" """)
 
-        if is_master == "true":
+        if local_ip == install_ip[0]:
             exec_shell_command(
                 f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET GLOBAL group_replication_bootstrap_group=ON;" """)
             stdout, stderr, code = exec_shell_command(
