@@ -4,418 +4,8 @@ import time
 
 from commons import *
 
-def kill_hadoop_service():
-    hadoop_class = ["org.apache.hadoop.hdfs.server.namenode.NameNode",
-                    "org.apache.hadoop.hdfs.server.datanode.DataNode",
-                    "org.apache.hadoop.hdfs.qjournal.server.JournalNode",
-                    "org.apache.hadoop.yarn.server.resourcemanager.ResourceManager",
-                    "org.apache.hadoop.yarn.server.nodemanager.NodeManager",
-                    "org.apache.hadoop.yarn.server.applicationhistoryservice.ApplicationHistoryServer",
-                    "org.apache.hadoop.hdfs.tools.DFSZKFailoverController"]
-
-    for class_name in hadoop_class:
-        stdout, stderr, code = exec_shell_command(f"ps -ef | grep {class_name} | grep -v grep | awk '{{print $2}}'")
-        if stdout != "":
-            stdout, stderr, code = exec_shell_command(f"kill -9 {stdout}")
-            print(f"kill  残留进程 {class_name} 成功\n {stdout}" if code == 0 else f"kill  残留进程 {class_name} 失败   ->  {stderr}\n")
-
-
 
 def install_hadoop():
-    core_conf_template = """
-    <!--  核心配置  -->
-    <property>
-        <name>fs.defaultFS</name>
-        <value>hdfs://{{ dfs_nameservice }}</value>
-    </property>
-
-
-    <!--  通用配置  -->
-    <property>
-        <name>hadoop.tmp.dir</name>
-        <value>{{ hadoop_data_dir }}</value>
-    </property>
-    <property>
-        <name>hadoop.http.filter.initializers</name>
-        <value>org.apache.hadoop.security.HttpCrossOriginFilterInitializer</value>
-    </property>
-    <property>
-        <name>hadoop.http.cross-origin.allowed-origins</name>
-        <value>*</value>
-    </property>
-    <property>
-        <name>hadoop.http.cross-origin.allowed-methods</name>
-        <value>GET,POST,HEAD</value>
-    </property>
-    <property>
-        <name>hadoop.http.cross-origin.allowed-headers</name>
-        <value>X-Requested-With,Content-Type,Accept,Origin</value>
-    </property>
-    <property>
-        <name>hadoop.http.cross-origin.max-age</name>
-        <value>1800</value>
-    </property>
-     <property>
-        <name>hadoop.proxyuser.*.groups</name>
-        <value>*</value>
-    </property>
-    <property>
-        <name>hadoop.proxyuser.*.hosts</name>
-        <value>*</value>
-    </property>
-
-    {% if install_role == 'cluster' %}
-    <!--  ha配置  -->
-    <property>
-        <name>ha.zookeeper.parent-znode</name>
-        <value>/{{ dfs_nameservice }}</value>
-    </property>
-    <property>
-        <name>ha.zookeeper.quorum</name>
-        <value>{{ zk_addr }}</value>
-    </property>
-{% endif %}
-"""
-    hdfs_conf_template = """
-    <!-- 核心配置 -->
-    <property>
-        <name>dfs.replication</name>
-        <value>{{ dfs_replication }}</value>
-    </property>
-
-        <!-- 通用配置 -->
-    <property>
-        <name>dfs.permissions.enabled</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>dfs.datanode.address</name>
-        <value>0.0.0.0:9866</value>
-    </property>
-    <property>
-        <name>dfs.datanode.http.address</name>
-        <value>0.0.0.0:9864</value>
-    </property>
-    <property>
-        <name>dfs.namenode.name.dir</name>
-        <value>${hadoop.tmp.dir}/namenode-data</value>
-    </property>
-    <property>
-        <name>dfs.datanode.data.dir</name>
-        <value>${hadoop.tmp.dir}/datanode-data</value>
-    </property>
-    <property>
-        <name>dfs.journalnode.edits.dir</name>
-        <value>${hadoop.tmp.dir}/journalnode-data</value>
-    </property>
-    {% if install_role == 'cluster' %}
-    <!-- ha配置 -->
-    <property>
-        <name>dfs.nameservices</name>
-        <value>{{ dfs_nameservice }}</value>
-    </property>
-    <property>
-        <name>dfs.ha.namenodes.{{ dfs_nameservice }}</name>
-        <value>{{ nn_list }}</value>
-    </property>
-
-    {% for namenode in namenode_list %}
-    <property>
-        <name>dfs.namenode.rpc-address.{{ dfs_nameservice }}.nn{{ namenode_list.index(namenode) + 1 }}</name>
-        <value>{{ namenode }}:8020</value>
-    </property>
-
-    <property>
-        <name>dfs.namenode.http-address.{{ dfs_nameservice }}.nn{{ namenode_list.index(namenode) + 1 }}</name>
-        <value>{{ namenode }}:50070</value>
-    </property>
-    {% endfor %}
-
-    <property>
-        <name>dfs.journalnode.rpc-address</name>
-        <value>0.0.0.0:8485</value>
-    </property>
-    <property>
-        <name>dfs.journalnode.http-address</name>
-        <value>0.0.0.0:8480</value>
-    </property>
-    <property>
-        <name>dfs.ha.automatic-failover.enabled</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>dfs.ha.fencing.methods</name>
-        <value>shell(/bin/true)</value>
-    </property>
-    <property>
-        <name>dfs.client.failover.proxy.provider.{{ dfs_nameservice }}</name>
-        <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
-    </property>
-    <property>
-        <name>dfs.namenode.shared.edits.dir</name>
-        <value>qjournal://{{ journal_quorm }}/{{ dfs_nameservice }}</value>
-    </property>
-    {% endif %}
-    <property>
-        <name>dfs.hosts.exclude</name>
-        <value>{{ hadoop_conf_dir }}/hdfs_exclude</value>
-    </property>
-"""
-    yarn_conf_template = """
-    {% if install_role == 'standalone' %}
-    <property>
-        <name>yarn.resourcemanager.hostname</name>
-        <value>{{ local_ip }}</value>
-    </property>
-    {% endif %}
-    {% if install_role == 'cluster' %}
-    <property>
-        <name>yarn.resourcemanager.cluster-id</name>
-        <value>{{ yarn_cluster_id }}</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.ha.rm-ids</name>
-        <value>{{ rm_list }}</value>
-    </property>
-    {% for resourcemanager in resourcemanager_list %}
-    <property>
-        <name>yarn.resourcemanager.hostname.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
-        <value>{{ resourcemanager }}</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.scheduler.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
-        <value>{{ resourcemanager }}:8030</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
-        <value>{{ resourcemanager }}:8032</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.admin.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
-        <value>{{ resourcemanager }}:8033</value>
-    </property>
-    <property>
-        <name>yarn.web-proxy.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
-        <value>{{ resourcemanager }}:8034</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.webapp.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
-        <value>{{ resourcemanager }}:8088</value>
-    </property>
-    {% endfor %}
-    <property>
-        <name>yarn.resourcemanager.ha.enabled</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.ha.automatic-failover.enabled</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.zk-address</name>
-        <value>{{ zk_addr }}</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.ha.automatic-failover.zk-base-path</name>
-        <value>/{{ dfs_nameservice }}/{{ yarn_cluster_id }}/yarn-leader-election</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.recovery.enabled</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.zk-state-store.parent-path</name>
-        <value>/{{ dfs_nameservice }}/{{ yarn_cluster_id }}/yarn-store</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.store.class</name>
-        <value>org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore</value>
-    </property>
-    {% endif %}
-    <!-- nodemanager配置一 -->
-    <property>
-        <name>yarn.resourcemanager.nodes.exclude-path</name>
-        <value>{{ hadoop_conf_dir }}/nodemanager_exclude</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.localizer.address</name>
-        <value>0.0.0.0:8040</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.address</name>
-        <value>0.0.0.0:8041</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.webapp.address</name>
-        <value>0.0.0.0:8042</value>
-    </property>
-    <property>
-        <name>yarn.resourcemanager.am.max-attempts</name>
-        <value>4</value>
-    </property>
-
-    <!-- 日志聚合配置 -->
-    <property>
-        <name>yarn.log-aggregation-enable</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>yarn.log-aggregation.retain-seconds</name>
-        <value>604800</value>
-    </property>
-    <property>
-        <name>yarn.log-aggregation.retain-check-interval-seconds</name>
-        <value>3600</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.log-aggregation.compression-type</name>
-        <value>GZIP</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.local-dirs</name>
-        <value>${hadoop.tmp.dir}/yarn</value>
-    </property>
-    <property>
-        <name>yarn.log.server.url</name>
-        <value>http://{{ resourcemanager_list[0] }}:19888/jobhistory/logs</value>
-    </property>
-
-    <!-- yarn资源配置 -->
-    <property>
-        <name>yarn.application.classpath</name>
-        <value>{{ hadoop_classpath }}</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.resource.memory-mb</name>
-        <value>{{ yarn_mem }}</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.resource.cpu-vcores</name>
-        <value>{{ yarn_cpu }}</value>
-    </property>
-    <property>
-        <name>yarn.scheduler.maximum-allocation-mb</name>
-        <value>{{ yarn_mem }}</value>
-    </property>
-    <property>
-        <name>yarn.scheduler.maximum-allocation-vcores</name>
-        <value>{{ yarn_cpu }}</value>
-    </property>
-    
-    <!-- yarn外部拓展 -->
-    <property>
-        <name>yarn.nodemanager.aux-services</name>
-        <value>mapreduce_shuffle,spark_shuffle</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
-        <value>org.apache.hadoop.mapred.ShuffleHandler</value>
-    </property>
-    <property>
-        <name>yarn.nodemanager.aux-services.spark_shuffle.class</name>
-        <value>org.apache.spark.network.yarn.YarnShuffleService</value>
-    </property>
-"""
-    mapred_conf_template = """
-    <!-- 核心配置 -->
-    <property>
-        <name>mapreduce.framework.name</name>
-        <value>yarn</value>
-    </property>
-    <property>
-        <name>mapreduce.jobhistory.address</name>
-        <value>0.0.0.0:10020</value>
-    </property>
-    <property>
-        <name>mapreduce.jobhistory.webapp.address</name>
-        <value>0.0.0.0:19888</value>
-    </property>
-    <property>
-        <name>mapreduce.jobhistory.intermediate-done-dir</name>
-        <value>hdfs://{{ dfs_nameservice }}/hadoop/mr-history/tmp</value>
-    </property>
-    <property>
-        <name>mapreduce.jobhistory.done-dir</name>
-        <value>hdfs://{{ dfs_nameservice }}/hadoop/mr-history/done</value>
-    </property>
-
-    <!-- 作业压缩配置 -->
-    <property>
-        <name>mapreduce.map.output.compress</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>mapreduce.map.output.compress.codec</name>
-        <value>org.apache.hadoop.io.compress.GzipCodec</value>
-    </property>
-    <property>
-        <name>mapreduce.map.output.compress.type</name>
-        <value>BLOCK</value>
-    </property>
-    <property>
-        <name>mapreduce.output.fileoutputformat.compress</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>mapreduce.output.fileoutputformat.compress.codec</name>
-        <value>org.apache.hadoop.io.compress.GzipCodec</value>
-    </property>
-    <property>
-        <name>mapreduce.output.fileoutputformat.compress.type</name>
-        <value>BLOCK</value>
-    </property>
-    <property>
-        <name>mapreduce.reduce.output.compress</name>
-        <value>true</value>
-    </property>
-    <property>
-        <name>mapreduce.reduce.output.compress.codec</name>
-        <value>org.apache.hadoop.io.compress.GzipCodec</value>
-    </property>
-    <property>
-        <name>mapreduce.reduce.output.compress.type</name>
-        <value>BLOCK</value>
-    <!-- 作业重启配置 -->
-    </property>
-        <property>
-        <name>mapreduce.job.failures.tolerated</name>
-        <value>3</value>
-    </property>
-    <property>
-        <name>mapreduce.map.maxattempts</name>
-        <value>3</value>
-    </property>
-    <property>
-        <name>mapreduce.reduce.maxattempts</name>
-        <value>3</value>
-    </property>
-"""
-    env_conf_template = """
-export HADOOP_HOME={{ hadoop_home_dir }}
-export HADOOP_CONF_DIR={{ hadoop_conf_dir }}
-export HADOOP_LOG_DIR=${HADOOP_HOME}/logs
-export HADOOP_PID_DIR=${HADOOP_HOME}/pid
-export HADOOP_TMP_DIR=${HADOOP_HOME}/tmp
-export HDFS_NAMENODE_USER={{ current_user }}
-export HDFS_DATANODE_USER={{ current_user }}
-export HDFS_SECONDARYNAMENODE_USER={{ current_user }}
-export YARN_RESOURCEMANAGER_USER={{ current_user }}
-export YARN_NODEMANAGER_USER={{ current_user }}
-export MAPRED_HISTORYSERVER_USER={{ current_user }}
-
-export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
-export HDFS_NAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/namenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/namenode-heapdump.hprof"
-export HDFS_DATANODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
-export HDFS_SECONDARYNAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/secondarynamenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/secondarynamenode-heapdump.hprof"
-export YARN_RESOURCEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
-export YARN_NODEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/resourcemanager-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/resourcemanager-heapdump.hprof"
-export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/historyserver-heapdump.hprof"
-"""
-
     namenode_list = params_dict["namenode.list"]
     nn_list = ",".join([f"nn{i + 1}" for i in range(len(namenode_list))])
     resourcemanager_list = params_dict["resourcemanager.list"]
@@ -505,63 +95,468 @@ export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }
     exec_shell_command(f"touch {hadoop_conf_dir}/nodemanager_exclude")
     set_permissions(hadoop_home_dir)
     exec_shell_command(f"rm -rf  {hadoop_data_dir}")
-    time.sleep(3)
+
     if install_role == "standalone":
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
-        print(f"namenode  初始化成功\n {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "namenode 初始化", check=True)
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-        print(f"namenode  启动成功\n {stdout}" if code == 0 else f"namenode 启动失败   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "namenode 启动", check=True)
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
-        print(f"datanode  启动成功\n {stdout}" if code == 0 else f"datanode 启动失败   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "datanode 启动", check=True)
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
-        print(f"resourcemanager  启动成功\n {stdout}" if code == 0 else f"resourcemanager 启动失败   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "resourcemanager 启动", check=True)
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
-        print(f"nodemanager  启动成功\n {stdout}" if code == 0 else f"nodemanager 启动失败   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "nodemanager 启动", check=True)
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
-        print(f"historyserver  启动成功\n {stdout}" if code == 0 else f"historyserver 启动失败   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "timelineserver(historyserver) 启动", check=True)
+
     if install_role == "cluster":
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
-        print(f"journalnode  启动成功\n {stdout}" if code == 0 else f"journalnode 启动成功   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "journalnode 启动", check=True)
         check_service(8485, "journalnode")
 
         if local_ip == namenode_list[0]:
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
-            print(f"namenode  初始化成功\n {stdout}" if code == 0 else f"namenode 初始化失败   ->  {stderr}\n")
+            check_cmd_output(stdout, stderr, code, "namenode 初始化", check=True)
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
-            print(f"zkfc  初始化成功\n  {stdout}" if code == 0 else f"zkfc 初始化失败   ->  {stderr}\n")
+            check_cmd_output(stdout, stderr, code, "zkfc 初始化", check=True)
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-            print(f"namenode  启动成功\n {stdout}" if code == 0 else f"namenode 启动失败   ->  {stderr}\n")
+            check_cmd_output(stdout, stderr, code, "namenode 启动", check=True)
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
-            print(f"zkfc  启动成功\n {stdout}" if code == 0 else f"zkfc 启动失败   ->  {stderr}\n")
+            check_cmd_output(stdout, stderr, code, "zkfc 启动", check=True)
         elif local_ip in namenode_list:
             check_service(8020, "namenode", [install_ip[0]])
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
-            print(f"namenode  同步元数据成功 \n  {stdout}" if code == 0 else f"namenode 同步元数据失败   ->  {stderr}\n")
+            check_cmd_output(stdout, stderr, code, "namenode 同步元数据", check=True)
+
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-            print(f"namenode  启动成功\n {stdout}" if code == 0 else f"namenode 启动失败   ->  {stderr}\n")
+            check_cmd_output(stdout, stderr, code, "namenode 启动", check=True)
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
-            print(f"zkfc  启动成功\n {stdout}" if code == 0 else f"zkfc 启动失败   ->  {stderr}\n")
+            check_cmd_output(stdout, stderr, code, "zkfc 启动", check=True)
         else:
             print(f"当前主机  {local_ip} 不是namenode节点,跳过namenode初始化")
+
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
-        print(f"datanode  启动成功\n {stdout}" if code == 0 else f"datanode 启动失败   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "datanode 启动", check=True)
         if local_ip in resourcemanager_list:
             stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
-            print(f"resourcemanager  启动成功\n {stdout}" if code == 0 else f"resourcemanager 启动失败   ->  {stderr}\n")
+            check_cmd_output(stdout, stderr, code, "resourcemanager 启动", check=True)
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
-        print(f"nodemanager  启动成功\n {stdout}" if code == 0 else f"nodemanager 启动失败   ->  {stderr}\n")
+        check_cmd_output(stdout, stderr, code, "nodemanager 启动", check=True)
         stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
-        print(f"timelineserver(historyserver)  启动成功\n {stdout}" if code == 0 else f"timelineserver(historyserver) 启动失败   ->  {stderr}\n")
-
+        check_cmd_output(stdout, stderr, code, "timelineserver(historyserver) 启动", check=True)
         # 创建 hdfs 目录
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mr-history/tmp")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mr-history/done")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/event")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/history")
 
         # 创建 spark 目录
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/jars")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/history-log")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/share/jars")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/history/logs")
+
+        print("hadoop 安装完成")
 
 if __name__ == '__main__':
-    kill_hadoop_service()
+    core_conf_template = """
+        <!--  核心配置  -->
+        <property>
+            <name>fs.defaultFS</name>
+            <value>hdfs://{{ dfs_nameservice }}</value>
+        </property>
+
+
+        <!--  通用配置  -->
+        <property>
+            <name>hadoop.tmp.dir</name>
+            <value>{{ hadoop_data_dir }}</value>
+        </property>
+        <property>
+            <name>hadoop.http.filter.initializers</name>
+            <value>org.apache.hadoop.security.HttpCrossOriginFilterInitializer</value>
+        </property>
+        <property>
+            <name>hadoop.http.cross-origin.allowed-origins</name>
+            <value>*</value>
+        </property>
+        <property>
+            <name>hadoop.http.cross-origin.allowed-methods</name>
+            <value>GET,POST,HEAD</value>
+        </property>
+        <property>
+            <name>hadoop.http.cross-origin.allowed-headers</name>
+            <value>X-Requested-With,Content-Type,Accept,Origin</value>
+        </property>
+        <property>
+            <name>hadoop.http.cross-origin.max-age</name>
+            <value>1800</value>
+        </property>
+         <property>
+            <name>hadoop.proxyuser.*.groups</name>
+            <value>*</value>
+        </property>
+        <property>
+            <name>hadoop.proxyuser.*.hosts</name>
+            <value>*</value>
+        </property>
+
+        {% if install_role == 'cluster' %}
+        <!--  ha配置  -->
+        <property>
+            <name>ha.zookeeper.parent-znode</name>
+            <value>/{{ dfs_nameservice }}</value>
+        </property>
+        <property>
+            <name>ha.zookeeper.quorum</name>
+            <value>{{ zk_addr }}</value>
+        </property>
+    {% endif %}
+    """
+    hdfs_conf_template = """
+        <!-- 核心配置 -->
+        <property>
+            <name>dfs.replication</name>
+            <value>{{ dfs_replication }}</value>
+        </property>
+
+            <!-- 通用配置 -->
+        <property>
+            <name>dfs.permissions.enabled</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>dfs.datanode.address</name>
+            <value>0.0.0.0:9866</value>
+        </property>
+        <property>
+            <name>dfs.datanode.http.address</name>
+            <value>0.0.0.0:9864</value>
+        </property>
+        <property>
+            <name>dfs.namenode.name.dir</name>
+            <value>${hadoop.tmp.dir}/namenode-data</value>
+        </property>
+        <property>
+            <name>dfs.datanode.data.dir</name>
+            <value>${hadoop.tmp.dir}/datanode-data</value>
+        </property>
+        <property>
+            <name>dfs.journalnode.edits.dir</name>
+            <value>${hadoop.tmp.dir}/journalnode-data</value>
+        </property>
+        {% if install_role == 'cluster' %}
+        <!-- ha配置 -->
+        <property>
+            <name>dfs.nameservices</name>
+            <value>{{ dfs_nameservice }}</value>
+        </property>
+        <property>
+            <name>dfs.ha.namenodes.{{ dfs_nameservice }}</name>
+            <value>{{ nn_list }}</value>
+        </property>
+
+        {% for namenode in namenode_list %}
+        <property>
+            <name>dfs.namenode.rpc-address.{{ dfs_nameservice }}.nn{{ namenode_list.index(namenode) + 1 }}</name>
+            <value>{{ namenode }}:8020</value>
+        </property>
+
+        <property>
+            <name>dfs.namenode.http-address.{{ dfs_nameservice }}.nn{{ namenode_list.index(namenode) + 1 }}</name>
+            <value>{{ namenode }}:50070</value>
+        </property>
+        {% endfor %}
+
+        <property>
+            <name>dfs.journalnode.rpc-address</name>
+            <value>0.0.0.0:8485</value>
+        </property>
+        <property>
+            <name>dfs.journalnode.http-address</name>
+            <value>0.0.0.0:8480</value>
+        </property>
+        <property>
+            <name>dfs.ha.automatic-failover.enabled</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>dfs.ha.fencing.methods</name>
+            <value>shell(/bin/true)</value>
+        </property>
+        <property>
+            <name>dfs.client.failover.proxy.provider.{{ dfs_nameservice }}</name>
+            <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+        </property>
+        <property>
+            <name>dfs.namenode.shared.edits.dir</name>
+            <value>qjournal://{{ journal_quorm }}/{{ dfs_nameservice }}</value>
+        </property>
+        {% endif %}
+        <property>
+            <name>dfs.hosts.exclude</name>
+            <value>{{ hadoop_conf_dir }}/hdfs_exclude</value>
+        </property>
+    """
+    yarn_conf_template = """
+        {% if install_role == 'standalone' %}
+        <property>
+            <name>yarn.resourcemanager.hostname</name>
+            <value>{{ local_ip }}</value>
+        </property>
+        {% endif %}
+        {% if install_role == 'cluster' %}
+        <property>
+            <name>yarn.resourcemanager.cluster-id</name>
+            <value>{{ yarn_cluster_id }}</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.ha.rm-ids</name>
+            <value>{{ rm_list }}</value>
+        </property>
+        {% for resourcemanager in resourcemanager_list %}
+        <property>
+            <name>yarn.resourcemanager.hostname.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
+            <value>{{ resourcemanager }}</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.scheduler.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
+            <value>{{ resourcemanager }}:8030</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
+            <value>{{ resourcemanager }}:8032</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.admin.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
+            <value>{{ resourcemanager }}:8033</value>
+        </property>
+        <property>
+            <name>yarn.web-proxy.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
+            <value>{{ resourcemanager }}:8034</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.webapp.address.rm{{ resourcemanager_list.index(resourcemanager) + 1 }}</name>
+            <value>{{ resourcemanager }}:8088</value>
+        </property>
+        {% endfor %}
+        <property>
+            <name>yarn.resourcemanager.ha.enabled</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.ha.automatic-failover.enabled</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.zk-address</name>
+            <value>{{ zk_addr }}</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.ha.automatic-failover.zk-base-path</name>
+            <value>/{{ dfs_nameservice }}/{{ yarn_cluster_id }}/yarn-leader-election</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.recovery.enabled</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.zk-state-store.parent-path</name>
+            <value>/{{ dfs_nameservice }}/{{ yarn_cluster_id }}/yarn-store</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.store.class</name>
+            <value>org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore</value>
+        </property>
+        {% endif %}
+        <!-- nodemanager配置一 -->
+        <property>
+            <name>yarn.resourcemanager.nodes.exclude-path</name>
+            <value>{{ hadoop_conf_dir }}/nodemanager_exclude</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.localizer.address</name>
+            <value>0.0.0.0:8040</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.address</name>
+            <value>0.0.0.0:8041</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.webapp.address</name>
+            <value>0.0.0.0:8042</value>
+        </property>
+        <property>
+            <name>yarn.resourcemanager.am.max-attempts</name>
+            <value>4</value>
+        </property>
+
+        <!-- 日志聚合配置 -->
+        <property>
+            <name>yarn.log-aggregation-enable</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>yarn.log-aggregation.retain-seconds</name>
+            <value>604800</value>
+        </property>
+        <property>
+            <name>yarn.log-aggregation.retain-check-interval-seconds</name>
+            <value>3600</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.log-aggregation.compression-type</name>
+            <value>GZIP</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.local-dirs</name>
+            <value>${hadoop.tmp.dir}/yarn</value>
+        </property>
+        <property>
+            <name>yarn.log.server.url</name>
+            <value>http://{{ resourcemanager_list[0] }}:19888/jobhistory/logs</value>
+        </property>
+
+        <!-- yarn资源配置 -->
+        <property>
+            <name>yarn.application.classpath</name>
+            <value>{{ hadoop_classpath }}</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.resource.memory-mb</name>
+            <value>{{ yarn_mem }}</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.resource.cpu-vcores</name>
+            <value>{{ yarn_cpu }}</value>
+        </property>
+        <property>
+            <name>yarn.scheduler.maximum-allocation-mb</name>
+            <value>{{ yarn_mem }}</value>
+        </property>
+        <property>
+            <name>yarn.scheduler.maximum-allocation-vcores</name>
+            <value>{{ yarn_cpu }}</value>
+        </property>
+
+        <!-- yarn外部拓展 -->
+        <property>
+            <name>yarn.nodemanager.aux-services</name>
+            <value>mapreduce_shuffle,spark_shuffle</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
+            <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+        </property>
+        <property>
+            <name>yarn.nodemanager.aux-services.spark_shuffle.class</name>
+            <value>org.apache.spark.network.yarn.YarnShuffleService</value>
+        </property>
+    """
+    mapred_conf_template = """
+        <!-- 核心配置 -->
+        <property>
+            <name>mapreduce.framework.name</name>
+            <value>yarn</value>
+        </property>
+        <property>
+            <name>mapreduce.jobhistory.address</name>
+            <value>0.0.0.0:10020</value>
+        </property>
+        <property>
+            <name>mapreduce.jobhistory.webapp.address</name>
+            <value>0.0.0.0:19888</value>
+        </property>
+        <property>
+            <name>mapreduce.jobhistory.intermediate-done-dir</name>
+            <value>hdfs://{{ dfs_nameservice }}/hadoop/mapreduce/event</value>
+        </property>
+        <property>
+            <name>mapreduce.jobhistory.done-dir</name>
+            <value>hdfs://{{ dfs_nameservice }}/hadoop/mapreduce/history</value>
+        </property>
+
+        <!-- 作业压缩配置 -->
+        <property>
+            <name>mapreduce.map.output.compress</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>mapreduce.map.output.compress.codec</name>
+            <value>org.apache.hadoop.io.compress.GzipCodec</value>
+        </property>
+        <property>
+            <name>mapreduce.map.output.compress.type</name>
+            <value>BLOCK</value>
+        </property>
+        <property>
+            <name>mapreduce.output.fileoutputformat.compress</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>mapreduce.output.fileoutputformat.compress.codec</name>
+            <value>org.apache.hadoop.io.compress.GzipCodec</value>
+        </property>
+        <property>
+            <name>mapreduce.output.fileoutputformat.compress.type</name>
+            <value>BLOCK</value>
+        </property>
+        <property>
+            <name>mapreduce.reduce.output.compress</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>mapreduce.reduce.output.compress.codec</name>
+            <value>org.apache.hadoop.io.compress.GzipCodec</value>
+        </property>
+        <property>
+            <name>mapreduce.reduce.output.compress.type</name>
+            <value>BLOCK</value>
+        <!-- 作业重启配置 -->
+        </property>
+            <property>
+            <name>mapreduce.job.failures.tolerated</name>
+            <value>3</value>
+        </property>
+        <property>
+            <name>mapreduce.map.maxattempts</name>
+            <value>3</value>
+        </property>
+        <property>
+            <name>mapreduce.reduce.maxattempts</name>
+            <value>3</value>
+        </property>
+    """
+    env_conf_template = """
+    export HADOOP_HOME={{ hadoop_home_dir }}
+    export HADOOP_CONF_DIR={{ hadoop_conf_dir }}
+    export HADOOP_LOG_DIR=${HADOOP_HOME}/logs
+    export HADOOP_PID_DIR=${HADOOP_HOME}/pid
+    export HADOOP_TMP_DIR=${HADOOP_HOME}/tmp
+    export HDFS_NAMENODE_USER={{ current_user }}
+    export HDFS_DATANODE_USER={{ current_user }}
+    export HDFS_SECONDARYNAMENODE_USER={{ current_user }}
+    export YARN_RESOURCEMANAGER_USER={{ current_user }}
+    export YARN_NODEMANAGER_USER={{ current_user }}
+    export MAPRED_HISTORYSERVER_USER={{ current_user }}
+
+    export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
+    export HDFS_NAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/namenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/namenode-heapdump.hprof"
+    export HDFS_DATANODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
+    export HDFS_SECONDARYNAMENODE_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/secondarynamenode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/secondarynamenode-heapdump.hprof"
+    export YARN_RESOURCEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/datanode-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/datanode-heapdump.hprof"
+    export YARN_NODEMANAGER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/resourcemanager-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/resourcemanager-heapdump.hprof"
+    export MAPRED_HISTORYSERVER_OPTS="-Xms{{ jvm_heap_size }} -Xmx{{ jvm_heap_size }} ${GC_OPTS} -Xloggc:{{ hadoop_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ hadoop_home_dir }}/logs/historyserver-heapdump.hprof"
+    """
+    hadoop_class = ["org.apache.hadoop.hdfs.server.namenode.NameNode",
+                    "org.apache.hadoop.hdfs.server.datanode.DataNode",
+                    "org.apache.hadoop.hdfs.qjournal.server.JournalNode",
+                    "org.apache.hadoop.yarn.server.resourcemanager.ResourceManager",
+                    "org.apache.hadoop.yarn.server.nodemanager.NodeManager",
+                    "org.apache.hadoop.yarn.server.applicationhistoryservice.ApplicationHistoryServer",
+                    "org.apache.hadoop.hdfs.tools.DFSZKFailoverController"]
+
+    kill_service(hadoop_class)
     unzip_package()
     install_hadoop()

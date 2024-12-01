@@ -10,9 +10,9 @@ def install_jdk():
         f1.write(f"export JAVA_HOME={app_home}\n")
         f1.write(f"export PATH=$PATH:$JAVA_HOME/bin\n")
     exec_shell_command(f"source {env_file}")
-    exec_shell_command("java -version")
-
-    print("jdk 安装完成!!!!")
+    stdout, stderr, code = exec_shell_command("java -version")
+    check_cmd_output(stdout, stderr, code, "jdk 环境变量设置", check=True)
+    print("jdk 安装完成")
 
 
 if __name__ == '__main__':

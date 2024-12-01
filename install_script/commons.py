@@ -147,3 +147,16 @@ def check_service(service_port, service_name, ip_list=install_ip):
                 time.sleep(3)
             else:
                 break
+
+
+def kill_service(service_class):
+    for class_name in service_class:
+        stdout, stderr, code = exec_shell_command(f"ps -ef | grep {class_name} | grep -v grep | awk '{{print $2}}'")
+        if stdout != "":
+            stdout, stderr, code = exec_shell_command(f"kill -9 {stdout}")
+            check_cmd_output(stdout, stderr, code, f"kill  残留进程 {class_name}", check=True)
+
+
+def check_cmd_output(stdout, stderr, code, msg, check=False):
+    if check:
+        print(f"{msg} 成功 -> {stdout}" if code == 0 else f"{msg} 失败   ->  {stderr}")
