@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
-
-from commons import exec_shell_command
+from commons import *
 
 
 def init_os_conf():
@@ -30,6 +27,16 @@ def init_os_conf():
 
     # cpu性能调度模式
     exec_shell_command("echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor")
+
+    # 启用lvs支持
+    exec_shell_command("modprobe ip_vs")
+    exec_shell_command("modprobe ip_vs_rr")
+    exec_shell_command("modprobe ip_vs_wrr")
+    exec_shell_command("modprobe ip_vs_sh")
+    if get_os_name() == "ubuntu" or get_os_name() == "debian":
+        exec_shell_command("apt install ipvsadm -y")
+    elif get_os_name() == "centos" or get_os_name() == "redhat":
+        exec_shell_command("yum install ipvsadm -y")
 
 
 if __name__ == '__main__':
