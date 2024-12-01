@@ -152,12 +152,12 @@ if __name__ == '__main__':
     high-availability.zookeeper.quorum: {{ zk_addr }}
     {% endif %}
     {% if (install_role == "standalone" %}
-    jobmanager.archive.fs.dir: file://{{ flink_home_dir }}/data/archive
-    historyserver.archive.fs.dir: file://{{ flink_home_dir }}/data/archive
+    jobmanager.archive.fs.dir: file://{{ flink_home_dir }}/data/jobmanager/archive
+    historyserver.archive.fs.dir: file://{{ flink_home_dir }}/data/historyserver/archive
     {% endif %}
     {% if install_role == "yarn" or install_role == "cluster" %}
-    jobmanager.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/archive
-    historyserver.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/archive
+    jobmanager.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/jobmanager/archive
+    historyserver.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/historyserver/archive
     {% endif %}
     """
     zk_conf_template = """

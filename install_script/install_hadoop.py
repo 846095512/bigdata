@@ -153,6 +153,13 @@ def install_hadoop():
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/share/jars")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/history/logs")
 
+        # 创建 flink 目录
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/checkpoints")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/savepoints")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/storage")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/jobmanager/archive")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/historyserver/archive")
+
         print("hadoop 安装完成")
 
 if __name__ == '__main__':
