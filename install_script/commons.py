@@ -180,8 +180,8 @@ def download_from_hdfs(hdfs_host, hdfs_path, local_dir, hdfs_port=50070, recursi
                 download_from_hdfs(hdfs_host, hdfs_port, hdfs_file_path, local_file_path)
 
 
-def check_namenode_status(hadoop_ips, port=50070):
-    for ip in hadoop_ips:
+def check_namenode_status(namenode_list, port=50070):
+    for ip in namenode_list:
         url = f'http://{ip}:{port}/jmx'
         try:
             response = requests.get(url)
