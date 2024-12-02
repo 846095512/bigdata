@@ -10,7 +10,6 @@ def install_flink():
         zk_addr = ",".join([f"{ip}:2181" for ip in install_ip])
     else:
         zk_addr = params_dict["zookeeper.address"]
-    jvm_heapsize = params_dict["jvm.heapsize"]
     task_slots, stderr, code = exec_shell_command("nproc")
     history_server_port = 8082
     prom_port = 9249
@@ -30,7 +29,9 @@ def install_flink():
     exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
     exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
     exec_shell_command(f"mv {zk_conf_file} {zk_conf_file}.template")
-
+    total_mem, stderr, code = exec_shell_command("free -g | awk '/Mem:/ {print $2}'")
+    jm_heapsize = f"{total_mem / 8}g"
+    tm_heapsize = f"{total_mem / 2}g"
     generate_config_file(
         template_str=flink_conf_template,
         conf_file=flink_conf_file,
@@ -38,7 +39,8 @@ def install_flink():
         local_ip=local_ip,
         jm_rpc_port=jm_rpc_port,
         jm_rest_port=jm_rest_port,
-        jvm_heapsize=jvm_heapsize,
+        jm_heapsize=jm_heapsize,
+        tm_heapsize=tm_heapsize,
         task_slots=task_slots,
         parallelism=parallelism,
         jvm_options=jvm_options,
@@ -71,8 +73,8 @@ if __name__ == '__main__':
 jobmanager.rpc.address: {{ local_ip }}
 jobmanager.rpc.port: {{ jm_rpc_port }}
 rest.port: {{ jm_rest_port }}
-jobmanager.memory.process.size: {{ jvm_heapsize }}
-taskmanager.memory.process.size: {{ jvm_heapsize }}
+jobmanager.memory.process.size: {{ jm_heapsize }}
+taskmanager.memory.process.size: {{ tm_heapsize }}
 taskmanager.numberOfTaskSlots: {{ task_slots }}
 parallelism.default: {{ parallelism }}
 env.log.dir: {{ flink_home_dir }}/log
@@ -80,7 +82,6 @@ env.pid.dir: {{ flink_home_dir }}/pid
 env.java.opts: {{ jvm_options }}
 env.hadoop.conf.dir: {{ flink_home_dir }}/conf/hadoop
 io.tmp.dirs: {{ flink_home_dir }}/tmp
-taskmanager.heap.size: {{ jvm_heapsize }}
 
 # checkpoint 状态后端
 execution.checkpointing.interval: 30000
@@ -149,7 +150,7 @@ historyserver.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/historyserver/a
 """
     flink_class = ["org.apache.flink.runtime.entrypoint.StandaloneSessionClusterEntrypoint",
                         "org.apache.flink.runtime.taskexecutor.TaskManagerRunner",
-                        "org.apache.flink.runtime.wenmonitor.history.HistoryServer"]
+                        "org.apache.flink.runtime.webmonitor.history.HistoryServer"]
     kill_service(flink_class)
     unzip_package()
     install_flink()
