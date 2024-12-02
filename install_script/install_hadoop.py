@@ -148,6 +148,14 @@ def install_hadoop():
         # 创建 hdfs 目录
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/event")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/history")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/share/jars")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/share/conf")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_home_dir}/share/hadoop/*/*.jar /hadoop/share/jars")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/core-site.xml /hadoop/share/conf")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/hdfs-site.xml /hadoop/share/conf")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/yarn-site.xml /hadoop/share/conf")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/mapred-site.xml /hadoop/share/conf")
+
 
         # 创建 spark 目录
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/share/jars")
@@ -233,6 +241,16 @@ if __name__ == '__main__':
         <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
         <value>false</value>
     </property>
+    {% if install_role == 'standalone' %}
+    <property>
+        <name>dfs.namenode.rpc-address</name>
+        <value>0.0.0.0:8020</value>
+    </property>
+    <property>
+        <name>dfs.namenode.http-address</name>
+        <value>0.0.0.0:50070</value>
+    </property>
+    {% endif %}
     <property>
         <name>dfs.datanode.address</name>
         <value>0.0.0.0:9866</value>
@@ -269,7 +287,6 @@ if __name__ == '__main__':
         <name>dfs.namenode.rpc-address.{{ dfs_nameservice }}.nn{{ namenode_list.index(namenode) + 1 }}</name>
         <value>{{ namenode }}:8020</value>
     </property>
-
     <property>
         <name>dfs.namenode.http-address.{{ dfs_nameservice }}.nn{{ namenode_list.index(namenode) + 1 }}</name>
         <value>{{ namenode }}:50070</value>

@@ -8,6 +8,8 @@ import sys
 import tarfile
 import time
 
+import requests
+from hdfs import InsecureClient
 from jinja2 import Template
 
 current_user = os.getlogin()
@@ -160,3 +162,35 @@ def kill_service(service_class):
 def check_cmd_output(stdout, stderr, code, msg, check=False):
     if check:
         print(f"{msg} 成功 -> {stdout}" if code == 0 else f"{msg} 失败   ->  {stderr}")
+
+
+def download_from_hdfs(hdfs_host, hdfs_path, local_dir, hdfs_port=50070, recursive=False):
+    client = InsecureClient(f'http://{hdfs_host}:{hdfs_port}')
+    os.makedirs(local_dir, exist_ok=True)
+    files = client.list(hdfs_path)
+    for file in files:
+        hdfs_file_path = f"{hdfs_path}/{file}"
+        local_file_path = os.path.join(local_dir, file)
+
+        if client.status(hdfs_file_path)['type'] == 'FILE':
+            client.download(hdfs_file_path, local_file_path)
+        elif client.status(hdfs_file_path)['type'] == 'DIRECTORY':
+            if recursive:
+                os.makedirs(local_file_path, exist_ok=True)
+                download_from_hdfs(hdfs_host, hdfs_port, hdfs_file_path, local_file_path)
+
+
+def check_namenode_status(hadoop_ips, port=50070):
+    for ip in hadoop_ips:
+        url = f'http://{ip}:{port}/jmx'
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            jmx_data = response.json()
+            for bean in jmx_data.get('beans', []):
+                if bean.get('name') == 'Hadoop:service=NameNode,name=NameNodeStatus':
+                    state = bean.get('State')
+                    if state == 'active':
+                        return ip
+        except requests.exceptions.RequestException as e:
+            print(f"Node {ip} is {e}")

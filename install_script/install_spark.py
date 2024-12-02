@@ -5,6 +5,7 @@ from commons import *
 
 
 def install_spark():
+    namenode_list = params_dict['namenode.list']
     jvm_heapsize = params_dict["jvm.heapsize"]
     dfs_nameservice = params_dict["dfs.nameservice"]
     zk_addr = params_dict["zookeeper.address"]
@@ -36,19 +37,17 @@ def install_spark():
                          spark_masters=spark_masters,
                          dfs_nameservice=dfs_nameservice,
                          spark_cluster_id=spark_cluster_id)
-    set_permissions(spark_home_dir)
 
+    active_namenode_ip = check_namenode_status(namenode_list)
+    download_from_hdfs(active_namenode_ip, "/hadoop/share/conf/", f"{spark_conf_dir}")
+    set_permissions(spark_home_dir)
     if install_role != "yarn":
         stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-master.sh")
         check_cmd_output(stdout, stderr, code, "spark master 启动", check=True)
         stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-worker.sh spark://{spark_masters}")
         check_cmd_output(stdout, stderr, code, "spark worker 启动", check=True)
-        need_history_server = input(
-            "启动historyserver,请输入Y/N,启动historyserver需要将hadoop文件上传到spark的conf目录: ")
-        if need_history_server == "y" or need_history_server == "Y":
-            stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh")
-            check_cmd_output(stdout, stderr, code, "spark history server 启动", check=True)
-
+        stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh")
+        check_cmd_output(stdout, stderr, code, "spark history server 启动", check=True)
     print("spark 安装完成")
 
 

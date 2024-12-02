@@ -16,8 +16,8 @@ def install_mysql():
 
     mysql_home_dir = os.path.join(get_app_home_dir(), module_name)
     my_cnf_file = os.path.join(mysql_home_dir, "my.cnf")
-    stdout, stderr, code = exec_shell_command("free -g | awk '/Mem:/ {print $2}'")
-    innodb_buffer_pool_size = "4g"
+    total_mem, stderr, code = exec_shell_command("free -g | awk '/Mem:/ {print $2}'")
+    innodb_buffer_pool_size = f"{int(total_mem) / 2}g"
     exec_shell_command(f"mkdir -p {mysql_home_dir}")
     exec_shell_command(f"mkdir -p {mysql_home_dir}/data")
     exec_shell_command(f"mkdir -p {mysql_home_dir}/binlog/relay")

@@ -3,6 +3,7 @@ from commons import *
 
 
 def install_flink():
+    namenode_list = params_dict['namenode.list']
     dfs_nameservice = params_dict["dfs.nameservice"]
     flink_cluster_id = params_dict["flink.cluster.id"]
     if install_role == "cluster":
@@ -48,6 +49,12 @@ def install_flink():
         history_server_port=history_server_port,
         prom_port=prom_port
     )
+
+    active_namenode_ip = check_namenode_status(namenode_list)
+    download_from_hdfs(active_namenode_ip, "/hadoop/share/jars/", f"{flink_home_dir}/lib")
+    download_from_hdfs(active_namenode_ip, "/hadoop/share/conf/", f"{flink_home_dir}/conf/hadoop")
+    set_permissions(flink_home_dir)
+
     if install_role == "cluster" or install_role == "standalone":
         stdout, stderr, code = exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         check_cmd_output(stdout, stderr, code, "flink jobmanager 启动", check=True)
@@ -56,6 +63,7 @@ def install_flink():
         stdout, stderr, code = exec_shell_command(f"{flink_bin_dir}/historyserver.sh start")
         check_cmd_output(stdout, stderr, code, "flink historyserver 启动", check=True)
     print("flink 安装完成")
+
 
 if __name__ == '__main__':
     flink_conf_template = """
@@ -139,5 +147,9 @@ jobmanager.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/jobmanager/archive
 historyserver.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/historyserver/archive
 {% endif %}
 """
+    flink_class = ["org.apache.flink.runtime.entrypoint.StandaloneSessionClusterEntrypoint",
+                        "org.apache.flink.runtime.taskexecutor.TaskManagerRunner",
+                        "org.apache.flink.runtime.wenmonitor.history.HistoryServer"]
+    kill_service(flink_class)
     unzip_package()
     install_flink()
