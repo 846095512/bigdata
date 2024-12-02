@@ -25,6 +25,8 @@ def install_flink():
     exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
     exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
     exec_shell_command(f"mkdir -p {flink_home_dir}/conf/hadoop")
+    exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
+    exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
     exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
     exec_shell_command(f"mv {zk_conf_file} {zk_conf_file}.template")
 
@@ -46,27 +48,6 @@ def install_flink():
         history_server_port=history_server_port,
         prom_port=prom_port
     )
-
-    if install_role == "cluster":
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/zookeeper")
-        generate_config_file(
-            template_str=zk_conf_template,
-            conf_file=zk_conf_file,
-            install_role=install_role,
-            install_ip=install_ip,
-            flink_home_dir=flink_home_dir
-        )
-        for myid in range(len(install_ip)):
-            if local_ip == install_ip[myid]:
-                with open(f"{flink_home_dir}/data/zookeeper/myid", "w") as f1:
-                    f1.write(str(myid))
-
-        myid, stderr, code = exec_shell_command(f"cat {flink_home_dir}/data/zookeeper/myid")
-        stdout, stderr, code = exec_shell_command(f"{flink_bin_dir}/zookeeper.sh start {myid}")
-        check_cmd_output(stdout, stderr, code, "flink zookeeper 启动", check=True)
-    if install_role == "standalone":
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
-        exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
     if install_role == "cluster" or install_role == "standalone":
         stdout, stderr, code = exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
         check_cmd_output(stdout, stderr, code, "flink jobmanager 启动", check=True)
@@ -74,7 +55,6 @@ def install_flink():
         check_cmd_output(stdout, stderr, code, "flink taskmanager 启动", check=True)
         stdout, stderr, code = exec_shell_command(f"{flink_bin_dir}/historyserver.sh start")
         check_cmd_output(stdout, stderr, code, "flink historyserver 启动", check=True)
-
     print("flink 安装完成")
 
 if __name__ == '__main__':
@@ -158,24 +138,6 @@ historyserver.archive.fs.dir: file://{{ flink_home_dir }}/data/historyserver/arc
 jobmanager.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/jobmanager/archive
 historyserver.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/historyserver/archive
 {% endif %}
-"""
-    zk_conf_template = """
-initLimit=10
-syncLimit=5
-clientPort=2181
-dataDir={{ flink_home_dir }}/data/zookeeper
-autopurge.snapRetainCount=5
-autopurge.purgeInterval=12
-maxClientCnxns=1000
-minSessionTimeout=10000
-maxSessionTimeout=60000
-admin.enableServer=false
-admin.serverPort=9999
-{% if install_role == "cluster" %}
-{% for ip in install_ip %}
-server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
-{% endfor %}
-{% endif %}    
 """
     unzip_package()
     install_flink()
