@@ -65,5 +65,7 @@ server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
 {% endfor %}
 {% endif %}
 """
+    zookeeper_class = ["org.apache.zookeeper.server.quorum.QuorumPeerMain"]
+    kill_service(zookeeper_class)
     unzip_package()
     install_zk()
