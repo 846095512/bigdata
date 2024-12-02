@@ -151,7 +151,7 @@ high-availability.zookeeper.path.root: /{{ flink_cluster_id }}
 high-availability.storageDir: hdfs://{{ dfs_nameservice }}/flink/storage
 high-availability.zookeeper.quorum: {{ zk_addr }}
 {% endif %}
-{% if (install_role == "standalone" %}
+{% if install_role == "standalone" %}
 jobmanager.archive.fs.dir: file://{{ flink_home_dir }}/data/jobmanager/archive
 historyserver.archive.fs.dir: file://{{ flink_home_dir }}/data/historyserver/archive
 {% endif %}
