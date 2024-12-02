@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import math
-import sys
 
 from commons import *
 
@@ -71,6 +70,7 @@ def install_kafka():
         )
 
     print("kafka 安装完成")
+
 
 if __name__ == '__main__':
     kafka_conf_template = """
