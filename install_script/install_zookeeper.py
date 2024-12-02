@@ -47,23 +47,23 @@ def install_zk():
 
 if __name__ == '__main__':
     zoo_conf_template = """
-    tickTime=2000
-    initLimit=10
-    syncLimit=5
-    clientPort=2181
-    dataDir={{ zk_home_dir }}
-    autopurge.snapRetainCount=5
-    autopurge.purgeInterval=12
-    maxClientCnxns=1000
-    minSessionTimeout=10000
-    maxSessionTimeout=60000
-    admin.enableServer=false
-    admin.serverPort=9999
-    {% if install_role == "cluster" %}
-    {% for ip in install_ip %}
-    server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
-    {% endfor %}
-    {% endif %}
-    """
+tickTime=2000
+initLimit=10
+syncLimit=5
+clientPort=2181
+dataDir={{ zk_home_dir }}
+autopurge.snapRetainCount=5
+autopurge.purgeInterval=12
+maxClientCnxns=1000
+minSessionTimeout=10000
+maxSessionTimeout=60000
+admin.enableServer=false
+admin.serverPort=9999
+{% if install_role == "cluster" %}
+{% for ip in install_ip %}
+server.{{ install_ip.index(ip) }}={{ ip }}:2888:3888
+{% endfor %}
+{% endif %}
+"""
     unzip_package()
     install_zk()

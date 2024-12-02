@@ -35,9 +35,15 @@ def init_os_conf():
     exec_shell_command("modprobe ip_vs_sh")
     if get_os_name() == "ubuntu" or get_os_name() == "debian":
         exec_shell_command("apt install ipvsadm -y")
+        exec_shell_command("sudo apt remove mariadb* -y")
+        exec_shell_command("sudo apt install libncurses5 -y")
     elif get_os_name() == "centos" or get_os_name() == "redhat":
         exec_shell_command("yum install ipvsadm -y")
-
+        exec_shell_command("sudo yum remove mariadb* -y")
+        exec_shell_command("sudo yum install ncurses-compat-libs -y")
+    else:
+        print("暂时不支持的系统类型")
+        sys.exit(1)
 
 if __name__ == '__main__':
     init_os_conf()
