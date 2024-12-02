@@ -87,7 +87,6 @@ jobmanager.memory.process.size: {{ jvm_heapsize }}
 taskmanager.memory.process.size: {{ jvm_heapsize }}
 taskmanager.numberOfTaskSlots: {{ task_slots }}
 parallelism.default: {{ parallelism }}
-env.java.home: {{ flink_home_dir }}/jdk
 env.log.dir: {{ flink_home_dir }}/log
 env.pid.dir: {{ flink_home_dir }}/pid
 env.java.opts: {{ jvm_options }}
