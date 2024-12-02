@@ -125,6 +125,7 @@ spark.sql.shuffle.partitions            200
 spark.sql.parquet.cacheMetadata         true
 spark.sql.parquet.filterPushdown        true
 spark.sql.files.maxPartitionBytes       134217728 
+spark.sql.inMemoryColumnarStorage.compressed  true
 spark.sql.cache.serializer              org.apache.spark.storage.SnappyCompressionCodec 
 
 # Spark MLlib 配置
