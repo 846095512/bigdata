@@ -119,9 +119,7 @@ def generate_config_file(template_str, conf_file, keyword="", **kwargs):
         insert_line_num = 1
     else:
         insert_line_num, stderr, code = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
-
     exec_shell_command(f"touch {conf_file}")
-
     with open(conf_file, "r", encoding="utf-8") as f1:
         lines = f1.readlines()
         lines.insert(int(insert_line_num), config_content)
@@ -171,13 +169,29 @@ def download_from_hdfs(hdfs_host, hdfs_path, local_dir, hdfs_port=50070, recursi
     for file in files:
         hdfs_file_path = f"{hdfs_path}/{file}"
         local_file_path = os.path.join(local_dir, file)
-
         if client.status(hdfs_file_path)['type'] == 'FILE':
             client.download(hdfs_file_path, local_file_path)
         elif client.status(hdfs_file_path)['type'] == 'DIRECTORY':
             if recursive:
                 os.makedirs(local_file_path, exist_ok=True)
-                download_from_hdfs(hdfs_host, hdfs_port, hdfs_file_path, local_file_path)
+                download_from_hdfs(hdfs_host, hdfs_file_path, local_file_path, hdfs_port=hdfs_port)
+    print(f"从hdfs {hdfs_path} -> {local_dir}  文件下载完毕")
+
+
+def upload_from_local(hdfs_host, hdfs_path, local_dir, hdfs_port=50070, recursive=False):
+    client = InsecureClient(f'http://{hdfs_host}:{hdfs_port}')
+    if not os.path.exists(local_dir):
+        print(f"本地目录 {local_dir} 不存在！")
+        return
+    for item in os.listdir(local_dir):
+        local_item_path = os.path.join(local_dir, item)
+        hdfs_item_path = f"{hdfs_path}/{item}"
+        if os.path.isfile(local_item_path):
+            client.upload(hdfs_item_path, local_item_path, overwrite=True)
+        elif os.path.isdir(local_item_path):
+            if recursive:
+                upload_from_local(hdfs_host, hdfs_item_path, local_item_path)
+    print(f"从本地  {local_dir} ->  {hdfs_path} 文件上传完毕")
 
 
 def check_namenode_status(namenode_list, port=50070):
@@ -194,3 +208,4 @@ def check_namenode_status(namenode_list, port=50070):
                         return ip
         except requests.exceptions.RequestException as e:
             print(f"Node {ip} is {e}")
+
