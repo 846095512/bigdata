@@ -74,61 +74,61 @@ def install_kafka():
 
 if __name__ == '__main__':
     kafka_conf_template = """
-    # 基础配置
-    {% if kraft_enable == "true" %}
-    node.id={{ node_id }}
-    process.roles={{ process_roles }}
-    listeners={{ listeners }}
-    advertised.listeners={{ broker }}
-    controller.quorum.voters={{ controller_quorums }}
-    listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-    inter.broker.listener.name=PLAINTEXT
-    controller.listener.names=CONTROLLER
-    {% else %}
-    broker.id={{ broker_id }}
-    listeners={{ broker }}
-    advertised.listeners={{ broker }}
-    zookeeper.connect={{ zk_addr }}
-    zookeeper.connection.timeout.ms=3000
-    listener.security.protocol.map=PLAINTEXT:PLAINTEXT
-    {% endif %}
-    # 分区
-    num.partitions={{ partitions_default }}
-    min.insync.replicas={{ partitions_default }}
-    default.replication.factor={{ partitions_default }}
-    offsets.topic.replication.factor={{ partitions_default }}
-    transaction.state.log.replication.factor={{ partitions_default }}
-    transaction.state.log.min.isr={{ partitions_default }}
-    # 日志存储
-    log.dirs={{ kafka_home_dir }}/message
-    metadata.log.dir={{ kafka_home_dir }}/metadata
-    log.retention.hours=3
-    log.segment.bytes=1073741824
-    log.retention.bytes=10737418240
-    log.flush.interval.ms=10000
-    log.cleanup.policy=delete
-    log.retention.check.interval.ms=300000
-    log.flush.interval.messages=10000
-    unclean.leader.election.enable=false
+# 基础配置
+{% if kraft_enable == "true" %}
+node.id={{ node_id }}
+process.roles={{ process_roles }}
+listeners={{ listeners }}
+advertised.listeners={{ broker }}
+controller.quorum.voters={{ controller_quorums }}
+listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+inter.broker.listener.name=PLAINTEXT
+controller.listener.names=CONTROLLER
+{% else %}
+broker.id={{ broker_id }}
+listeners={{ broker }}
+advertised.listeners={{ broker }}
+zookeeper.connect={{ zk_addr }}
+zookeeper.connection.timeout.ms=3000
+listener.security.protocol.map=PLAINTEXT:PLAINTEXT
+{% endif %}
+# 分区
+num.partitions={{ partitions_default }}
+min.insync.replicas={{ partitions_default }}
+default.replication.factor={{ partitions_default }}
+offsets.topic.replication.factor={{ partitions_default }}
+transaction.state.log.replication.factor={{ partitions_default }}
+transaction.state.log.min.isr={{ partitions_default }}
+# 日志存储
+log.dirs={{ kafka_home_dir }}/message
+metadata.log.dir={{ kafka_home_dir }}/metadata
+log.retention.hours=3
+log.segment.bytes=1073741824
+log.retention.bytes=10737418240
+log.flush.interval.ms=10000
+log.cleanup.policy=delete
+log.retention.check.interval.ms=300000
+log.flush.interval.messages=10000
+unclean.leader.election.enable=false
 
-    # 线程数
-    num.network.threads=3
-    num.io.threads=8
+# 线程数
+num.network.threads=3
+num.io.threads=8
 
-    # 元数据刷新
-    metadata.max.age.ms=300000
+# 元数据刷新
+metadata.max.age.ms=300000
 
-    # 副本同步
-    replica.fetch.min.bytes=524288
-    replica.fetch.max.bytes=2097152
-    replica.lag.time.max.ms=10000
+# 副本同步
+replica.fetch.min.bytes=524288
+replica.fetch.max.bytes=2097152
+replica.lag.time.max.ms=10000
 
-    # 最大消息大小
-    message.max.bytes=20971520
+# 最大消息大小
+message.max.bytes=20971520
 
-    # 受控关闭
-    controlled.shutdown.enable=true
-    controlled.shutdown.max.retries=3
-    """
+# 受控关闭
+controlled.shutdown.enable=true
+controlled.shutdown.max.retries=3
+"""
     unzip_package()
     install_kafka()
