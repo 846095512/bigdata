@@ -103,7 +103,7 @@ def set_permissions(path):
 def unzip_package():
     file_path = get_download_dir()
     app_home_dir = get_app_home_dir()
-    print(f"App home path is {app_home_dir}")
+    print(f"PREFIX={app_home_dir}")
 
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
         tar_ref.extractall(app_home_dir)
