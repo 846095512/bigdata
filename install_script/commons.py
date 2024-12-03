@@ -35,10 +35,10 @@ def is_valid_ip(*args):
                 for ip in arg:
                     ipaddress.ip_address(ip)
             else:
-                print("不支持的参数类型")
+                print("Unsupported parameter. Please check the parameters")
                 sys.exit(1)
     except ValueError:
-        print("ip 地址不合法")
+        print("Invalid IP address")
         sys.exit(1)
 
 
@@ -46,13 +46,12 @@ def is_valid_nums(ip_list):
     if len(ip_list) > 1 and len(ip_list) % 2 != 0:
         return True
     else:
-        print("集群模式下ip个数必须大于1并且为奇数")
+        print("the number of IPs must be greater than 1 and be an odd number")
         sys.exit(1)
 
 
 def get_user_env_filename():
     os_name = get_os_name()
-
     if os_name == "ubuntu":
         return f"/home/{current_user}/.profile"
     else:
@@ -83,10 +82,13 @@ def get_app_home_dir():
     return app_home_dir
 
 
-def exec_shell_command(cmd):
+def exec_shell_command(cmd, msg="", output=False):
     try:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
-        return result.stdout.strip(), result.stderr.strip(), result.returncode
+        if output:
+            print(
+                f"{msg} Succeeded -> {result.stdout}" if result.returncode == 0 else f"{msg} Failed  ->  {result.stderr}")
+        return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         print(e)
         sys.exit(1)
@@ -95,23 +97,23 @@ def exec_shell_command(cmd):
 def set_permissions(path):
     exec_shell_command(f"chmod -R 750 {path}")
     exec_shell_command(f"chown -R {current_user}:{current_user} {path}")
-    print(f"{path}  设置目录权限完成")
+    print(f"The permissions for the {path} directory have been set")
 
 
 def unzip_package():
     file_path = get_download_dir()
     app_home_dir = get_app_home_dir()
-    print(f"应用家目录 -> {app_home_dir}")
+    print(f"App home path is {app_home_dir}")
 
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
         tar_ref.extractall(app_home_dir)
-    print(f"文件解压完成  ->  {filename}")
+    print(f"The {filename} file has been extracted")
 
-    unpack_name, stderr, code = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
+    unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
     old_path = os.path.join(app_home_dir, unpack_name)
     new_path = os.path.join(app_home_dir, module_name)
     shutil.move(old_path, new_path)
-    print(f"目录移动完成  {old_path} -> {new_path}")
+    print(f"The directory has been moved from {old_path} to {new_path}")
 
 
 def generate_config_file(template_str, conf_file, keyword="", **kwargs):
@@ -120,21 +122,22 @@ def generate_config_file(template_str, conf_file, keyword="", **kwargs):
     if keyword == "":
         insert_line_num = 1
     else:
-        insert_line_num, stderr, code = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
+        insert_line_num = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
     exec_shell_command(f"touch {conf_file}")
     with open(conf_file, "r", encoding="utf-8") as f1:
         lines = f1.readlines()
         lines.insert(int(insert_line_num), config_content)
     with open(conf_file, "w", encoding="utf-8") as f2:
         f2.writelines(lines)
-    print(f"文件配置完成    ->    {conf_file} ")
+    print(f"The configuration file {conf_file} has been generated ")
 
 
 def get_download_dir():
     root_dir = get_root_dir()
     package_dir = os.path.join(root_dir, "package", filename)
     if not os.path.exists(package_dir):
-        print(f"安装包文件下载路径    ->    {package_dir}  不存在,请先将安装包上传至    ->    {package_dir}")
+        print(
+            f"installation package download path  {package_dir}  is not exist. Please upload the installation package to {package_dir}")
         sys.exit(1)
     return package_dir
 
@@ -145,7 +148,7 @@ def check_service(service_port, service_name, ip_list=install_ip):
             result = subprocess.run(
                 f"nc -zv {ip} {service_port}", shell=True, capture_output=True, text=True)
             if result.returncode != 0:
-                print(f"等待 {ip} {service_name}  服务启动")
+                print(f"wait host  {ip} {service_name}  start")
                 time.sleep(3)
             else:
                 break
@@ -153,15 +156,9 @@ def check_service(service_port, service_name, ip_list=install_ip):
 
 def kill_service(service_class):
     for class_name in service_class:
-        stdout, stderr, code = exec_shell_command(f"ps -ef | grep {class_name} | grep -v grep | awk '{{print $2}}'")
+        stdout = exec_shell_command(f"ps -ef | grep {class_name} | grep -v grep | awk '{{print $2}}'")
         if stdout != "":
-            stdout, stderr, code = exec_shell_command(f"kill -9 {stdout}")
-            check_cmd_output(stdout, stderr, code, f"kill  残留进程 {class_name}", check=True)
-
-
-def check_cmd_output(stdout, stderr, code, msg, check=False):
-    if check:
-        print(f"{msg} 成功 -> {stdout}" if code == 0 else f"{msg} 失败   ->  {stderr}")
+            exec_shell_command(f"kill -9 {stdout}", f"kill process {class_name}", output=True)
 
 
 def download_from_hdfs(hdfs_host, hdfs_path, local_dir, hdfs_port=50070, recursive=False):
@@ -177,13 +174,13 @@ def download_from_hdfs(hdfs_host, hdfs_path, local_dir, hdfs_port=50070, recursi
             if recursive:
                 os.makedirs(local_file_path, exist_ok=True)
                 download_from_hdfs(hdfs_host, hdfs_file_path, local_file_path, hdfs_port=hdfs_port)
-    print(f"从hdfs {hdfs_path} -> {local_dir}  文件下载完毕")
+    print(f"From hdfs path  {hdfs_path} download file to local path {local_dir}  success")
 
 
 def upload_from_local(hdfs_host, hdfs_path, local_dir, hdfs_port=50070, recursive=False):
     client = InsecureClient(f'http://{hdfs_host}:{hdfs_port}')
     if not os.path.exists(local_dir):
-        print(f"本地目录 {local_dir} 不存在！")
+        print(f"Local path {local_dir} is not exist")
         return
     for item in os.listdir(local_dir):
         local_item_path = os.path.join(local_dir, item)
@@ -193,7 +190,7 @@ def upload_from_local(hdfs_host, hdfs_path, local_dir, hdfs_port=50070, recursiv
         elif os.path.isdir(local_item_path):
             if recursive:
                 upload_from_local(hdfs_host, hdfs_item_path, local_item_path)
-    print(f"从本地  {local_dir} ->  {hdfs_path} 文件上传完毕")
+    print(f"From local path {local_dir} upload file to hdfs path {hdfs_path}  success")
 
 
 def check_namenode_status(namenode_list, port=50070):

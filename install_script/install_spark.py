@@ -42,13 +42,13 @@ def install_spark():
     download_from_hdfs(active_namenode_ip, "/hadoop/share/conf/", f"{spark_conf_dir}")
     set_permissions(spark_home_dir)
     if install_role != "yarn":
-        stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-master.sh")
-        check_cmd_output(stdout, stderr, code, "spark master 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-worker.sh spark://{spark_masters}")
-        check_cmd_output(stdout, stderr, code, "spark worker 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh")
-        check_cmd_output(stdout, stderr, code, "spark history server 启动", check=True)
-    print("spark 安装完成")
+        exec_shell_command(f"{spark_sbin_dir}/start-master.sh",
+                           "spark master start", output=True)
+        exec_shell_command(f"{spark_sbin_dir}/start-worker.sh spark://{spark_masters}",
+                           "spark worker start", output=True)
+        exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh",
+                           "spark history server start", output=True)
+    print("Spark installation completed")
 
 
 if __name__ == '__main__':

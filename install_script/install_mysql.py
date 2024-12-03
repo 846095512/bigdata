@@ -38,20 +38,20 @@ def install_mysql():
     set_permissions(mysql_home_dir)
     new_pwd = "DBuser@123_!@#"
     # 初始化mysql并修改root用户密码 启动组复制
-    stdout, stderr, code = exec_shell_command(
-        f"""{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_home_dir}/data """)
-    check_cmd_output(stdout, stderr, code, "mysql 初始化", check=True)
-    stdout, stderr, code = exec_shell_command(
-        f"""{mysql_home_dir}/bin/mysqld_safe --defaults-file={mysql_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """)
-    check_cmd_output(stdout, stderr, code, "mysql 启动", check=True)
+    exec_shell_command(
+        f"""{mysql_home_dir}/bin/mysqld --defaults-file={mysql_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={mysql_home_dir} --datadir={mysql_home_dir}/data""",
+        "mysql format", output=True)
+    exec_shell_command(
+        f"""{mysql_home_dir}/bin/mysqld_safe --defaults-file={mysql_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
+        "mysql 启动", output=True)
     temp_passwd = exec_shell_command(
         f"""grep 'temporary password' {mysql_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
-    print(f"临时root密码 -> {temp_passwd}")
-    print(f"新root密码 -> {new_pwd}")
+    print(f"Temporary root password is {temp_passwd}")
+    print(f"new root password is {new_pwd}")
     time.sleep(5)
-    stdout, stderr, code = exec_shell_command(
-        f"""{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """)
-    check_cmd_output(stdout, stderr, code, "修改 mysql 密码", check=True)
+    exec_shell_command(
+        f"""{mysql_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {mysql_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """,
+        "change mysql root password", output=True)
     if install_role == "cluster":
         exec_shell_command(
             f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=0;" """)
@@ -67,16 +67,16 @@ def install_mysql():
         if local_ip == install_ip[0]:
             exec_shell_command(
                 f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET GLOBAL group_replication_bootstrap_group=ON;" """)
-            stdout, stderr, code = exec_shell_command(
-                f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """)
-            check_cmd_output(stdout, stderr, code, "启动 mysql 组复制", check=True)
+            exec_shell_command(
+                f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """,
+                "Start MySQL Group Replication", output=True)
             exec_shell_command(
                 f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "SET GLOBAL group_replication_bootstrap_group=OFF;" """)
         else:
-            stdout, stderr, code = exec_shell_command(
-                f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """)
-            check_cmd_output(stdout, stderr, code, "启动 mysql 组复制", check=True)
-    print("mysql 安装完成")
+            exec_shell_command(
+                f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """,
+                "Start MySQL Group Replication", output=True)
+    print("MySQL  installation completed")
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ from commons import *
 
 def init_os_conf():
     if os.getlogin() != 'root':
-        print("请用root用户执行系统优化脚本")
+        print("Please execute this script as the root user.")
         sys.exit(1)
 
     # 交换分区
@@ -37,12 +37,13 @@ def init_os_conf():
         exec_shell_command("apt install ipvsadm -y")
         exec_shell_command("sudo apt remove mariadb* -y")
         exec_shell_command("sudo apt install libncurses5 -y")
+        exec_shell_command("sudo apt clean")
     elif get_os_name() == "centos" or get_os_name() == "redhat":
         exec_shell_command("yum install ipvsadm -y")
         exec_shell_command("sudo yum remove mariadb* -y")
-        exec_shell_command("sudo yum install ncurses-compat-libs -y")
+        exec_shell_command("sudo yum clean  -y")
     else:
-        print("暂时不支持的系统类型")
+        print("System type not currently supported.")
         sys.exit(1)
 
 if __name__ == '__main__':

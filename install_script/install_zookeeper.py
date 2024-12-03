@@ -38,9 +38,9 @@ def install_zk():
         f"sed -i 's|^export CLIENT_JVMFLAGS=.*$|export CLIENT_JVMFLAGS=\"-Xloggc:{zk_home_dir}/logs/cli-gc.log -XX:HeapDumpPath={zk_home_dir}/logs/cli-heapdump.hprof/ ${{CLIENT_JVMFLAGS}}\"|'  {zk_env_file}")
     exec_shell_command(f"echo 'export ZOOKEEPER_HOME={zk_home_dir}' >> {zk_env_file}")
     set_permissions(zk_home_dir)
-    stdout, stderr, code = exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start")
-    check_cmd_output(stdout, stderr, code, "zookeeper 启动", check=True)
-    print("zookeeper 安装完成")
+    exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start",
+                       "zookeeper start", output=True)
+    print("zookeeper installation completed")
 
 
 if __name__ == '__main__':

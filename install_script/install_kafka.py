@@ -41,7 +41,7 @@ def install_kafka():
             process_roles = "controller"
             listeners = f"{controller}"
         else:
-            print("本机ip不在broker或controller列表内,请检查安装参数")
+            print("The local IP is not in the broker or controller list. Please check the installation parameters")
             sys.exit(1)
 
         generate_config_file(
@@ -57,11 +57,11 @@ def install_kafka():
             partitions_default=partitions_default,
             kafka_home_dir=kafka_home_dir
         )
-        stdout, stderr, code = exec_shell_command(
-            f"{bin_dir}/kafka-storage.sh format --config {kraft_conf} --cluster-id {cluster_id}")
-        check_cmd_output(stdout, stderr, code, "kafka storage 初始化")
-        stdout, stderr, code = exec_shell_command(f"{bin_dir}/kafka-server-start.sh -daemon {kraft_conf}")
-        check_cmd_output(stdout, stderr, code, "kafka server 启动")
+        exec_shell_command(
+            f"{bin_dir}/kafka-storage.sh format --config {kraft_conf} --cluster-id {cluster_id}",
+            "kafka storage format", output=True)
+        exec_shell_command(f"{bin_dir}/kafka-server-start.sh -daemon {kraft_conf}",
+                           "kafka server start", output=True)
     else:
         zk_addr = params_dict["zookeeper.address"]
         generate_config_file(
@@ -74,9 +74,9 @@ def install_kafka():
             kraft_enable=kraft_enable,
             kafka_home_dir=kafka_home_dir
         )
-        stdout, stderr, code = exec_shell_command(f"{bin_dir}/kafka-server-start.sh -daemon {server_conf}")
-        check_cmd_output(stdout, stderr, code, "kafka server 启动")
-    print("kafka 安装完成")
+        exec_shell_command(f"{bin_dir}/kafka-server-start.sh -daemon {server_conf}",
+                           "kafka server start", output=True)
+    print("Kafka installation completed")
 
 
 if __name__ == '__main__':

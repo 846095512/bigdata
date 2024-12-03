@@ -96,54 +96,53 @@ def install_hadoop():
     exec_shell_command(f"rm -rf  {hadoop_data_dir}")
 
     if install_role == "standalone":
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
-        check_cmd_output(stdout, stderr, code, "namenode 初始化", check=True)
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-        check_cmd_output(stdout, stderr, code, "namenode 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
-        check_cmd_output(stdout, stderr, code, "datanode 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
-        check_cmd_output(stdout, stderr, code, "resourcemanager 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
-        check_cmd_output(stdout, stderr, code, "nodemanager 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
-        check_cmd_output(stdout, stderr, code, "timelineserver(historyserver) 启动", check=True)
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force",
+                           "namenode format", output=True)
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode",
+                           "namenode start", output=True)
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode",
+                           "datanode start", output=True)
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager",
+                           "resourcemanager start", output=True)
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager",
+                           "nodemanager start", output=True)
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver",
+                           "timelineserver(historyserver) start", output=True)
 
     if install_role == "cluster":
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode")
-        check_cmd_output(stdout, stderr, code, "journalnode 启动", check=True)
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start journalnode",
+                           "journalnode start", output=True)
         check_service(8485, "journalnode")
 
         if local_ip == namenode_list[0]:
-            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force")
-            check_cmd_output(stdout, stderr, code, "namenode 初始化", check=True)
-            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force")
-            check_cmd_output(stdout, stderr, code, "zkfc 初始化", check=True)
-            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-            check_cmd_output(stdout, stderr, code, "namenode 启动", check=True)
-            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
-            check_cmd_output(stdout, stderr, code, "zkfc 启动", check=True)
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -format -force",
+                               "namenode format", output=True)
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs zkfc -formatZK -force",
+                               "zkfc format", output=True)
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode",
+                               "namenode start", output=True)
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc",
+                               "zkfc start", output=True)
         elif local_ip in namenode_list:
             check_service(8020, "namenode", [install_ip[0]])
-            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby")
-            check_cmd_output(stdout, stderr, code, "namenode 同步元数据", check=True)
-
-            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode")
-            check_cmd_output(stdout, stderr, code, "namenode 启动", check=True)
-            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc")
-            check_cmd_output(stdout, stderr, code, "zkfc 启动", check=True)
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs namenode -bootstrapStandby",
+                               "namenode Synchronize metadata", output=True)
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start namenode",
+                               "namenode start", output=True)
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start zkfc",
+                               "zkfc start", output=True)
         else:
-            print(f"当前主机  {local_ip} 不是namenode节点,跳过namenode初始化")
+            print(f"The current host {local_ip} is not a namenode node, skipping namenode initialization.")
 
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode")
-        check_cmd_output(stdout, stderr, code, "datanode 启动", check=True)
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs --daemon start datanode",
+                           "datanode start", output=True)
         if local_ip in resourcemanager_list:
-            stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager")
-            check_cmd_output(stdout, stderr, code, "resourcemanager 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager")
-        check_cmd_output(stdout, stderr, code, "nodemanager 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver")
-        check_cmd_output(stdout, stderr, code, "timelineserver(historyserver) 启动", check=True)
+            exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start resourcemanager",
+                               "resourcemanager start", output=True)
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start nodemanager",
+                           "nodemanager start", output=True)
+        exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver",
+                           "timelineserver(historyserver) start", output=True)
         # 创建 hdfs 目录
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/event")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/history")
@@ -154,7 +153,6 @@ def install_hadoop():
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/hdfs-site.xml /hadoop/share/conf")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/yarn-site.xml /hadoop/share/conf")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/mapred-site.xml /hadoop/share/conf")
-
 
         # 创建 spark 目录
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/share/jars")
@@ -167,7 +165,8 @@ def install_hadoop():
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/jobmanager/archive")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/historyserver/archive")
 
-        print("hadoop 安装完成")
+        print("Hadoop installation completed")
+
 
 if __name__ == '__main__':
     core_conf_template = """

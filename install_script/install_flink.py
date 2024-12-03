@@ -58,13 +58,13 @@ def install_flink():
     set_permissions(flink_home_dir)
 
     if install_role == "cluster" or install_role == "standalone":
-        stdout, stderr, code = exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start")
-        check_cmd_output(stdout, stderr, code, "flink jobmanager 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start")
-        check_cmd_output(stdout, stderr, code, "flink taskmanager 启动", check=True)
-        stdout, stderr, code = exec_shell_command(f"{flink_bin_dir}/historyserver.sh start")
-        check_cmd_output(stdout, stderr, code, "flink historyserver 启动", check=True)
-    print("flink 安装完成")
+        exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start",
+                           "flink jobmanager start", output=True)
+        exec_shell_command(f"{flink_bin_dir}/taskmanager.sh start",
+                           "flink taskmanager start", output=True)
+        exec_shell_command(f"{flink_bin_dir}/historyserver.sh start",
+                           "flink historyserver start", output=True)
+    print("Flink installation completed")
 
 
 if __name__ == '__main__':
@@ -149,8 +149,8 @@ historyserver.archive.fs.dir: hdfs://{{ dfs_nameservice }}/flink/historyserver/a
 {% endif %}
 """
     flink_class = ["org.apache.flink.runtime.entrypoint.StandaloneSessionClusterEntrypoint",
-                        "org.apache.flink.runtime.taskexecutor.TaskManagerRunner",
-                        "org.apache.flink.runtime.webmonitor.history.HistoryServer"]
+                   "org.apache.flink.runtime.taskexecutor.TaskManagerRunner",
+                   "org.apache.flink.runtime.webmonitor.history.HistoryServer"]
     kill_service(flink_class)
     unzip_package()
     install_flink()
