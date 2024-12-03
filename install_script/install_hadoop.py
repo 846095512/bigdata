@@ -143,6 +143,8 @@ def install_hadoop():
                            "nodemanager start", output=True)
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver",
                            "timelineserver(historyserver) start", output=True)
+
+        configure_environment("HADOOP_HOME", hadoop_home_dir)
         # 创建 hdfs 目录
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/event")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/history")

@@ -64,6 +64,7 @@ def install_flink():
                            "flink taskmanager start", output=True)
         exec_shell_command(f"{flink_bin_dir}/historyserver.sh start",
                            "flink historyserver start", output=True)
+    configure_environment("FLINK_HOME", flink_home_dir)
     print("Flink installation completed")
 
 

@@ -213,3 +213,35 @@ def generate_uuid(key):
     hash_object = hashlib.sha256(key.encode())
     hash_hex = hash_object.hexdigest()
     return uuid.UUID(hash_hex[:32])
+
+
+def configure_environment(app, app_home):
+    env_file = get_user_env_filename()
+    if os.path.exists(env_file):
+        if os.path.exists(env_file):
+            with open(env_file, 'r+') as file:
+                lines = file.readlines()
+                path_found = False
+                for line in lines:
+                    if line.startswith("export PATH="):
+                        path_found = True
+                        break
+                # 如果有 PATH 设置，则插入 export app-home 并在 PATH 后添加应用路径
+                if path_found:
+                    with open(env_file, 'w') as file:
+                        new_lines = []
+                        for line in lines:
+                            if line.startswith("export PATH="):
+                                new_lines.append(f"export {app}={app_home}\n")
+                                new_lines.append(line.strip() + f":{app_home}/bin\n")
+                            else:
+                                new_lines.append(line)
+                        file.writelines(new_lines)
+                else:
+                    # 如果没有设置 PATH，则直接添加 export app-home 和 export PATH
+                    with open(env_file, 'a') as file:
+                        file.write(f"export {app}={app_home}\n")
+                        file.write(f"export PATH=$PATH:{app_home}/bin\n")
+        print("environment configure success")
+    else:
+        print(f"File {env_file} does not exist.")

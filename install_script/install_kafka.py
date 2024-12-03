@@ -76,6 +76,8 @@ def install_kafka():
         )
         exec_shell_command(f"{bin_dir}/kafka-server-start.sh -daemon {server_conf}",
                            "kafka server start", output=True)
+
+    configure_environment("KAFKA_HOME", kafka_home_dir)
     print("Kafka installation completed")
 
 

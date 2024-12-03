@@ -48,6 +48,7 @@ def install_spark():
                            "spark worker start", output=True)
         exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh",
                            "spark history server start", output=True)
+    configure_environment("SPARK_HOME", spark_home_dir)
     print("Spark installation completed")
 
 

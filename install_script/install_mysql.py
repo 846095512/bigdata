@@ -76,6 +76,7 @@ def install_mysql():
             exec_shell_command(
                 f"""{mysql_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {mysql_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """,
                 "Start MySQL Group Replication", output=True)
+    configure_environment("MYSQL_HOME", mysql_home_dir)
     print("MySQL  installation completed")
 
 

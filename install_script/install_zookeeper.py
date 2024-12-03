@@ -40,6 +40,8 @@ def install_zk():
     set_permissions(zk_home_dir)
     exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start",
                        "zookeeper start", output=True)
+
+    configure_environment("ZOOKEEPER_HOME", zk_home_dir)
     print("zookeeper installation completed")
 
 
