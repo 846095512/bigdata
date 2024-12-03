@@ -25,7 +25,7 @@ def install_kafka():
 
     kraft_enable = params_dict["kraft.enable"]
     if kraft_enable == "true":
-        cluster_id = "4ca7ea20-485b-46f8-a480-d1a26f41fb85"
+        cluster_id = generate_uuid(params_dict["kafka.cluster.id"])
         node_id = broker_id
         controller = f"CONTROLLER://{local_ip}:9093"
         controller_list = params_dict["controller.list"]

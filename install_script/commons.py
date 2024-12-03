@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import hashlib
 import ipaddress
 import json
 import os
@@ -7,6 +8,7 @@ import subprocess
 import sys
 import tarfile
 import time
+import uuid
 
 import requests
 from hdfs import InsecureClient
@@ -209,3 +211,8 @@ def check_namenode_status(namenode_list, port=50070):
         except requests.exceptions.RequestException as e:
             print(f"Node {ip} is {e}")
 
+
+def generate_uuid(key):
+    hash_object = hashlib.sha256(key.encode())
+    hash_hex = hash_object.hexdigest()
+    return uuid.UUID(hash_hex[:32])
