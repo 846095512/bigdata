@@ -233,7 +233,7 @@ def configure_environment(app, app_home):
                         for line in lines:
                             if line.startswith("export PATH="):
                                 new_lines.append(f"export {app}={app_home}\n")
-                                new_lines.append(line.strip() + f":{app_home}/bin\n")
+                                new_lines.append(line.strip() + f":${app}/bin\n")
                             else:
                                 new_lines.append(line)
                         file.writelines(new_lines)
@@ -241,7 +241,7 @@ def configure_environment(app, app_home):
                     # 如果没有设置 PATH，则直接添加 export app-home 和 export PATH
                     with open(env_file, 'a') as file:
                         file.write(f"export {app}={app_home}\n")
-                        file.write(f"export PATH=$PATH:{app_home}/bin\n")
+                        file.write(f"export PATH=$PATH:${app}/bin\n")
         print("environment configure success")
     else:
         print(f"File {env_file} does not exist.")
