@@ -52,6 +52,7 @@ def install_hadoop():
         hadoop_conf_dir=hadoop_conf_dir,
         journal_quorm=journal_quorm,
         namenode_list=namenode_list,
+        local_ip=local_ip,
         nn_list=nn_list,
         zk_addr=zk_addr,
         dfs_replication=dfs_replication
@@ -244,20 +245,24 @@ if __name__ == '__main__':
     {% if install_role == 'standalone' %}
     <property>
         <name>dfs.namenode.rpc-address</name>
-        <value>0.0.0.0:8020</value>
+        <value>{{ local_ip }}:8020</value>
     </property>
     <property>
         <name>dfs.namenode.http-address</name>
-        <value>0.0.0.0:50070</value>
+        <value>{{ local_ip }}:50070</value>
     </property>
     {% endif %}
     <property>
+        <name>dfs.datanode.hostname</name>
+        <value>{{ local_ip }}</value>
+    </property>
+    <property>
         <name>dfs.datanode.address</name>
-        <value>0.0.0.0:9866</value>
+        <value>{{ local_ip }}:9866</value>
     </property>
     <property>
         <name>dfs.datanode.http.address</name>
-        <value>0.0.0.0:9864</value>
+        <value>{{ local_ip }}:9864</value>
     </property>
     <property>
         <name>dfs.namenode.name.dir</name>
@@ -292,7 +297,7 @@ if __name__ == '__main__':
         <value>{{ namenode }}:50070</value>
     </property>
     {% endfor %}
-
+    
     <property>
         <name>dfs.journalnode.rpc-address</name>
         <value>0.0.0.0:8485</value>
@@ -400,16 +405,20 @@ if __name__ == '__main__':
         <value>{{ hadoop_conf_dir }}/nodemanager_exclude</value>
     </property>
     <property>
+        <name>yarn.nodemanager.hostname</name>
+        <value>{{ local_ip }}</value>
+    </property>
+    <property>
         <name>yarn.nodemanager.localizer.address</name>
-        <value>0.0.0.0:8040</value>
+        <value>{{ local_ip }}:8040</value>
     </property>
     <property>
         <name>yarn.nodemanager.address</name>
-        <value>0.0.0.0:8041</value>
+        <value>{{ local_ip }}:8041</value>
     </property>
     <property>
         <name>yarn.nodemanager.webapp.address</name>
-        <value>0.0.0.0:8042</value>
+        <value>{{ local_ip }}:8042</value>
     </property>
     <property>
         <name>yarn.resourcemanager.am.max-attempts</name>
