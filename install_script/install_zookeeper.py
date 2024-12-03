@@ -27,7 +27,6 @@ def install_zk():
                     f1.write(str(id))
                 exec_shell_command(f"echo 'export ZOO_MYID={id}' >> {zk_env_file}")
     exec_shell_command(f"mkdir -p {zk_home_dir}/tmp")
-    exec_shell_command(f"sed  -i \"44 i JMXDISABLE=true\" {zk_server_file}")
     exec_shell_command(
         f"""echo 'export GC_OPTS="-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError  -Djava.io.tmpdir={zk_home_dir}/tmp" '  >> {java_env_file} """)
     exec_shell_command(
