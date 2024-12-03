@@ -84,6 +84,7 @@ controller.quorum.voters={{ controller_quorums }}
 listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
 inter.broker.listener.name=PLAINTEXT
 controller.listener.names=CONTROLLER
+metadata.log.dir={{ kafka_home_dir }}/metadata
 {% else %}
 broker.id={{ broker_id }}
 listeners={{ broker }}
@@ -101,7 +102,6 @@ transaction.state.log.replication.factor={{ partitions_default }}
 transaction.state.log.min.isr={{ partitions_default }}
 # 日志存储
 log.dirs={{ kafka_home_dir }}/message
-metadata.log.dir={{ kafka_home_dir }}/metadata
 log.retention.hours=3
 log.segment.bytes=1073741824
 log.retention.bytes=10737418240
