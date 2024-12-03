@@ -10,7 +10,6 @@ def install_zk():
     zk_conf_file = os.path.join(zk_home_dir, "conf", "zoo.cfg")
     java_env_file = os.path.join(zk_home_dir, "conf", "java.env")
     zk_env_file = os.path.join(zk_home_dir, "bin", "zkEnv.sh")
-    zk_server_file = os.path.join(zk_home_dir, "bin", "zkServer.sh")
     zk_myid_file = os.path.join(zk_home_dir, "myid")
 
     generate_config_file(
@@ -41,7 +40,7 @@ def install_zk():
     set_permissions(zk_home_dir)
     stdout, stderr, code = exec_shell_command(f"{zk_home_dir}/bin/zkServer.sh start")
     check_cmd_output(stdout, stderr, code, "zookeeper 启动", check=True)
-    print("hadoop 安装完成")
+    print("zookeeper 安装完成")
 
 
 if __name__ == '__main__':
