@@ -25,6 +25,7 @@ def install_kafka():
 
     kraft_enable = params_dict["kraft.enable"]
     if kraft_enable == "true":
+        cluster_id = "4ca7ea20-485b-46f8-a480-d1a26f41fb85"
         node_id = broker_id
         controller = f"CONTROLLER://{local_ip}:9093"
         controller_list = params_dict["controller.list"]
@@ -56,6 +57,11 @@ def install_kafka():
             partitions_default=partitions_default,
             kafka_home_dir=kafka_home_dir
         )
+        stdout, stderr, code = exec_shell_command(
+            f"{bin_dir}/kafka-storage.sh format --config {kraft_conf} --cluster-id {cluster_id}")
+        check_cmd_output(stdout, stderr, code, "kafka storage 初始化")
+        stdout, stderr, code = exec_shell_command(f"{bin_dir}/kafka-server-start.sh -daemon {kraft_conf}")
+        check_cmd_output(stdout, stderr, code, "kafka server 启动")
     else:
         zk_addr = params_dict["zookeeper.address"]
         generate_config_file(
@@ -68,7 +74,8 @@ def install_kafka():
             kraft_enable=kraft_enable,
             kafka_home_dir=kafka_home_dir
         )
-
+        stdout, stderr, code = exec_shell_command(f"{bin_dir}/kafka-server-start.sh -daemon {server_conf}")
+        check_cmd_output(stdout, stderr, code, "kafka server 启动")
     print("kafka 安装完成")
 
 
