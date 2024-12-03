@@ -101,6 +101,7 @@ if __name__ == '__main__':
     transaction.state.log.min.isr={{ partitions_default }}
     # 日志存储
     log.dirs={{ kafka_home_dir }}/message
+    metadata.log.dir={{ kafka_home_dir }}/metadata
     log.retention.hours=3
     log.segment.bytes=1073741824
     log.retention.bytes=10737418240
