@@ -4,6 +4,7 @@ from commons import *
 
 def install_jdk():
     app_home = os.path.join(get_app_home_dir(), module_name)
+    delete_dir(app_home)
     set_permissions(app_home)
     configure_environment("JAVA_HOME", app_home)
     exec_shell_command("java -version", "Jdk Installation", output=True)

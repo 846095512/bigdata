@@ -245,7 +245,22 @@ def configure_environment(app, app_home):
                     with open(env_file, 'a') as f3:
                         f3.write(f"export {app}={app_home}\n")
                         f3.write(f"export PATH=$PATH:${app}/bin\n")
-        exec_shell_command(f"source {env_file}", "source env", output=True)
+        res = exec_shell_command(f"source {env_file} && env")
+        env_lines = res.splitlines()
+        os.environ.update(line.split('=', 1) for line in env_lines if "=" in line)
         print("environment configure success")
     else:
         print(f"File {env_file} does not exist.")
+
+
+def delete_dir(path):
+    if os.path.isdir(path):
+        is_empty_dir = len(os.listdir(path)) == 0
+        if not is_empty_dir:
+            removed = input(f"Remove {path}? [y/N] ")
+            if removed == "y" or removed == "Y" or removed == "yes":
+                exec_shell_command(f"rm -rf {path}", f"remove {path}", output=True)
+
+
+if __name__ == '__main__':
+    print(delete_dir("D:\\111"))
