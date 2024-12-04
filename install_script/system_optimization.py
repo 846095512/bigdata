@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from commons import exec_shell_command, os, sys, get_os_name
+from commons import *
 
 
 def init_os_conf():
