@@ -220,39 +220,39 @@ def generate_uuid(key):
 
 def configure_environment(app, app_home):
     env_file = get_user_env_filename()
-    if os.path.exists(env_file):
-        if os.path.exists(env_file):
-            with open(env_file, 'r+') as file:
-                lines = file.readlines()
-                path_found = False
-                for line in lines:
-                    if line.startswith("export PATH="):
-                        path_found = True
-                        break
-                # 如果有 PATH 设置，则插入 export app-home 并在 PATH 后添加应用路径
-                if path_found:
-                    with open(env_file, 'w') as f2:
-                        new_lines = []
-                        for line in lines:
-                            if line.startswith("export PATH="):
-                                new_lines.append(f"export {app}={app_home}\n")
-                                new_lines.append(line.strip() + f":${app}/bin\n")
-                            else:
-                                new_lines.append(line)
-                        f2.writelines(new_lines)
-                else:
-                    # 如果没有设置 PATH，则直接添加 export app-home 和 export PATH
-                    with open(env_file, 'a') as f3:
-                        f3.write(f"export {app}={app_home}\n")
-                        f3.write(f"export PATH=$PATH:${app}/bin\n")
-        res = exec_shell_command(f"source {env_file} && env")
-        env_lines = res.splitlines()
-        print(env_lines)
-        os.environ.update(line.split('=', 1) for line in env_lines if "=" in line)
-        print("environment configure success")
-    else:
-        print(f"File {env_file} does not exist.")
 
+    with open(env_file, 'r+') as file:
+        lines = file.readlines()
+        path_found = False
+        app_found = False
+        for line in lines:
+            if line.startswith("export PATH="):
+                path_found = True
+                if line.startswith(f"export {app}"):
+                    app_found = True
+                    break
+
+        # 如果有 PATH 设置，则插入 export app-home 并在 PATH 后添加应用路径
+        if path_found:
+            if not app_found:
+                pass
+            else:
+                with open(env_file, 'w') as f2:
+                    new_lines = []
+                    for line in lines:
+                        if line.startswith("export PATH="):
+                            new_lines.append(f"export {app}={app_home}\n")
+                            new_lines.append(line.strip() + f":${app}/bin\n")
+                        else:
+                            new_lines.append(line)
+                    f2.writelines(new_lines)
+        else:
+            # 如果没有设置 PATH，则直接添加 export app-home 和 export PATH
+            with open(env_file, 'a') as f3:
+                f3.write(f"export {app}={app_home}\n")
+                f3.write(f"export PATH=$PATH:${app}/bin\n")
+    exec_shell_command(f"source {env_file}")
+    print(f"please run this command to effective environment variables  ->   source {env_file}")
 
 def delete_dir(path):
     if os.path.isdir(path):
@@ -261,4 +261,3 @@ def delete_dir(path):
             removed = input(f"Remove {path}? [y/N] ")
             if removed == "y" or removed == "Y" or removed == "yes":
                 exec_shell_command(f"rm -rf {path}", f"remove {path}", output=True)
-
