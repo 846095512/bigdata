@@ -32,6 +32,9 @@ def init_os_conf():
     exec_shell_command("modprobe ip_vs_rr")
     exec_shell_command("modprobe ip_vs_wrr")
     exec_shell_command("modprobe ip_vs_sh")
+    exec_shell_command("sysctl -w net.ipv4.ip_forward=1")
+    exec_shell_command("sysctl -w net.ipv4.conf.all.rp_filter=0")
+    exec_shell_command("sysctl -w net.ipv4.conf.all.accept_source_route=0")
 
     exec_shell_command("sed -i 's|X11Forwarding yes|X11Forwarding no|g' /etc/ssh/sshd_config")
     exec_shell_command("systemctl restart sshd")

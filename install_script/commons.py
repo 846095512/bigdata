@@ -84,7 +84,7 @@ def get_app_home_dir():
 
 def exec_shell_command(cmd, msg=None, output=False):
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
         if output:
             print(
                 f"{msg} Succeeded -> {result.stdout}" if result.returncode == 0 else f"{msg} Failed  ->  {result.stderr}")
