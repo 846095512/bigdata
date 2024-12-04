@@ -116,7 +116,7 @@ def generate_config_file(template_str, conf_file, keyword=None, line_num=None, *
     template = Template(template_str)
     config_content = template.render(kwargs)
     exec_shell_command(f"touch {conf_file}")
-    if keyword is None:
+    if keyword is None and line_num is None:
         with open(conf_file, "w", encoding="utf-8") as f1:
             f1.writelines(config_content)
     elif line_num is not None:
