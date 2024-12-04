@@ -38,7 +38,7 @@ def init_os_conf():
     res = subprocess.run("grep -q 'cpu.shares=1024' /etc/sysctl.conf", shell=True, capture_output=True, text=True)
     if res.returncode:
         generate_config_file(sys_conf_template, "/etc/sysctl.conf",
-                             line_num=exec_shell_command("wc -l < /etc/sysctl.conf"))
+                             line_num=int(exec_shell_command("wc -l < /etc/sysctl.conf")))
         exec_shell_command("sysctl -p")
 
     if get_os_name() == "ubuntu" or get_os_name() == "debian":
