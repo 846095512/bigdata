@@ -221,7 +221,7 @@ def configure_environment(app, app_home):
                     app_found = True
                     break
 
-        # 如果有 PATH 设置，则插入 export app-home 并在 PATH 后添加应用路径
+        # 如果有 PATH 设置，且不存在app-home 则插入 export app-home 并在 PATH 后添加应用路径
         if path_found:
             if not app_found:
                 pass
