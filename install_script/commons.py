@@ -112,13 +112,19 @@ def unzip_package():
     print(f"The directory has been moved from {old_path} to {new_path}")
 
 
-def generate_config_file(template_str, conf_file, keyword=None, **kwargs):
+def generate_config_file(template_str, conf_file, keyword=None, line_num=None, **kwargs):
     template = Template(template_str)
     config_content = template.render(kwargs)
     exec_shell_command(f"touch {conf_file}")
     if keyword is None:
         with open(conf_file, "w", encoding="utf-8") as f1:
             f1.writelines(config_content)
+    elif line_num is not None:
+        with open(conf_file, "r", encoding="utf-8") as f1:
+            lines = f1.readlines()
+            lines.insert(line_num, config_content)
+        with open(conf_file, "w", encoding="utf-8") as f2:
+            f2.writelines(lines)
     else:
         insert_line_num = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
         with open(conf_file, "r", encoding="utf-8") as f1:
