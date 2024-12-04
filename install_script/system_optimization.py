@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import subprocess
+
 from commons import *
 
 
@@ -15,7 +17,8 @@ def init_os_conf():
     exec_shell_command("echo never > /sys/kernel/mm/transparent_hugepage/defrag")
 
     # 系统文件描述符 进程限制
-    if exec_shell_command("grep -q '* soft nofile 1000000' /etc/security/limits.conf"):
+    res = subprocess.run("grep -q '* soft nofile 1000000' /etc/security/limits.conf", shell=True, capture_output=True, text=True)
+    if res.returncode:
         exec_shell_command("echo '* soft nofile 1000000'  >> /etc/security/limits.conf")
         exec_shell_command("echo '* hard nofile 1000000'  >> /etc/security/limits.conf")
         exec_shell_command("echo '* soft nproc 1000000'  >> /etc/security/limits.conf")
@@ -32,8 +35,8 @@ def init_os_conf():
 
     exec_shell_command("sed -i 's|X11Forwarding yes|X11Forwarding no|g' /etc/ssh/sshd_config")
     exec_shell_command("systemctl restart sshd")
-
-    if exec_shell_command("grep -q 'cpu.shares=1024' /etc/sysctl.conf"):
+    res = subprocess.run("grep -q 'cpu.shares=1024' /etc/sysctl.conf", shell=True, capture_output=True, text=True)
+    if res.returncode:
         generate_config_file(sys_conf_template, "/etc/sysctl.conf",
                              line_num=exec_shell_command("wc -l < /etc/sysctl.conf"))
         exec_shell_command("sysctl -p")
