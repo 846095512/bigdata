@@ -82,7 +82,7 @@ def get_app_home_dir():
     return app_home_dir
 
 
-def exec_shell_command(cmd, msg="", output=False):
+def exec_shell_command(cmd, msg=None, output=False):
     try:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
         if output:
@@ -116,19 +116,20 @@ def unzip_package():
     print(f"The directory has been moved from {old_path} to {new_path}")
 
 
-def generate_config_file(template_str, conf_file, keyword="", **kwargs):
+def generate_config_file(template_str, conf_file, keyword=None, **kwargs):
     template = Template(template_str)
     config_content = template.render(kwargs)
-    if keyword == "":
-        insert_line_num = 1
+    exec_shell_command(f"touch {conf_file}")
+    if keyword is None:
+        with open(conf_file, "w", encoding="utf-8") as f1:
+            f1.writelines(config_content)
     else:
         insert_line_num = exec_shell_command(f"sed -n \"/{keyword}/=\" {conf_file}")
-    exec_shell_command(f"touch {conf_file}")
-    with open(conf_file, "r", encoding="utf-8") as f1:
-        lines = f1.readlines()
-        lines.insert(int(insert_line_num), config_content)
-    with open(conf_file, "w", encoding="utf-8") as f2:
-        f2.writelines(lines)
+        with open(conf_file, "r", encoding="utf-8") as f1:
+            lines = f1.readlines()
+            lines.insert(int(insert_line_num), config_content)
+        with open(conf_file, "w", encoding="utf-8") as f2:
+            f2.writelines(lines)
     print(f"The configuration file {conf_file} has been generated ")
 
 
