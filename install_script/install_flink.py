@@ -16,17 +16,16 @@ def install_flink():
     jm_rpc_port = 6123
     jm_rest_port = 8081
     parallelism = 1
-    flink_home_dir = os.path.join(get_app_home_dir(), 'flink')
-    flink_conf_file = os.path.join(flink_home_dir, 'conf', 'config.yaml')
-    zk_conf_file = os.path.join(flink_home_dir, 'conf', 'zoo.cfg')
-    flink_bin_dir = os.path.join(flink_home_dir, 'bin')
+    flink_conf_file = os.path.join(app_home_dir, 'conf', 'config.yaml')
+    zk_conf_file = os.path.join(app_home_dir, 'conf', 'zoo.cfg')
+    flink_bin_dir = os.path.join(app_home_dir, 'bin')
     jvm_options = f"-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintHeapAtGC -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError"
-    exec_shell_command(f"mkdir -p {flink_home_dir}/tmp")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/data/upload")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/data/archive")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/conf/hadoop")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/data/checkpoints")
-    exec_shell_command(f"mkdir -p {flink_home_dir}/data/savepoints")
+    exec_shell_command(f"mkdir -p {app_home_dir}/tmp")
+    exec_shell_command(f"mkdir -p {app_home_dir}/data/upload")
+    exec_shell_command(f"mkdir -p {app_home_dir}/data/archive")
+    exec_shell_command(f"mkdir -p {app_home_dir}/conf/hadoop")
+    exec_shell_command(f"mkdir -p {app_home_dir}/data/checkpoints")
+    exec_shell_command(f"mkdir -p {app_home_dir}/data/savepoints")
     exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
     exec_shell_command(f"mv {zk_conf_file} {zk_conf_file}.template")
     total_mem, stderr, code = exec_shell_command("free -g | awk '/Mem:/ {print $2}'")
@@ -44,7 +43,7 @@ def install_flink():
         task_slots=task_slots,
         parallelism=parallelism,
         jvm_options=jvm_options,
-        flink_home_dir=flink_home_dir,
+        flink_home_dir=app_home_dir,
         dfs_nameservice=dfs_nameservice,
         flink_cluster_id=flink_cluster_id,
         zk_addr=zk_addr,
@@ -53,9 +52,9 @@ def install_flink():
     )
 
     active_namenode_ip = check_namenode_status(namenode_list)
-    download_from_hdfs(active_namenode_ip, "/hadoop/share/jars/", f"{flink_home_dir}/lib")
-    download_from_hdfs(active_namenode_ip, "/hadoop/share/conf/", f"{flink_home_dir}/conf/hadoop")
-    set_permissions(flink_home_dir)
+    download_from_hdfs(active_namenode_ip, "/hadoop/share/jars/", f"{app_home_dir}/lib")
+    download_from_hdfs(active_namenode_ip, "/hadoop/share/conf/", f"{app_home_dir}/conf/hadoop")
+    set_permissions(app_home_dir)
 
     if install_role == "cluster" or install_role == "standalone":
         exec_shell_command(f"{flink_bin_dir}/jobmanager.sh start",
@@ -64,7 +63,7 @@ def install_flink():
                            "flink taskmanager start", output=True)
         exec_shell_command(f"{flink_bin_dir}/historyserver.sh start",
                            "flink historyserver start", output=True)
-    configure_environment("FLINK_HOME", flink_home_dir)
+    configure_environment("FLINK_HOME", app_home_dir)
     print("Flink installation completed")
 
 

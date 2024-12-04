@@ -5,17 +5,15 @@ from commons import *
 
 
 def install_kafka():
-    app_home_dir = get_app_home_dir()
-    kafka_home_dir = os.path.join(app_home_dir, module_name)
     if len(install_ip) % 2 == 0:
         partitions_default = math.ceil((len(install_ip) / 2) + 1)
     else:
         partitions_default = math.ceil(len(install_ip) / 2)
     broker_list = params_dict["broker.list"]
     broker = f"PLAINTEXT://{local_ip}:9092"
-    server_conf = os.path.join(kafka_home_dir, "config", "server.properties")
-    kraft_conf = os.path.join(kafka_home_dir, "config", "kraft", "server.properties")
-    bin_dir = os.path.join(kafka_home_dir, "bin")
+    server_conf = os.path.join(app_home_dir, "config", "server.properties")
+    kraft_conf = os.path.join(app_home_dir, "config", "kraft", "server.properties")
+    bin_dir = os.path.join(app_home_dir, "bin")
     broker_id = 0
     for i in range(len(install_ip)):
         if local_ip == install_ip[i]:
@@ -55,7 +53,7 @@ def install_kafka():
             kraft_enable=kraft_enable,
             node_id=node_id,
             partitions_default=partitions_default,
-            kafka_home_dir=kafka_home_dir
+            kafka_home_dir=app_home_dir
         )
         exec_shell_command(
             f"{bin_dir}/kafka-storage.sh format --config {kraft_conf} --cluster-id {cluster_id}",
@@ -72,12 +70,12 @@ def install_kafka():
             zk_addr=zk_addr,
             broker=broker,
             kraft_enable=kraft_enable,
-            kafka_home_dir=kafka_home_dir
+            kafka_home_dir=app_home_dir
         )
         exec_shell_command(f"{bin_dir}/kafka-server-start.sh -daemon {server_conf}",
                            "kafka server start", output=True)
 
-    configure_environment("KAFKA_HOME", kafka_home_dir)
+    configure_environment("KAFKA_HOME", app_home_dir)
     print("Kafka installation completed")
 
 

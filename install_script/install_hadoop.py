@@ -20,11 +20,9 @@ def install_hadoop():
         dfs_replication = math.ceil((len(install_ip) / 2) + 1)
     else:
         dfs_replication = math.ceil(len(install_ip) / 2)
-    app_home_dir = get_app_home_dir()
-    hadoop_home_dir = os.path.join(app_home_dir, module_name)
-    hadoop_conf_dir = os.path.join(hadoop_home_dir, "etc/hadoop")
-    hadoop_bin_dir = os.path.join(hadoop_home_dir, "bin")
-    hadoop_data_dir = os.path.join(hadoop_home_dir, "data")
+    hadoop_conf_dir = os.path.join(app_home_dir, "etc/hadoop")
+    hadoop_bin_dir = os.path.join(app_home_dir, "bin")
+    hadoop_data_dir = os.path.join(app_home_dir, "data")
     hadoop_env_file = os.path.join(hadoop_conf_dir, "hadoop-env.sh")
     core_conf = os.path.join(hadoop_conf_dir, "core-site.xml")
     hdfs_conf = os.path.join(hadoop_conf_dir, "hdfs-site.xml")
@@ -87,13 +85,13 @@ def install_hadoop():
         conf_file=hadoop_env_file,
         keyword="# export HADOOP_REGISTRYDNS_SECURE_EXTRA_OPTS",
         current_user=current_user,
-        hadoop_home_dir=hadoop_home_dir,
+        hadoop_home_dir=app_home_dir,
         hadoop_conf_dir=hadoop_conf_dir,
         jvm_heap_size=jvm_heap_size
     )
     exec_shell_command(f"touch {hadoop_conf_dir}/hdfs_exclude")
     exec_shell_command(f"touch {hadoop_conf_dir}/nodemanager_exclude")
-    set_permissions(hadoop_home_dir)
+    set_permissions(app_home_dir)
     exec_shell_command(f"rm -rf  {hadoop_data_dir}")
 
     if install_role == "standalone":
@@ -145,13 +143,13 @@ def install_hadoop():
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver",
                            "timelineserver(historyserver) start", output=True)
 
-        configure_environment("HADOOP_HOME", hadoop_home_dir)
+        configure_environment("HADOOP_HOME", app_home_dir)
         # 创建 hdfs 目录
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/event")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/history")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/share/jars")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/share/conf")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_home_dir}/share/hadoop/*/*.jar /hadoop/share/jars")
+        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {app_home_dir}/share/hadoop/*/*.jar /hadoop/share/jars")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/core-site.xml /hadoop/share/conf")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/hdfs-site.xml /hadoop/share/conf")
         exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/yarn-site.xml /hadoop/share/conf")

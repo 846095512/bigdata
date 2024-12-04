@@ -13,18 +13,17 @@ def install_spark():
     is_valid_ip(local_ip, spark_master_ips)
     spark_cluster_id = params_dict["spark.cluster.id"]
     spark_masters = ",".join([f"{ip}:7077" for ip in spark_master_ips])
-    spark_home_dir = os.path.join(get_app_home_dir(), module_name)
-    spark_conf_dir = os.path.join(spark_home_dir, "conf")
+    spark_conf_dir = os.path.join(app_home_dir, "conf")
     spark_env_file = os.path.join(spark_conf_dir, "spark-env.sh")
     spark_defaults_file = os.path.join(spark_conf_dir, "spark-defaults.conf")
-    spark_sbin_dir = os.path.join(spark_home_dir, "sbin")
+    spark_sbin_dir = os.path.join(app_home_dir, "sbin")
 
     # 生成配置
     generate_config_file(template_str=spark_env_template,
                          conf_file=spark_env_file,
                          install_role=install_role,
                          local_ip=local_ip,
-                         spark_home_dir=spark_home_dir,
+                         spark_home_dir=app_home_dir,
                          spark_conf_dir=spark_conf_dir,
                          jvm_heapsize=jvm_heapsize,
                          dfs_nameservice=dfs_nameservice,
@@ -40,7 +39,7 @@ def install_spark():
 
     active_namenode_ip = check_namenode_status(namenode_list)
     download_from_hdfs(active_namenode_ip, "/hadoop/share/conf/", f"{spark_conf_dir}")
-    set_permissions(spark_home_dir)
+    set_permissions(app_home_dir)
     if install_role != "yarn":
         exec_shell_command(f"{spark_sbin_dir}/start-master.sh",
                            "spark master start", output=True)
@@ -48,7 +47,7 @@ def install_spark():
                            "spark worker start", output=True)
         exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh",
                            "spark history server start", output=True)
-    configure_environment("SPARK_HOME", spark_home_dir)
+    configure_environment("SPARK_HOME", app_home_dir)
     print("Spark installation completed")
 
 

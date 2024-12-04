@@ -14,17 +14,6 @@ import requests
 from hdfs import InsecureClient
 from jinja2 import Template
 
-current_user = os.getlogin()
-script_path = os.path.dirname(os.path.abspath(__file__))
-with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
-    params_dict = json.load(f)
-
-filename = params_dict["filename"]
-module_name = params_dict["module.name"]
-local_ip = params_dict["local.ip"]
-install_role = params_dict["install.role"]
-install_ip = params_dict["install.ip"]
-
 
 def is_valid_ip(*args):
     try:
@@ -254,10 +243,27 @@ def configure_environment(app, app_home):
     exec_shell_command(f"source {env_file}")
     print(f"please run this command to effective environment variables  ->   source {env_file}")
 
+
 def delete_dir(path):
     if os.path.isdir(path):
         is_empty_dir = len(os.listdir(path)) == 0
         if not is_empty_dir:
-            removed = input(f"Remove {path}? [y/N] ")
+            removed = input(f"this path is not empty, do you want remove this {path}? [y/N] ")
             if removed == "y" or removed == "Y" or removed == "yes":
                 exec_shell_command(f"rm -rf {path}", f"remove {path}", output=True)
+
+
+
+current_user = os.getlogin()
+script_path = os.path.dirname(os.path.abspath(__file__))
+with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
+    params_dict = json.load(f)
+
+filename = params_dict["filename"]
+module_name = params_dict["module.name"]
+local_ip = params_dict["local.ip"]
+install_role = params_dict["install.role"]
+install_ip = params_dict["install.ip"]
+app_home_dir = os.path.join(get_app_home_dir(), module_name)
+
+delete_dir(app_home_dir)
