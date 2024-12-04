@@ -33,18 +33,23 @@ def init_os_conf():
     exec_shell_command("sed -i 's|X11Forwarding yes|X11Forwarding no|g' /etc/ssh/sshd_config")
     exec_shell_command("systemctl restart sshd")
 
-    if get_os_name() == "ubuntu" or get_os_name() == "debian":
-        exec_shell_command("ufw disable")
-        exec_shell_command("echo 'LANG=en_GB.UTF-8' > /etc/default/locale")
-    elif get_os_name() == "centos" or get_os_name() == "redhat":
-        exec_shell_command("systemctl stop firewalld")
-        exec_shell_command("systemctl disable firewalld")
-        exec_shell_command("echo 'LANG=en_GB.UTF-8' > /etc/locale.conf")
-
     if exec_shell_command("grep -q 'cpu.shares=1024' /etc/sysctl.conf"):
         generate_config_file(sys_conf_template, "/etc/sysctl.conf",
                              line_num=exec_shell_command("wc -l < /etc/sysctl.conf"))
         exec_shell_command("sysctl -p")
+
+    if get_os_name() == "ubuntu" or get_os_name() == "debian":
+        exec_shell_command("ufw disable")
+        exec_shell_command("echo 'LANG=en_GB.UTF-8' > /etc/default/locale")
+    elif get_os_name() == "centos" or get_os_name() == "redhat" or get_os_name() == "kylin":
+        exec_shell_command("systemctl stop firewalld")
+        exec_shell_command("systemctl disable firewalld")
+        exec_shell_command("echo 'LANG=en_GB.UTF-8' > /etc/locale.conf")
+    else:
+        print("System type not supported temporarily.")
+        sys.exit(1)
+
+    print("System optimization parameters configuration completed.")
 
 
 if __name__ == '__main__':
