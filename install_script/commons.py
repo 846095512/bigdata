@@ -246,6 +246,7 @@ def configure_environment(app, app_home):
                         f3.write(f"export {app}={app_home}\n")
                         f3.write(f"export PATH=$PATH:${app}/bin\n")
         res = exec_shell_command(f"source {env_file} && env")
+        print(res)
         env_lines = res.splitlines()
         os.environ.update(line.split('=', 1) for line in env_lines if "=" in line)
         print("environment configure success")
