@@ -262,6 +262,3 @@ def delete_dir(path):
             if removed == "y" or removed == "Y" or removed == "yes":
                 exec_shell_command(f"rm -rf {path}", f"remove {path}", output=True)
 
-
-if __name__ == '__main__':
-    print(delete_dir("D:\\111"))
