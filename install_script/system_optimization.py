@@ -6,13 +6,6 @@ def init_os_conf():
     if os.getlogin() != 'root':
         print("Please execute this script as the root user.")
         sys.exit(1)
-    if get_os_name() == "ubuntu" or get_os_name() == "debian":
-        exec_shell_command("apt remove mariadb* -y")
-    elif get_os_name() == "centos" or get_os_name() == "redhat":
-        exec_shell_command("yum remove mariadb* -y")
-    else:
-        print("System type not currently supported.")
-        sys.exit(1)
 
     # 时区设置
     exec_shell_command("timedatectl set-timezone Asia/Shanghai")
