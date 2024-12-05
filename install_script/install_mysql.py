@@ -18,7 +18,7 @@ def install_mysql():
 
     my_cnf_file = os.path.join(app_home_dir, "my.cnf")
     total_mem = int(exec_shell_command("free -g | awk '/Mem:/ {print $2}'"))
-    innodb_buffer_pool_size = f"{math.ceil(total_mem / 2)}g"
+    innodb_buffer_pool_size = f"{math.ceil(total_mem / 2)}G"
     mysql_group_id = params_dict["mysql.group.id"]
     group_id = generate_uuid(mysql_group_id)
     exec_shell_command(f"mkdir -p {app_home_dir}")
@@ -40,7 +40,8 @@ def install_mysql():
                          innodb_buffer_pool_size=innodb_buffer_pool_size)
 
     set_permissions(app_home_dir)
-    new_pwd = "DBuser@123_!@#"
+    new_password = "DBuser@123_!@#"
+    repl_password = "repl@146_!$&"
     # 初始化mysql并修改root用户密码 启动组复制
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld --defaults-file={app_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={app_home_dir} --datadir={app_home_dir}/data""",
@@ -51,41 +52,41 @@ def install_mysql():
     temp_passwd = exec_shell_command(
         f"""grep 'temporary password' {app_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
     print(f"Temporary root password is {temp_passwd}")
-    print(f"new root password is {new_pwd}")
+    print(f"new root password is {new_password}")
+    print(f"repl password is {repl_password}")
     check_service("3306", "mysql server")
     time.sleep(5)
     exec_shell_command(
-        f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """,
-        "change mysql root password", output=True)
+        f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';" ""","change mysql root password", output=True)
     if install_role == "cluster":
         exec_shell_command(
-            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "CREATE USER 'repl'@'%' IDENTIFIED BY 'repl@147_!$&'; " """)
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}'; " """)
         exec_shell_command(
-            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "GRANT REPLICATION SLAVE on *.* to 'repl'@'%'; " """)
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "GRANT REPLICATION SLAVE on *.* to 'repl'@'%'; " """)
         exec_shell_command(
-            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=0;" """)
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=0;" """)
         exec_shell_command(
-            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "INSTALL PLUGIN clone SONAME 'mysql_clone.so';" """)
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "INSTALL PLUGIN clone SONAME 'mysql_clone.so';" """)
         exec_shell_command(
-            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "INSTALL PLUGIN group_replication SONAME 'group_replication.so';" """)
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "INSTALL PLUGIN group_replication SONAME 'group_replication.so';" """)
         exec_shell_command(
-            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=1;" """)
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=1;" """)
         exec_shell_command(
-            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "FLUSH PRIVILEGES;" """)
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "FLUSH PRIVILEGES;" """)
 
         if local_ip == install_ip[0]:
             exec_shell_command(
-                f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "SET GLOBAL group_replication_bootstrap_group=ON;" """)
+                f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "SET GLOBAL group_replication_bootstrap_group=ON;" """)
             exec_shell_command(
-                f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """,
+                f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """,
                 "Start MySQL Group Replication", output=True)
             exec_shell_command(
-                f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "SET GLOBAL group_replication_bootstrap_group=OFF;" """)
+                f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "SET GLOBAL group_replication_bootstrap_group=OFF;" """)
         else:
             exec_shell_command(
-                f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='repl@147_!$&' FOR CHANNEL 'group_replication_recovery';" """)
+                f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='repl@147_!$&' FOR CHANNEL 'group_replication_recovery';" """)
             exec_shell_command(
-                f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """,
+                f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """,
                 "Start MySQL Group Replication", output=True)
     configure_environment("MYSQL_HOME", app_home_dir)
     print("MySQL  installation completed")
