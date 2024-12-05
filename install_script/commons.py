@@ -223,29 +223,27 @@ def configure_environment(app, app_home):
 
     with open(env_file, 'r+') as file:
         lines = file.readlines()
-        path_found = False
-        app_found = False
+        path_found = "not found"
+        app_found = "not found"
         for line in lines:
             if line.startswith("export PATH="):
-                path_found = True
-                if line.startswith(f"export {app}"):
-                    app_found = True
-                    break
+                path_found = "found"
+            if line.startswith(f"export {app}"):
+                app_found = "found"
 
         # 如果有 PATH 设置，且不存在app-home 则插入 export app-home 并在 PATH 后添加应用路径
-        if path_found:
-            if not app_found:
-                pass
-            else:
-                with open(env_file, 'w') as f2:
-                    new_lines = []
-                    for line in lines:
-                        if line.startswith("export PATH="):
-                            new_lines.append(f"export {app}={app_home}\n")
-                            new_lines.append(line.strip() + f":${app}/bin\n")
-                        else:
-                            new_lines.append(line)
-                    f2.writelines(new_lines)
+        if path_found == "found" and app_found == "found":
+            pass
+        elif path_found == "found" and app_found == "not found":
+            with open(env_file, 'w') as f2:
+                new_lines = []
+                for line in lines:
+                    if line.startswith("export PATH="):
+                        new_lines.append(f"export {app}={app_home}\n")
+                        new_lines.append(line.strip() + f":${app}/bin\n")
+                    else:
+                        new_lines.append(line)
+                f2.writelines(new_lines)
         else:
             # 如果没有设置 PATH，则直接添加 export app-home 和 export PATH
             with open(env_file, 'a') as f3:
