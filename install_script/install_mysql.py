@@ -114,7 +114,6 @@ port=3306
 socket={{ mysql_home_dir }}/mysql.sock
 explicit_defaults_for_timestamp=1
 local-infile=0
-secure_file_priv=''
 wait_timeout=1800
 interactive_timeout=600
 log_timestamps=SYSTEM
@@ -207,7 +206,7 @@ loose-group_replication_unreachable_majority_timeout=30
 loose-group_replication_member_expel_timeout=30
 loose-group_replication_autorejoin_tries=5
 loose-group_replication_compression_threshold=131072
-loose-group_replication_transaction_size_limit=209715200
+loose-group_replication_transaction_size_limit=4294967296
 {% endif %}
 
 ################# error log #############
@@ -224,15 +223,7 @@ long_query_time=1
 default-time-zone='+08:00'
 performance_schema_session_connect_attrs_size=2048
 sql_mode="STRICT_ALL_TABLES,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
-
-
-[mysqldump]
-quick
-max_allowed_packet=128M
-
-
-[mysqlhotcopy]
-interactive_timeout
+max_allowed_packet=1073741824
 """
     exec_shell_command("pkill mysql", "kill mysql", output=True)
     unzip_package()
