@@ -9,6 +9,8 @@ def init_os_conf():
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
         tar_ref.extractall("/tmp")
 
+    exec_shell_command(f"hostnamectl set-hostname {local_ip}")
+
     exec_shell_command("dpkg -i /tmp/lib/*.deb")
     # 时区设置
     exec_shell_command("timedatectl set-timezone Asia/Shanghai")
