@@ -4,6 +4,7 @@ from commons import *
 
 
 def init_os_conf():
+    exec_shell_command("apt remove  systemd-timesyncd -y")
     file_path = get_download_dir()
 
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
