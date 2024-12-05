@@ -71,7 +71,7 @@ def install_mysql():
         exec_shell_command(
             f"""{mysql_exec} "{create_repl_pwd_sql}" """)
         exec_shell_command(
-            f"""{mysql_exec} "GRANT REPLICATION SLAVE on *.* to 'repl'@'%'; " """)
+            f"""{mysql_exec} "GRANT REPLICATION SLAVE on *.* to 'repl'@'%';" """)
         exec_shell_command(
             f"""{mysql_exec} "SET SQL_LOG_BIN=0;" """)
         exec_shell_command(
