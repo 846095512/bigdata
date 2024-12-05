@@ -230,5 +230,6 @@ max_allowed_packet=128M
 interactive_timeout
 """
     exec_shell_command("pkill mysql")
+
     unzip_package()
     install_mysql()
