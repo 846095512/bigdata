@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+import time
 
 from commons import *
 
@@ -50,6 +51,8 @@ def install_mysql():
     print(f"Temporary root password is {temp_passwd}")
     print(f"new root password is {new_pwd}")
     check_service("3306", "mysql server")
+    print("wait mysql server start")
+    time.sleep(5)
     exec_shell_command(
         f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """,
         "change mysql root password", output=True)
