@@ -59,6 +59,10 @@ def install_mysql():
         "change mysql root password", output=True)
     if install_role == "cluster":
         exec_shell_command(
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "CREATE USER 'repl'@'%' IDENTIFIED BY 'repl@147_!$&'; " """)
+        exec_shell_command(
+            f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "GRANT REPLICATION SLAVE on *.* to 'repl'@'%'; " """)
+        exec_shell_command(
             f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "SET SQL_LOG_BIN=0;" """)
         exec_shell_command(
             f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "INSTALL PLUGIN clone SONAME 'mysql_clone.so';" """)
@@ -78,6 +82,8 @@ def install_mysql():
             exec_shell_command(
                 f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "SET GLOBAL group_replication_bootstrap_group=OFF;" """)
         else:
+            exec_shell_command(
+                f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='repl@147_!$&' FOR CHANNEL 'group_replication_recovery';" """)
             exec_shell_command(
                 f"""{app_home_dir}/bin/mysql -uroot -p'{new_pwd}' -S {app_home_dir}/mysql.sock -e  "START GROUP_REPLICATION;" """,
                 "Start MySQL Group Replication", output=True)
