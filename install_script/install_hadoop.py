@@ -143,7 +143,6 @@ def install_hadoop():
         exec_shell_command(f"{hadoop_bin_dir}/yarn --daemon start timelineserver",
                            "timelineserver(historyserver) start", output=True)
 
-        configure_environment("HADOOP_HOME", app_home_dir)
         # 创建 hdfs 目录
         if local_ip == namenode_list[0]:
             exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/event")
@@ -167,6 +166,7 @@ def install_hadoop():
             exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/jobmanager/archive")
             exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/historyserver/archive")
 
+        configure_environment("HADOOP_HOME", app_home_dir)
         print("Hadoop installation completed")
 
 
