@@ -63,7 +63,7 @@ def init_os_conf():
     else:
         print("System type not supported temporarily.")
         sys.exit(1)
-    print(f"timezone changed successfully, please source the config -> {time_zone_conf}")
+    print(f"timezone changed successfully, please source the config -> source {time_zone_conf}")
     print("System optimization parameters configuration completed.")
 
 
