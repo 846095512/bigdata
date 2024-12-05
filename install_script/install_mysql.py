@@ -55,7 +55,7 @@ def install_mysql():
     print(f"new root password is {new_password}")
     print(f"repl password is {repl_password}")
     check_service("3306", "mysql server")
-    time.sleep(5)
+    time.sleep(10)
 
     mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock"
 
