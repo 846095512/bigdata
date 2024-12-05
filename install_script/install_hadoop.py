@@ -145,26 +145,27 @@ def install_hadoop():
 
         configure_environment("HADOOP_HOME", app_home_dir)
         # 创建 hdfs 目录
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/event")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/history")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/share/jars")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/share/conf")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {app_home_dir}/share/hadoop/*/*.jar /hadoop/share/jars")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/core-site.xml /hadoop/share/conf")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/hdfs-site.xml /hadoop/share/conf")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/yarn-site.xml /hadoop/share/conf")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/mapred-site.xml /hadoop/share/conf")
+        if local_ip == namenode_list[0]:
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/event")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/mapreduce/history")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/share/jars")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /hadoop/share/conf")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {app_home_dir}/share/hadoop/*/*.jar /hadoop/share/jars")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/core-site.xml /hadoop/share/conf")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/hdfs-site.xml /hadoop/share/conf")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/yarn-site.xml /hadoop/share/conf")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -put {hadoop_conf_dir}/mapred-site.xml /hadoop/share/conf")
 
-        # 创建 spark 目录
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/share/jars")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/history/logs")
+            # 创建 spark 目录
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/share/jars")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /spark/history/logs")
 
-        # 创建 flink 目录
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/checkpoints")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/savepoints")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/storage")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/jobmanager/archive")
-        exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/historyserver/archive")
+            # 创建 flink 目录
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/checkpoints")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/savepoints")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/storage")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/jobmanager/archive")
+            exec_shell_command(f"{hadoop_bin_dir}/hdfs dfs -mkdir -p /flink/historyserver/archive")
 
         print("Hadoop installation completed")
 
