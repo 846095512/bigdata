@@ -57,7 +57,7 @@ def install_mysql():
     check_service("3306", "mysql server")
     time.sleep(5)
     exec_shell_command(
-        f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';" ""","change mysql root password", output=True)
+        f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock  --connect-expires-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';" ""","change mysql root password", output=True)
     if install_role == "cluster":
         exec_shell_command(
             f"""{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e  "CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}'; " """)
