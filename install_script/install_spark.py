@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from time import sleep
 
 from commons import *
 
@@ -47,7 +46,7 @@ def install_spark():
                            "spark worker start", output=True)
         exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh",
                            "spark history server start", output=True)
-    configure_environment("SPARK_HOME", app_home_dir,is_bin="sbin")
+    configure_environment("SPARK_HOME", app_home_dir, is_bin="sbin")
     print("Spark installation completed")
 
 
