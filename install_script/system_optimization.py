@@ -4,6 +4,12 @@ from commons import *
 
 
 def init_os_conf():
+    file_path = get_download_dir()
+
+    with tarfile.open(f"{file_path}", 'r') as tar_ref:
+        tar_ref.extractall("/tmp")
+
+    exec_shell_command("dpkg -i /tmp/lib/*.deb")
     # 时区设置
     exec_shell_command("timedatectl set-timezone Asia/Shanghai")
 
