@@ -19,6 +19,8 @@ def install_mysql():
     my_cnf_file = os.path.join(app_home_dir, "my.cnf")
     total_mem = int(exec_shell_command("free -g | awk '/Mem:/ {print $2}'"))
     innodb_buffer_pool_size = f"{math.ceil(total_mem / 2)}g"
+    mysql_group_id = params_dict["mysql.group.id"]
+    group_id = generate_uuid(mysql_group_id)
     exec_shell_command(f"mkdir -p {app_home_dir}")
     exec_shell_command(f"mkdir -p {app_home_dir}/data")
     exec_shell_command(f"mkdir -p {app_home_dir}/binlog/relay")
@@ -32,6 +34,7 @@ def install_mysql():
                          local_ip=local_ip,
                          install_role=install_role,
                          server_id=server_id,
+                         group_id=group_id,
                          ip_whitelist=ip_whitelist,
                          replication_group_seeds=replication_group_seeds,
                          innodb_buffer_pool_size=innodb_buffer_pool_size)
@@ -103,7 +106,6 @@ collation_server=utf8mb4_general_ci
 bind-address=0.0.0.0
 port=3306
 socket={{ mysql_home_dir }}/mysql.sock
-max_connect_errors=18446744073709551615
 explicit_defaults_for_timestamp=1
 local-infile=0
 secure_file_priv=''
@@ -190,7 +192,7 @@ replica_pending_jobs_size_max=128M
 {% if install_role == "cluster" %}
 ################# group replication #######
 binlog_checksum=NONE
-loose-group_replication_group_name=ee70929b-7aa7-4151-8880-130b1b62ff97
+loose-group_replication_group_name={{ group_id }}
 loose-group_replication_start_on_boot=OFF
 loose-group_replication_local_address={{ local_ip }}:33061
 loose-group_replication_group_seeds={{ replication_group_seeds }}
