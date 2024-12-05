@@ -28,6 +28,8 @@
     "spark.cluster.id":"sparkcluster",
 
 
-    "flink.cluster.id": "flinkcluster"
+    "flink.cluster.id": "flinkcluster",
+
+    "mysql.group.id": "mysqlcluster"
 
 }
