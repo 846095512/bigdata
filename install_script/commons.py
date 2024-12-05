@@ -218,9 +218,8 @@ def generate_uuid(key):
     return uuid.UUID(hash_hex[:32])
 
 
-def configure_environment(app, app_home):
+def configure_environment(app, app_home, is_bin="bin"):
     env_file = get_user_env_filename()
-
     with open(env_file, 'r+') as file:
         lines = file.readlines()
         path_found = "not found"
@@ -248,7 +247,7 @@ def configure_environment(app, app_home):
             # 如果没有设置 PATH，则直接添加 export app-home 和 export PATH
             with open(env_file, 'a') as f3:
                 f3.write(f"export {app}={app_home}\n")
-                f3.write(f"export PATH=$PATH:${app}/bin\n")
+                f3.write(f"export PATH=$PATH:${app}/{is_bin}\n")
     print(f"please run this command to effective environment variables  ->   source {env_file}")
 
 
