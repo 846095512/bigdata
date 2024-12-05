@@ -14,6 +14,17 @@ import requests
 from hdfs import InsecureClient
 from jinja2 import Template
 
+current_user = os.getlogin()
+script_path = os.path.dirname(os.path.abspath(__file__))
+with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
+    params_dict = json.load(f)
+
+filename = params_dict["filename"]
+module_name = params_dict["module.name"]
+local_ip = params_dict["local.ip"]
+install_role = params_dict["install.role"]
+install_ip = params_dict["install.ip"]
+
 
 def is_valid_ip(*args):
     try:
@@ -65,10 +76,10 @@ def get_root_dir():
 
 def get_app_home_dir():
     root_dir = get_root_dir()
-    app_home_dir = os.path.join(root_dir, "app")
-    if not os.path.exists(app_home_dir):
-        os.makedirs(app_home_dir)
-    return app_home_dir
+    home_dir = os.path.join(root_dir, "app")
+    if not os.path.exists(home_dir):
+        os.makedirs(home_dir)
+    return home_dir
 
 
 def exec_shell_command(cmd, msg=None, output=False):
@@ -87,8 +98,8 @@ def set_permissions(path):
 
 def unzip_package():
     file_path = get_download_dir()
-    app_home_dir = get_app_home_dir()
-    print(f"PREFIX={app_home_dir}")
+    home_dir = get_app_home_dir()
+    print(f"PREFIX={home_dir}")
 
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
         tar_ref.extractall(app_home_dir)
@@ -252,17 +263,5 @@ def delete_dir(path):
                 exec_shell_command(f"rm -rf {path}", f"remove {path}", output=True)
 
 
-
-current_user = os.getlogin()
-script_path = os.path.dirname(os.path.abspath(__file__))
-with open(f'{script_path}/conf.json', "r", encoding="utf-8") as f:
-    params_dict = json.load(f)
-
-filename = params_dict["filename"]
-module_name = params_dict["module.name"]
-local_ip = params_dict["local.ip"]
-install_role = params_dict["install.role"]
-install_ip = params_dict["install.ip"]
 app_home_dir = os.path.join(get_app_home_dir(), module_name)
-
 delete_dir(app_home_dir)
