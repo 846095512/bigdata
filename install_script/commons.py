@@ -102,12 +102,12 @@ def unzip_package():
     print(f"PREFIX={home_dir}")
 
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
-        tar_ref.extractall(app_home_dir)
+        tar_ref.extractall(home_dir)
     print(f"The {filename} file has been extracted")
 
     unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
-    old_path = os.path.join(app_home_dir, unpack_name)
-    new_path = os.path.join(app_home_dir, module_name)
+    old_path = os.path.join(home_dir, unpack_name)
+    new_path = os.path.join(home_dir, module_name)
     shutil.move(old_path, new_path)
     print(f"The directory has been moved from {old_path} to {new_path}")
 
