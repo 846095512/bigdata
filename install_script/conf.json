@@ -1,10 +1,10 @@
 {
-    "filename":"mysql-8.4.3-linux-glibc2.28-x86_64.tar.xz",
-    "module.name":"kafka",
-
-    "local.ip":"192.168.176.11",
-    "install.role":"standalone",
+    "filename":"openjdk-8u44-linux-x64.tar.gz",
+    "module.name":"jdk",
+    "local.ip":"10.238.111.50",
+    "install.role":"cluster",
     "install.ip":["10.238.111.50","10.238.111.51","10.238.111.52"],
+
 
 
     "broker.list": ["10.238.111.50","10.238.111.51","10.238.111.52"],
@@ -23,8 +23,10 @@
     "yarn.mem":"1024",
     "yarn.cpu":"1",
 
+
     "spark.master.ip":["10.238.111.50","10.238.111.51","10.238.111.52"],
     "spark.cluster.id":"sparkcluster",
+
 
     "flink.cluster.id": "flinkcluster"
 
