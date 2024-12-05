@@ -131,4 +131,5 @@ net.core.netdev_budget=300
 net.ipv4.conf.all.accept_source_route=0
 net.ipv4.conf.default.accept_source_route=0
 """
+    unzip_package()
     init_os_conf()
