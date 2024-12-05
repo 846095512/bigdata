@@ -239,7 +239,7 @@ def configure_environment(app, app_home, is_bin="bin"):
                 for line in lines:
                     if line.startswith("export PATH="):
                         new_lines.append(f"export {app}={app_home}\n")
-                        new_lines.append(line.strip() + f":${app}/bin\n")
+                        new_lines.append(line.strip() + f":${app}/{is_bin}\n")
                     else:
                         new_lines.append(line)
                 f2.writelines(new_lines)
