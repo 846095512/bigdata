@@ -12,7 +12,6 @@ def install_zk():
     generate_config_file(
         template_str=zoo_conf_template,
         conf_file=zk_conf_file,
-        local_ip=local_ip,
         install_role=install_role,
         install_ip=install_ip,
         zk_home_dir=app_home_dir,
@@ -48,7 +47,6 @@ if __name__ == '__main__':
 tickTime=2000
 initLimit=10
 syncLimit=5
-clientPortAddress={{ local_ip }}
 clientPort=2181
 dataDir={{ zk_home_dir }}
 autopurge.snapRetainCount=5
