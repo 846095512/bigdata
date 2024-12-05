@@ -43,19 +43,20 @@ def init_os_conf():
                              line_num=int(exec_shell_command("wc -l < /etc/sysctl.conf")))
         exec_shell_command("sysctl -p", "sysctl -p", output=True)
 
+
     if get_os_name() == "ubuntu" or get_os_name() == "debian":
+        time_zone_conf = "/etc/default/locale"
         exec_shell_command("ufw disable")
-        exec_shell_command("echo 'LANG=en_GB.UTF-8' > /etc/default/locale")
-        exec_shell_command("source /etc/default/locale")
+        exec_shell_command(f"echo 'LANG=en_GB.UTF-8' > {time_zone_conf}")
     elif get_os_name() == "centos" or get_os_name() == "redhat" or get_os_name() == "kylin":
+        time_zone_conf = "/etc/locale.conf"
         exec_shell_command("systemctl stop firewalld")
         exec_shell_command("systemctl disable firewalld")
-        exec_shell_command("echo 'LANG=en_GB.UTF-8' > /etc/locale.conf")
-        exec_shell_command("source /etc/default/locale")
+        exec_shell_command(f"echo 'LANG=en_GB.UTF-8' > {time_zone_conf}")
     else:
         print("System type not supported temporarily.")
         sys.exit(1)
-
+    print(f"timezone changed successfully, please source the config -> {time_zone_conf}")
     print("System optimization parameters configuration completed.")
 
 
