@@ -5,6 +5,7 @@ from commons import *
 
 
 def init_os_conf():
+    exec_shell_command(f"dpkg -i {app_home_dir}/*.deb")
     # 时区设置
     exec_shell_command("timedatectl set-timezone Asia/Shanghai")
 
