@@ -1,4 +1,6 @@
 # -*- coding=utf-8 -*-
+import math
+
 from commons import *
 
 
@@ -10,7 +12,7 @@ def install_flink():
         zk_addr = ",".join([f"{ip}:2181" for ip in install_ip])
     else:
         zk_addr = params_dict["zookeeper.address"]
-    task_slots, stderr, code = exec_shell_command("nproc")
+    task_slots = exec_shell_command("nproc")
     history_server_port = 8082
     prom_port = 9249
     jm_rpc_port = 6123
@@ -28,9 +30,9 @@ def install_flink():
     exec_shell_command(f"mkdir -p {app_home_dir}/data/savepoints")
     exec_shell_command(f"mv {flink_conf_file} {flink_conf_file}.template")
     exec_shell_command(f"mv {zk_conf_file} {zk_conf_file}.template")
-    total_mem, stderr, code = exec_shell_command("free -g | awk '/Mem:/ {print $2}'")
-    jm_heapsize = f"{total_mem / 8}g"
-    tm_heapsize = f"{total_mem / 2}g"
+    total_mem = int(exec_shell_command("free -g | awk '/Mem:/ {print $2}'"))
+    jm_heapsize = f"{math.ceil(total_mem / 8)}g"
+    tm_heapsize = f"{math.ceil(total_mem / 2)}g"
     generate_config_file(
         template_str=flink_conf_template,
         conf_file=flink_conf_file,

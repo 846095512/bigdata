@@ -258,6 +258,9 @@ def delete_dir(path):
             removed = input(f"this path is not empty, do you want remove this {path}? [y/N] ")
             if removed == "y" or removed == "Y" or removed == "yes":
                 exec_shell_command(f"rm -rf {path}", f"remove {path}", output=True)
+            else:
+                print("nothing to delete, stop installation.")
+                sys.exit(0)
 
 
 app_home_dir = os.path.join(get_app_home_dir(), module_name)

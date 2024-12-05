@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import math
+
 from commons import *
 
 
@@ -15,8 +17,8 @@ def install_mysql():
             server_id += 10
 
     my_cnf_file = os.path.join(app_home_dir, "my.cnf")
-    total_mem, stderr, code = exec_shell_command("free -g | awk '/Mem:/ {print $2}'")
-    innodb_buffer_pool_size = f"{int(total_mem) / 2}g"
+    total_mem = int(exec_shell_command("free -g | awk '/Mem:/ {print $2}'"))
+    innodb_buffer_pool_size = f"{math.ceil(total_mem / 2)}g"
     exec_shell_command(f"mkdir -p {app_home_dir}")
     exec_shell_command(f"mkdir -p {app_home_dir}/data")
     exec_shell_command(f"mkdir -p {app_home_dir}/binlog/relay")
