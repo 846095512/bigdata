@@ -60,12 +60,13 @@ def install_mysql():
 
     mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock"
 
+    tem_exec = f"{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock --connect-expired-password"
 
+    change_root_pwd_sql = f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';"
     create_repl_pwd_sql = f"CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}';"
     change_master_sql = f"CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='{repl_password}' FOR CHANNEL 'group_replication_recovery';"
 
-    exec_shell_command(f""" {app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock  --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';" """,
-                       "change mysql root password", output=True)
+    exec_shell_command(f"""{tem_exec} -e "{change_root_pwd_sql}" """, "change mysql root password", output=True)
     if install_role == "cluster":
         exec_shell_command(
             f"""{mysql_exec} -e  "{create_repl_pwd_sql}" """)
