@@ -73,7 +73,7 @@ export SPARK_SUBMIT_OPTS="-Djava.io.tmpdir={{ spark_home_dir }}/tmp -Dspark.work
 export SPARK_MASTER_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/master-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/master-heapdump.hprof"
 export SPARK_WORKER_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/worker-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/worker-heapdump.hprof"
 export SPARK_HISTORY_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/historyserver-heapdump.hprof"
-{% if cluster_role == "cluster" %}
+{% if install_role == "cluster" %}
 export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=zookeeper://{{ zk_addr }} -Dspark.deploy.zookeeper.dir=/{{ spark_cluster_id }}"
 {% endif %}
 """
@@ -81,7 +81,7 @@ export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.dep
 {% if install_role == "standalone" or install_role == "cluster" %}
 spark.master                            spark://{{ spark_masters }}
 {% endif %}
-{% if cluster_role == "yarn" %}
+{% if install_role == "yarn" %}
 spark.master                            yarn
 spark.dynamicAllocation.enabled         true                                  
 spark.dynamicAllocation.minExecutors    1                                
