@@ -47,7 +47,7 @@ def install_mysql():
         f"""{app_home_dir}/bin/mysqld --defaults-file={app_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={app_home_dir} --datadir={app_home_dir}/data""",
         "mysql format", output=True)
     exec_shell_command(
-        f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} --skip-grant-tables > /dev/null 2>&1 & """,
+        f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
         "mysql 启动", output=True)
     temp_passwd = exec_shell_command(
         f"""grep 'temporary password' {app_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
