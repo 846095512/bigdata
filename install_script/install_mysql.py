@@ -40,6 +40,7 @@ def install_mysql():
                          innodb_buffer_pool_size=innodb_buffer_pool_size)
 
     set_permissions(app_home_dir)
+    repl_user = "repl"
     new_password = "DBuser@123_!@#"
     repl_password = "repl@146_!$&"
     # 初始化mysql并修改root用户密码 启动组复制
@@ -54,7 +55,7 @@ def install_mysql():
 
     print(f"Temporary root password is {temp_passwd}")
     print(f"new root password is {new_password}")
-    print(f"repl password is {repl_password}")
+    print(f"repl user is {repl_user}, repl password is {repl_password}")
     check_service("3306", "mysql server")
     time.sleep(10)
 
