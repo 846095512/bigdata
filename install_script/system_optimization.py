@@ -39,7 +39,7 @@ def init_os_conf():
 
     exec_shell_command("sed -i 's|X11Forwarding yes|X11Forwarding no|g' /etc/ssh/sshd_config")
     exec_shell_command("systemctl restart sshd", "restart sshd", output=True)
-    res = subprocess.run("grep -q 'cpu.shares=1024' /etc/sysctl.conf", shell=True, capture_output=True, text=True)
+    res = subprocess.run("grep -q 'kernel.sched_rt_period_us=1000000' /etc/sysctl.conf", shell=True, capture_output=True, text=True)
     if res.returncode:
         generate_config_file(sys_conf_template, "/etc/sysctl.conf",
                              line_num=int(exec_shell_command("wc -l < /etc/sysctl.conf")))
