@@ -229,7 +229,6 @@ max_allowed_packet=128M
 [mysqlhotcopy]
 interactive_timeout
 """
-    exec_shell_command("pkill mysql")
-
+    exec_shell_command("pkill mysql", "kill mysql", output=True)
     unzip_package()
     install_mysql()
