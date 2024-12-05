@@ -255,7 +255,7 @@ def delete_dir(path):
     if os.path.isdir(path):
         is_empty_dir = len(os.listdir(path)) == 0
         if not is_empty_dir:
-            removed = input(f"this path is not empty, do you want remove this path {path}? [y/N] ")
+            removed = input(f"this install path is not empty, do you want remove this path {path}? [y/N] ")
             if removed == "y" or removed == "Y" or removed == "yes":
                 exec_shell_command(f"rm -rf {path}", f"remove {path}", output=True)
             else:
