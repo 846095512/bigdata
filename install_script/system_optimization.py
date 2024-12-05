@@ -64,10 +64,6 @@ def init_os_conf():
 if __name__ == '__main__':
     sys_conf_template = """
 # CPU 调优
-cpu.shares=1024
-kernel.sched_min_granularity_ns=10000000
-kernel.sched_wakeup_granularity_ns=15000000
-kernel.sched_latency_ns=4000000
 kernel.sched_rt_period_us=1000000
 kernel.sched_rt_runtime_us=950000
 kernel.sched_child_runs_first=1
@@ -94,15 +90,9 @@ fs.nr_open=1048576
 fs.aio-max-nr=1048576
 fs.inotify.max_user_watches=524288
 fs.inotify.max_user_instances=8192
-fs.dentry-state=1024
-fs.async_page_cache=1
-fs.max_pipesize=1MB
 fs.inotify.max_queued_events=8192
 fs.inotify.max_user_instances=8192
 fs.epoll.max_user_watches=524288
-fs.cache_pressure=50
-fs.mmap_minaddr=65536
-fs.mmap_maxaddr=8192MB
 
 # 网络调优
 net.core.rmem_max=16777216
