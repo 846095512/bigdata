@@ -49,7 +49,7 @@ def install_mysql():
         f"""grep 'temporary password' {app_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
     print(f"Temporary root password is {temp_passwd}")
     print(f"new root password is {new_pwd}")
-    time.sleep(5)
+    check_service("3306", "mysql server")
     exec_shell_command(
         f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """,
         "change mysql root password", output=True)
@@ -112,11 +112,10 @@ log_timestamps=SYSTEM
 report_host={{ local_ip }}
 safe-user-create=ON
 allow-suspicious-udfs=ON
-skip-slave-start
-skip-symbolic-links
+skip-replica-start
 skip_external_locking
 skip_name_resolve
-slave_skip_errors=1007,1008,1050,1051,1062,1032
+replica_skip_errors=1007,1008,1050,1051,1062,1032
 
 basedir={{ mysql_home_dir }}
 datadir={{ mysql_home_dir }}/data
@@ -144,8 +143,7 @@ log_bin_trust_function_creators=ON
 transaction_isolation=READ-COMMITTED
 innodb_data_file_path=ibdata1:1024M:autoextend
 innodb_buffer_pool_size={{ innodb_buffer_pool_size }}
-innodb_log_file_size=1G
-innodb_log_files_in_group=4
+innodb_redo_log_capacity=1G
 innodb_log_buffer_size=32M
 innodb_lock_wait_timeout=600
 innodb_print_all_deadlocks=ON
@@ -172,7 +170,6 @@ log_bin_index={{ mysql_home_dir }}/binlog/mysql-bin.index
 binlog_cache_size=2M
 binlog_rows_query_log_events=1
 binlog_expire_logs_seconds=864000
-binlog_format=row
 sync_binlog=10
 binlog_group_commit_sync_delay=1000
 
