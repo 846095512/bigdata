@@ -55,7 +55,7 @@ def install_mysql():
     check_service("3306", "mysql server")
     time.sleep(5)
     exec_shell_command(
-        f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """,
+        f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_pwd}';" """,
         "change mysql root password", output=True)
     if install_role == "cluster":
         exec_shell_command(
@@ -118,7 +118,6 @@ secure_file_priv=''
 wait_timeout=1800
 interactive_timeout=600
 log_timestamps=SYSTEM
-report_host={{ local_ip }}
 safe-user-create=ON
 allow-suspicious-udfs=ON
 skip-replica-start
@@ -190,7 +189,6 @@ relay_log={{ mysql_home_dir }}/binlog/relay/relay-bin
 relay_log_index={{ mysql_home_dir }}/binlog/relay/relay-bin.index
 relay_log_recovery=ON
 log_replica_updates=ON
-replica_parallel_type=LOGICAL_CLOCK
 replica_preserve_commit_order=1
 replica_parallel_workers=32
 replica_pending_jobs_size_max=128M
@@ -198,6 +196,7 @@ replica_pending_jobs_size_max=128M
 {% if install_role == "cluster" %}
 ################# group replication #######
 binlog_checksum=NONE
+report_host={{ local_ip }}
 loose-group_replication_group_name={{ group_id }}
 loose-group_replication_start_on_boot=OFF
 loose-group_replication_local_address={{ local_ip }}:33061
