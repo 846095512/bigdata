@@ -43,6 +43,7 @@ def install_spark():
     if install_role != "yarn":
         exec_shell_command(f"{spark_sbin_dir}/start-master.sh",
                            "spark master start", output=True)
+        check_service("10090","spark master")
         exec_shell_command(f"{spark_sbin_dir}/start-worker.sh spark://{spark_masters}",
                            "spark worker start", output=True)
         exec_shell_command(f"{spark_sbin_dir}/start-history-server.sh",
