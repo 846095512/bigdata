@@ -45,10 +45,12 @@ def init_os_conf():
     if get_os_name() == "ubuntu" or get_os_name() == "debian":
         exec_shell_command("ufw disable")
         exec_shell_command("echo 'LANG=en_GB.UTF-8' > /etc/default/locale")
+        exec_shell_command("source /etc/default/locale")
     elif get_os_name() == "centos" or get_os_name() == "redhat" or get_os_name() == "kylin":
         exec_shell_command("systemctl stop firewalld")
         exec_shell_command("systemctl disable firewalld")
         exec_shell_command("echo 'LANG=en_GB.UTF-8' > /etc/locale.conf")
+        exec_shell_command("source /etc/default/locale")
     else:
         print("System type not supported temporarily.")
         sys.exit(1)
