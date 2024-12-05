@@ -251,7 +251,6 @@ def configure_environment(app, app_home):
             with open(env_file, 'a') as f3:
                 f3.write(f"export {app}={app_home}\n")
                 f3.write(f"export PATH=$PATH:${app}/bin\n")
-    exec_shell_command(f"source {env_file}")
     print(f"please run this command to effective environment variables  ->   source {env_file}")
 
 
