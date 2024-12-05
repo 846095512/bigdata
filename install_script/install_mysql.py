@@ -51,6 +51,7 @@ def install_mysql():
         "mysql 启动", output=True)
     temp_passwd = exec_shell_command(
         f"""grep 'temporary password' {app_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
+
     print(f"Temporary root password is {temp_passwd}")
     print(f"new root password is {new_password}")
     print(f"repl password is {repl_password}")
@@ -63,7 +64,7 @@ def install_mysql():
     create_repl_pwd_sql = f"CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}';"
     change_master_sql = f"CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='{repl_password}' FOR CHANNEL 'group_replication_recovery';"
 
-    exec_shell_command(f'{mysql_exec} --connect-expired-password -e "{change_root_pwd_sql}"',
+    exec_shell_command(f""""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock"   --connect-expired-password -e "{change_root_pwd_sql}" """,
                        "change mysql root password", output=True)
     if install_role == "cluster":
         exec_shell_command(
