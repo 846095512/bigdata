@@ -4,7 +4,6 @@ from commons import *
 
 
 def init_os_conf():
-    exec_shell_command(f"dpkg -i {app_home_dir}/*.deb")
     # 时区设置
     exec_shell_command("timedatectl set-timezone Asia/Shanghai")
 
@@ -122,5 +121,4 @@ net.core.netdev_budget=300
 net.ipv4.conf.all.accept_source_route=0
 net.ipv4.conf.default.accept_source_route=0
 """
-    unzip_package()
     init_os_conf()
