@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-import os
-import subprocess
-import sys
 
-from commons import exec_shell_command, generate_config_file, get_os_name, get_app_home_dir, unzip_package, params_dict
+from commons import *
 
 
 def init_os_conf():
@@ -39,7 +36,8 @@ def init_os_conf():
 
     exec_shell_command("sed -i 's|X11Forwarding yes|X11Forwarding no|g' /etc/ssh/sshd_config")
     exec_shell_command("systemctl restart sshd", "restart sshd", output=True)
-    res = subprocess.run("grep -q 'kernel.sched_rt_period_us=1000000' /etc/sysctl.conf", shell=True, capture_output=True, text=True)
+    res = subprocess.run("grep -q 'kernel.sched_rt_period_us=1000000' /etc/sysctl.conf", shell=True,
+                         capture_output=True, text=True)
     if res.returncode:
         generate_config_file(sys_conf_template, "/etc/sysctl.conf",
                              line_num=int(exec_shell_command("wc -l < /etc/sysctl.conf")))
@@ -123,7 +121,5 @@ net.core.netdev_budget=300
 net.ipv4.conf.all.accept_source_route=0
 net.ipv4.conf.default.accept_source_route=0
 """
-    module_name = params_dict["module.name"]
-    app_home_dir = os.path.join(get_app_home_dir(), module_name)
     unzip_package()
     init_os_conf()
