@@ -73,7 +73,7 @@ export SPARK_MASTER_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/master-gc
 export SPARK_WORKER_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/worker-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/worker-heapdump.hprof"
 export SPARK_HISTORY_OPTS="${GC_OPTS} -Xloggc:{{ spark_home_dir }}/logs/historyserver-gc.log -XX:HeapDumpPath={{ spark_home_dir }}/historyserver-heapdump.hprof"
 {% if install_role == "cluster" %}
-export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url='{{ zk_addr }}' -Dspark.deploy.zookeeper.dir=/{{ spark_cluster_id }}"
+export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url={{ zk_addr }} -Dspark.deploy.zookeeper.dir=/{{ spark_cluster_id }}"
 {% endif %}
 """
     spark_defaults_template = """
