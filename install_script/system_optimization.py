@@ -4,10 +4,10 @@ from commons import *
 
 
 def init_os_conf():
-    # file_path = get_download_dir()
-    #
-    # with tarfile.open(f"{file_path}", 'r') as tar_ref:
-    #     tar_ref.extractall("/tmp")
+    file_path = get_download_dir()
+
+    with tarfile.open(f"{file_path}", 'r') as tar_ref:
+        tar_ref.extractall("/tmp")
 
     exec_shell_command("dpkg -i /tmp/lib/*.deb")
     # 时区设置
@@ -127,5 +127,4 @@ net.core.netdev_budget=300
 net.ipv4.conf.all.accept_source_route=0
 net.ipv4.conf.default.accept_source_route=0
 """
-    unzip_package()
     init_os_conf()
