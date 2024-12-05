@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+import os
 import subprocess
+import sys
 
-from commons import *
+from commons import exec_shell_command, generate_config_file, get_os_name, get_app_home_dir, unzip_package, params_dict
 
 
 def init_os_conf():
@@ -131,5 +133,7 @@ net.core.netdev_budget=300
 net.ipv4.conf.all.accept_source_route=0
 net.ipv4.conf.default.accept_source_route=0
 """
+    module_name = params_dict["module.name"]
+    app_home_dir = os.path.join(get_app_home_dir(), module_name)
     unzip_package()
     init_os_conf()
