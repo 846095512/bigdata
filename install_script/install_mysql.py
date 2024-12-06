@@ -244,3 +244,53 @@ max_allowed_packet=1073741824
     exec_shell_command("pkill mysqld")
     unzip_package()
     install_mysql()
+
+"""
+vrrp_instance VI_1 {
+    state MASTER         # 设置为主节点
+    interface eth0
+    virtual_router_id 51
+    priority 101         # 高优先级，主节点
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    virtual_ipaddress {
+        192.168.1.100     # 虚拟 IP 地址
+    }
+    track_script {
+        check_mysql_master
+    }
+}
+
+
+#!/bin/bash
+
+MYSQL_USER="root"
+MYSQL_PASS="your_mysql_password"
+MYSQL_SOCKET="/var/lib/mysql/mysql.sock"
+
+# 检查 MySQL 是否在运行
+mysqladmin -u$MYSQL_USER -p$MYSQL_PASS -S $MYSQL_SOCKET ping > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "MySQL is not running"
+  exit 1
+fi
+
+# 获取当前 MySQL 实例的 GTID 模式状态
+gtid_mode=$(mysql -u$MYSQL_USER -p$MYSQL_PASS -S $MYSQL_SOCKET -e "SHOW VARIABLES LIKE 'gtid_mode';" | grep -i gtid_mode | awk '{print $2}')
+
+# 获取当前 MySQL 实例的 super_read_only 状态
+super_read_only=$(mysql -u$MYSQL_USER -p$MYSQL_PASS -S $MYSQL_SOCKET -e "SHOW VARIABLES LIKE 'super_read_only';" | grep -i super_read_only | awk '{print $2}')
+
+# 判断是否是主节点
+if [ "$gtid_mode" == "ON" ] && [ "$super_read_only" == "OFF" ]; then
+  echo "This is the master node"
+  exit 0
+else
+  echo "This is not the master node"
+  exit 1
+fi
+
+"""
