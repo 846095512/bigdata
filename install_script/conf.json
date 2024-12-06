@@ -1,6 +1,6 @@
 {
-    "filename":"openjdk-8u44-linux-x64.tar.gz",
-    "module.name":"jdk",
+    "filename":["openjdk-8u44-linux-x64.tar.gz"],
+    "module.name":["jdk"],
     "local.ip":"10.238.111.50",
     "install.role":"cluster",
     "install.ip":["10.238.111.50","10.238.111.51","10.238.111.52"],
