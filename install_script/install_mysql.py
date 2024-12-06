@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+import time
 
 from commons import *
 
@@ -48,6 +49,7 @@ def install_mysql():
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld --defaults-file={app_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={app_home_dir} --datadir={app_home_dir}/data""",
         "mysql format", output=True)
+    time.sleep(10)
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
         "mysql start", output=True)
