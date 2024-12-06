@@ -27,6 +27,7 @@ logdir {{ chrony_home_dir }}/log
 log measurements statistics tracking
 allow {{ cird_notation }}
 makestep 1.0 3
+rtcsync
 """
     unzip_package()
     install_chrony()
