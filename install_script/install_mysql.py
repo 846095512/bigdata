@@ -140,7 +140,6 @@ basedir={{ mysql_home_dir }}
 datadir={{ mysql_home_dir }}/data
 tmpdir={{ mysql_home_dir }}/tmp
 pid-file={{ mysql_home_dir }}/mysqld.pid
-default_authentication_plugin=mysql_native_password
 
 
 ################# thread ################
