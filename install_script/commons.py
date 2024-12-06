@@ -85,8 +85,11 @@ def get_app_home_dir():
 def exec_shell_command(cmd, msg=None, output=False):
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if output:
-        print(
-            f"{msg} Succeeded -> {result.stdout}" if result.returncode == 0 else f"{msg} Failed  ->  {result.stderr}")
+        if result.returncode == 0:
+            print(f"{msg} Succeeded -> {result.stdout}")
+        else:
+            print(f"{msg} Failed  ->  {result.stderr}")
+            sys.exit(1)
     return result.stdout.strip()
 
 
@@ -260,7 +263,7 @@ def delete_dir(path):
                 exec_shell_command(f"rm -rf {path}", f"remove {path}", output=True)
             else:
                 print("nothing to delete, stop installation.")
-                sys.exit(0)
+                sys.exit(1)
 
 
 app_home_dir = os.path.join(get_app_home_dir(), module_name)
