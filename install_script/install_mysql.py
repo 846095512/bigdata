@@ -46,8 +46,7 @@ def install_mysql():
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld --defaults-file={app_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={app_home_dir} --datadir={app_home_dir}/data""",
         "mysql format", output=True)
-    tem_exec = f"""{app_home_dir}/bin/mysqld_safe --skip-grant-tables  > /dev/null 2>&1 & """
-    exec_shell_command(f"{tem_exec}")
+    exec_shell_command(f"{app_home_dir}/bin/mysqld_safe --skip-grant-tables  > /dev/null 2>&1 &")
     # exec_shell_command(
     #     f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
     #     "mysql 启动", output=True)
@@ -57,7 +56,7 @@ def install_mysql():
     # print(f"Temporary root password is {temp_passwd}")
 
     print(f"new root password is {new_password}")
-    check_service("3306", "mysql server")
+
 
     mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e"
 
@@ -69,6 +68,7 @@ def install_mysql():
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
         "mysql 启动", output=True)
+    check_service("3306", "mysql server")
     if install_role == "cluster":
         repl_user, repl_password = "repl", "Repl@146_!$&"
         clone_user, clone_password = "clone", "Clone@345_#$%"
