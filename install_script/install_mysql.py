@@ -102,7 +102,8 @@ def install_mysql():
         else:
             exec_shell_command(
                 f"""{mysql_exec} "START GROUP_REPLICATION;" """, "Start MySQL Group Replication", output=True)
-    exec_shell_command(f"{mysql_exec} 'SELECT * FROM performance_schema.replication_group_members;' ")
+    exec_shell_command(f"{mysql_exec} 'SELECT * FROM performance_schema.replication_group_members;' ",
+                       "show mysql group members", output=True)
     configure_environment("MYSQL_HOME", app_home_dir)
     print("MySQL  installation completed")
 
