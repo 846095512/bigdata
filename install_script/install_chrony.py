@@ -3,22 +3,28 @@
 from commons import *
 
 
-def install_ntp():
+def install_chrony():
     ntp_conf = os.path.join(app_home_dir, "conf", 'ntp.conf')
-
-    if install_role == "server":
-        server_host = "127.127.1.0"
-    else:
-        server_host = params_dict["server.host"]
-    exec_shell_command(f"sed -i 's|SERVER_HOST|{server_host}|g' {ntp_conf}")
-    exec_shell_command(f"sed -i 's|NTP_HOME_DIR|{app_home_dir}|g' {ntp_conf}")
-
-    exec_shell_command(f"{app_home_dir}/bin/ntpd -g -d -c {ntp_conf}",
-                       "ntpd start", output=True)
-
-    print("Ntp installation completed")
+    cird_notation = params_dict["cird.notation"]
+    generate_config_file(template_str=chrony_conf_template,
+                         conf_file=ntp_conf,
+                         cired_notation=cird_notation)
+    exec_shell_command(f"{app_home_dir}/sbin/chronyd -f {app_home_dir}/conf/chrony.conf",
+                       "chrony start", output=True)
+    print("chrony installation completed")
 
 
 if __name__ == '__main__':
+    chrony_conf_template = """
+server ntp1.aliyun.com iburst
+server ntp2.aliyun.com iburst
+server ntp3.aliyun.com iburst
+local stratum 10
+driftfile {{ chrony_home_dir }}/chrony.drift
+logdir {{ chrony_home_dir }}/log
+log measurements statistics tracking
+allow {{ cird_notation }}
+makestep 1.0 3
+"""
     unzip_package()
-    install_ntp()
+    install_chrony()
