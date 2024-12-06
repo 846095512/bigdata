@@ -65,8 +65,8 @@ def install_mysql():
         "change mysql root password", output=True)
 
     if install_role == "cluster":
-        repl_user, repl_password = "repl", "Repl@146"
-        clone_user, clone_password = "clone", "Clone@345"
+        repl_user, repl_password = "repl", "Repl@147"
+        clone_user, clone_password = "clone", "Clone@258"
         print(f"repl user is {repl_user}, repl password is {repl_password}")
         print(f"clone user is {clone_user}, clone password is {clone_password}")
         create_repl_user_sql = f"CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}';"
