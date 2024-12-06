@@ -5,7 +5,7 @@ from commons import *
 
 def install_chrony():
     ntp_conf = os.path.join(app_home_dir, "conf", 'ntp.conf')
-    cird_notation = params_dict["cird.notation"]
+    cird_notation = params_dict["allow.cird.notation"]
     chrony_server_ip = params_dict["chrony.server.ip"]
     generate_config_file(template_str=chrony_conf_template,
                          conf_file=ntp_conf,
