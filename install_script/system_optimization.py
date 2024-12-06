@@ -4,14 +4,20 @@ from commons import *
 
 
 def init_os_conf():
-    exec_shell_command("apt remove  systemd-timesyncd -y")
-    file_path = get_download_dir()
+    if get_os_name() == "ubuntu" or get_os_name() == "debian":
+        exec_shell_command("ufw disable")
+    elif get_os_name() == "centos" or get_os_name() == "redhat" or get_os_name() == "kylin":
+        exec_shell_command("systemctl stop firewalld")
+        exec_shell_command("systemctl disable firewalld")
+    else:
+        print("System type not supported temporarily.")
+        sys.exit(1)
 
+    file_path = get_download_dir()
     with tarfile.open(f"{file_path}", 'r') as tar_ref:
         tar_ref.extractall("/tmp")
 
     exec_shell_command(f"hostnamectl set-hostname {local_ip}")
-
     exec_shell_command("dpkg -i /tmp/lib/*.deb")
     # 时区设置
     exec_shell_command("timedatectl set-timezone Asia/Shanghai")
@@ -51,20 +57,6 @@ def init_os_conf():
                              line_num=int(exec_shell_command("wc -l < /etc/sysctl.conf")))
         exec_shell_command("sysctl -p", "sysctl -p", output=True)
 
-
-    if get_os_name() == "ubuntu" or get_os_name() == "debian":
-        time_zone_conf = "/etc/default/locale"
-        exec_shell_command("ufw disable")
-        exec_shell_command(f"echo 'LANG=en_GB.UTF-8' > {time_zone_conf}")
-    elif get_os_name() == "centos" or get_os_name() == "redhat" or get_os_name() == "kylin":
-        time_zone_conf = "/etc/locale.conf"
-        exec_shell_command("systemctl stop firewalld")
-        exec_shell_command("systemctl disable firewalld")
-        exec_shell_command(f"echo 'LANG=en_GB.UTF-8' > {time_zone_conf}")
-    else:
-        print("System type not supported temporarily.")
-        sys.exit(1)
-    print(f"timezone changed successfully, please source the config -> source {time_zone_conf}")
     print("System optimization parameters configuration completed.")
 
 
