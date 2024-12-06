@@ -48,7 +48,6 @@ def install_mysql():
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld --defaults-file={app_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={app_home_dir} --datadir={app_home_dir}/data""",
         "mysql format", output=True)
-    time.sleep(10)
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
         "mysql start", output=True)
@@ -241,6 +240,7 @@ performance_schema_session_connect_attrs_size=2048
 sql_mode="STRICT_ALL_TABLES,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
 max_allowed_packet=1073741824
 """
-    exec_shell_command("pkill mysql")
+    mysql_path = ["mysql/bin/mysqld_safe"]
+    kill_service(mysql_path)
     unzip_package()
     install_mysql()
