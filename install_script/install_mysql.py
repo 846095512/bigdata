@@ -57,18 +57,18 @@ def install_mysql():
 
     print(f"new root password is {new_password}")
 
-
     mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e"
-
+    change_root_password_sql = f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';"
     # tem_exec = f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';" """
     # exec_shell_command(f"{tem_exec}", "change mysql root password", output=True)
-    exec_shell_command(f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';", "change mysql root password",
+    exec_shell_command(f"{app_home_dir}/bin/mysql -uroot -e {change_root_password_sql}", "change mysql root password",
                        output=True)
     exec_shell_command("pkill mysql")
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
-        "mysql 启动", output=True)
+        "mysql start", output=True)
     check_service("3306", "mysql server")
+
     if install_role == "cluster":
         repl_user, repl_password = "repl", "Repl@146_!$&"
         clone_user, clone_password = "clone", "Clone@345_#$%"
