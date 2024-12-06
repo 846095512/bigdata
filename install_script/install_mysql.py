@@ -40,7 +40,7 @@ def install_mysql():
                          innodb_buffer_pool_size=innodb_buffer_pool_size)
 
     set_permissions(app_home_dir)
-    new_password = "DBuser@123_!@#"
+    new_password = "DBuser@123"
     mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e"
     change_root_password_sql = f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';"
 
@@ -65,8 +65,8 @@ def install_mysql():
         "change mysql root password", output=True)
 
     if install_role == "cluster":
-        repl_user, repl_password = "repl", "Repl@146_!$&"
-        clone_user, clone_password = "clone", "Clone@345_#$%"
+        repl_user, repl_password = "repl", "Repl@146"
+        clone_user, clone_password = "clone", "Clone@345"
         print(f"repl user is {repl_user}, repl password is {repl_password}")
         print(f"clone user is {clone_user}, clone password is {clone_password}")
         create_repl_user_sql = f"CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}';"
