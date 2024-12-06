@@ -46,28 +46,21 @@ def install_mysql():
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld --defaults-file={app_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={app_home_dir} --datadir={app_home_dir}/data""",
         "mysql format", output=True)
-    exec_shell_command(f"{app_home_dir}/bin/mysqld_safe --skip-grant-tables  > /dev/null 2>&1 &")
-    # exec_shell_command(
-    #     f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
-    #     "mysql 启动", output=True)
-    # temp_passwd = exec_shell_command(
-    #     f"""grep 'temporary password' {app_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
-    #
-    # print(f"Temporary root password is {temp_passwd}")
-
-    print(f"new root password is {new_password}")
-
-    mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e"
-    change_root_password_sql = f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';"
-    # tem_exec = f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';" """
-    # exec_shell_command(f"{tem_exec}", "change mysql root password", output=True)
-    exec_shell_command(f"{app_home_dir}/bin/mysql -uroot -e {change_root_password_sql}", "change mysql root password",
-                       output=True)
-    exec_shell_command("pkill mysql")
+    # exec_shell_command(f"{app_home_dir}/bin/mysqld_safe --skip-grant-tables  > /dev/null 2>&1 &")
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
         "mysql start", output=True)
     check_service("3306", "mysql server")
+
+    temp_passwd = exec_shell_command(
+        f"""grep 'temporary password' {app_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
+    print(f"Temporary root password is {temp_passwd}")
+    print(f"new root password is {new_password}")
+    mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e"
+
+    change_root_password_sql = f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';"
+    exec_shell_command(f"{app_home_dir}/bin/mysql -uroot -p '{temp_passwd}' -S {app_home_dir}/mysql.sock -e {change_root_password_sql}", "change mysql root password",
+                       output=True)
 
     if install_role == "cluster":
         repl_user, repl_password = "repl", "Repl@146_!$&"
