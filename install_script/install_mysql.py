@@ -59,9 +59,9 @@ def install_mysql():
     print(f"new root password is {new_password}")
     check_service("3306", "mysql server")
 
-    print(f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' --connect-expired-password  -S {app_home_dir}/mysql.sock -e "{change_root_password_sql}"  """)
+    print(f""" {app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' --connect-expired-password  -S {app_home_dir}/mysql.sock -e "{change_root_password_sql}"  """)
     exec_shell_command(
-        f""""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' --connect-expired-password  -S {app_home_dir}/mysql.sock -e "{change_root_password_sql}" """,
+        f""" {app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' --connect-expired-password  -S {app_home_dir}/mysql.sock -e "{change_root_password_sql}" """,
         "change mysql root password", output=True)
 
     if install_role == "cluster":
