@@ -102,6 +102,7 @@ def install_mysql():
         else:
             exec_shell_command(
                 f"""{mysql_exec} "START GROUP_REPLICATION;" """, "Start MySQL Group Replication", output=True)
+    exec_shell_command(f"{mysql_exec} 'SELECT * FROM performance_schema.replication_group_members;' ")
     configure_environment("MYSQL_HOME", app_home_dir)
     print("MySQL  installation completed")
 
@@ -239,7 +240,6 @@ performance_schema_session_connect_attrs_size=2048
 sql_mode="STRICT_ALL_TABLES,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
 max_allowed_packet=1073741824
 """
-    mysql_path = ["mysql/bin/mysqld_safe"]
-    kill_service(mysql_path)
+    exec_shell_command("pkill mysqld")
     unzip_package()
     install_mysql()
