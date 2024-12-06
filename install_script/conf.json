@@ -30,6 +30,7 @@
 
     "flink.cluster.id": "flinkcluster",
 
-    "mysql.group.id": "mysqlcluster"
-
+    "mysql.group.id": "mysqlcluster",
+    "allow.cird.notation": "10.238.111.0/24",
+    "chrony.server.ip": "10.238.111.50"
 }
