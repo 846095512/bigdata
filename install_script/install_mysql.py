@@ -60,7 +60,7 @@ def install_mysql():
     check_service("3306", "mysql server")
 
     exec_shell_command(
-        f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' --connect-expired-password  -S {app_home_dir}/mysql.sock -e {change_root_password_sql}",
+        f"{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' --connect-expired-password  -S {app_home_dir}/mysql.sock -e {change_root_password_sql}",
         "change mysql root password", output=True)
 
     if install_role == "cluster":
