@@ -76,11 +76,13 @@ def install_mysql():
         exec_shell_command(
             f"""{mysql_exec} "{create_repl_user_sql}" """)
         exec_shell_command(
-            f"""{mysql_exec} "{change_master_sql}" """)
-        exec_shell_command(
             f"""{mysql_exec} "{create_clone_user_sql}" """)
         exec_shell_command(
-            f"""{mysql_exec} "GRANT REPLICATION SLAVE on *.* to 'repl'@'%';" """)
+            f"""{mysql_exec} "{change_master_sql}" """)
+        exec_shell_command(
+            f"""{mysql_exec} "GRANT REPLICATION SLAVE on *.* to '{repl_user}'@'%';" """)
+        exec_shell_command(
+            f"""{mysql_exec} "GRANT BACKUP_ADMIN CLONE_ADMIN on *.* to '{clone_user}'@'%';" """)
         exec_shell_command(
             f"""{mysql_exec} "SET SQL_LOG_BIN=0;" """)
         exec_shell_command(
