@@ -65,8 +65,8 @@ def install_mysql():
     if install_role == "cluster":
         repl_user, repl_password = "repl", "Repl@147_!$&"
         clone_user, clone_password = "clone", "Clone@258_@%*"
-        print(f"repl user is {repl_user}, repl password is {repl_password}")
-        print(f"clone user is {clone_user}, clone password is {clone_password}")
+        print(f"repl user is {repl_user},  password is {repl_password}")
+        print(f"clone user is {clone_user},  password is {clone_password}")
         create_repl_user_sql = f"CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}';"
         create_clone_user_sql = f"CREATE USER 'clone'@'%' IDENTIFIED BY '{clone_password}';'"
         change_master_sql = f"CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='{repl_password}' FOR CHANNEL 'group_replication_recovery';"
