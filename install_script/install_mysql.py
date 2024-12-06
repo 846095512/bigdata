@@ -41,24 +41,22 @@ def install_mysql():
 
     set_permissions(app_home_dir)
     new_password = "DBuser@123_!@#"
+    mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e"
+    change_root_password_sql = f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';"
+
 
     # 初始化mysql并修改root用户密码 启动组复制
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld --defaults-file={app_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={app_home_dir} --datadir={app_home_dir}/data""",
         "mysql format", output=True)
-    # exec_shell_command(f"{app_home_dir}/bin/mysqld_safe --skip-grant-tables  > /dev/null 2>&1 &")
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld_safe --defaults-file={app_home_dir}/my.cnf --user={current_user} > /dev/null 2>&1 & """,
         "mysql start", output=True)
     check_service("3306", "mysql server")
-
     temp_passwd = exec_shell_command(
         f"""grep 'temporary password' {app_home_dir}/logs/mysql_error.log | awk '{{print $NF}}' """)
     print(f"Temporary root password is {temp_passwd}")
     print(f"new root password is {new_password}")
-    mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e"
-
-    change_root_password_sql = f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';"
     exec_shell_command(f"{app_home_dir}/bin/mysql -uroot -p '{temp_passwd}' -S {app_home_dir}/mysql.sock -e {change_root_password_sql}", "change mysql root password",
                        output=True)
 
@@ -136,7 +134,7 @@ skip-replica-start
 skip_external_locking
 skip_name_resolve
 replica_skip_errors=1007,1008,1050,1051,1062,1032
-
+default_password_lifetime=0
 basedir={{ mysql_home_dir }}
 datadir={{ mysql_home_dir }}/data
 tmpdir={{ mysql_home_dir }}/tmp
