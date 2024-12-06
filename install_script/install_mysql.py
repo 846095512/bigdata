@@ -58,9 +58,9 @@ def install_mysql():
     print(f"new root password is {new_password}")
     check_service("3306", "mysql server")
 
-    exec_shell_command(f"{mysql_exec} --connect-expired-password  {change_root_password_sql}",
-                       "change mysql root password",
-                       output=True)
+    exec_shell_command(
+        f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' --connect-expired-password -h127.0.0.1 -S {app_home_dir}/mysql.sock -e {change_root_password_sql}",
+        "change mysql root password", output=True)
 
     if install_role == "cluster":
         repl_user, repl_password = "repl", "Repl@146_!$&"
@@ -136,7 +136,6 @@ skip-replica-start
 skip_external_locking
 skip_name_resolve
 replica_skip_errors=1007,1008,1050,1051,1062,1032
-default_password_lifetime=0
 basedir={{ mysql_home_dir }}
 datadir={{ mysql_home_dir }}/data
 tmpdir={{ mysql_home_dir }}/tmp
