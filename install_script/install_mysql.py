@@ -40,9 +40,8 @@ def install_mysql():
                          innodb_buffer_pool_size=innodb_buffer_pool_size)
 
     set_permissions(app_home_dir)
-    repl_user = "repl"
     new_password = "DBuser@123_!@#"
-    repl_password = "repl@146_!$&"
+
     # 初始化mysql并修改root用户密码 启动组复制
     exec_shell_command(
         f"""{app_home_dir}/bin/mysqld --defaults-file={app_home_dir}/my.cnf  --initialize  --user={current_user}  --basedir={app_home_dir} --datadir={app_home_dir}/data""",
@@ -55,22 +54,29 @@ def install_mysql():
 
     print(f"Temporary root password is {temp_passwd}")
     print(f"new root password is {new_password}")
-    print(f"repl user is {repl_user}, repl password is {repl_password}")
     check_service("3306", "mysql server")
 
     mysql_exec = f"{app_home_dir}/bin/mysql -uroot -p'{new_password}' -S {app_home_dir}/mysql.sock -e"
 
     tem_exec = f"""{app_home_dir}/bin/mysql -uroot -p'{temp_passwd}' -S {app_home_dir}/mysql.sock --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{new_password}';" """
 
-    create_repl_pwd_sql = f"CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}';"
-    change_master_sql = f"CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='{repl_password}' FOR CHANNEL 'group_replication_recovery';"
 
     exec_shell_command(f"{tem_exec}", "change mysql root password", output=True)
     if install_role == "cluster":
+        repl_user,repl_password = "repl","Repl@146_!$&"
+        clone_user,clone_password = "clone","Clone@345_#$%"
+        print(f"repl user is {repl_user}, repl password is {repl_password}")
+        print(f"clone user is {clone_user}, clone password is {clone_password}")
+        create_repl_user_sql = f"CREATE USER 'repl'@'%' IDENTIFIED BY '{repl_password}';"
+        create_clone_user_sql = f"CREATE USER 'clone'@'%' IDENTIFIED BY '{clone_password}';'"
+        change_master_sql = f"CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='{repl_password}' FOR CHANNEL 'group_replication_recovery';"
+
         exec_shell_command(
-            f"""{mysql_exec} "{create_repl_pwd_sql}" """)
+            f"""{mysql_exec} "{create_repl_user_sql}" """)
         exec_shell_command(
             f"""{mysql_exec} "{change_master_sql}" """)
+        exec_shell_command(
+            f"""{mysql_exec} "{create_clone_user_sql}" """)
         exec_shell_command(
             f"""{mysql_exec} "GRANT REPLICATION SLAVE on *.* to 'repl'@'%';" """)
         exec_shell_command(
@@ -92,8 +98,6 @@ def install_mysql():
             exec_shell_command(
                 f"""{mysql_exec} "SET GLOBAL group_replication_bootstrap_group=OFF;" """)
         else:
-            exec_shell_command(
-                f"""{mysql_exec} "{change_master_sql}" """)
             exec_shell_command(
                 f"""{mysql_exec} "START GROUP_REPLICATION;" """, "Start MySQL Group Replication", output=True)
     configure_environment("MYSQL_HOME", app_home_dir)
