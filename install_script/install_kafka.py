@@ -137,5 +137,7 @@ message.max.bytes=20971520
 controlled.shutdown.enable=true
 controlled.shutdown.max.retries=3
 """
+    kafka_class_name = ["kafka.Kafka"]
+    kill_service(kafka_class_name)
     unzip_package()
     install_kafka()
