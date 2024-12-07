@@ -274,5 +274,4 @@ def delete_dir(path):
 app_home_dir = os.path.join(get_app_home_dir(), module_name[0])
 delete_dir(app_home_dir)
 
-if __name__ == '__main__':
-    unzip_package()
+

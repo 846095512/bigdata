@@ -1,5 +1,5 @@
 {
-    "filename":["openjdk-8u44-linux-x64.tar.gz"],
+    "filename":["openjdk-8u44-linux-x64.tar.gz","hadoop","spark","flink"],
     "module.name":["jdk"],
     "local.ip":"10.238.111.50",
     "install.role":"cluster",
