@@ -252,6 +252,7 @@ def configure_environment(app, app_home, is_bin="bin"):
                 f3.write(f"export PATH=$PATH:${app}/{is_bin}\n")
     exec_shell_command(f"source {env_file}")
     print(f"environment variables has been configured successfully")
+    print(f"please run this command to effective environment variables  ->   source {env_file}")
 
 
 def delete_dir(path):
