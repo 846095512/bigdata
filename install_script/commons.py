@@ -101,19 +101,17 @@ def set_permissions(path):
 
 def unzip_package():
     file_path = get_download_dir()
-    home_dir = get_app_home_dir()
-    print(f"PREFIX={home_dir}")
+    print(f"PREFIX={app_home_dir}")
 
-    for file, module in zip(file_path, module_name):
-        with tarfile.open(f"{file}", 'r') as tar_ref:
-            tar_ref.extractall(home_dir)
-        print(f"The {file} file has been extracted")
-        unpack_name = exec_shell_command(f"tar -tf {file}  | head -1 | cut -d'/' -f1")
-        old_path = os.path.join(home_dir, unpack_name)
-        print(file, module)
-        new_path = os.path.join(home_dir, module)
-        shutil.move(old_path, new_path)
-        print(f"The directory has been moved from {old_path} to {new_path}")
+    with tarfile.open(f"{file_path}", 'r') as tar_ref:
+        tar_ref.extractall(app_home_dir)
+    print(f"The {filename} file has been extracted")
+
+    unpack_name = exec_shell_command(f"tar -tf {file_path}  | head -1 | cut -d'/' -f1")
+    old_path = os.path.join(app_home_dir, unpack_name)
+    new_path = os.path.join(app_home_dir, module_name)
+    shutil.move(old_path, new_path)
+    print(f"The directory has been moved from {old_path} to {new_path}")
 
 
 def generate_config_file(template_str, conf_file, keyword=None, line_num=None, **kwargs):
@@ -141,14 +139,11 @@ def generate_config_file(template_str, conf_file, keyword=None, line_num=None, *
 
 def get_download_dir():
     root_dir = get_root_dir()
-    package_dir = []
-    for file in filename:
-        package_dir.append(os.path.join(root_dir, "package", file))
-    for package in package_dir:
-        if not os.path.exists(package):
-            print(
-                f"installation package download path  {package}  is not exist. Please upload the installation package to {package}")
-            sys.exit(1)
+    package_dir = os.path.join(root_dir, "package", filename)
+    if not os.path.exists(package_dir):
+        print(
+            f"installation package download path  {package_dir}  is not exist. Please upload the installation package to {package_dir}")
+        sys.exit(1)
     return package_dir
 
 
@@ -271,7 +266,7 @@ def delete_dir(path):
                 sys.exit(1)
 
 
-app_home_dir = os.path.join(get_app_home_dir(), module_name[0])
+app_home_dir = get_app_home_dir()
 delete_dir(app_home_dir)
 
 
